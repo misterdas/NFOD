@@ -2,7 +2,7 @@ name: Daily Data Update & Deploy to Pages
 
 on:
   schedule:
-    # 15:00 UTC is 8:30 PM IST (Mon-Fri)
+    # 18:00 UTC = 11:30 PM IST (Mon-Fri)
     - cron: '0 18 * * 1-5'
   workflow_dispatch:
 
@@ -12,57 +12,87 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: daily-data-update
   cancel-in-progress: false
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
         with:
-          python-version: '3.14'
-          
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
       - name: Install dependencies
-        run: pip install pandas requests nsefetch
-        
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests nsefetch
+
       - name: Run data fetch scripts
         run: |
           python FDCP.py
           python OC.py
           python money_flow_engine.py
-        
+
       - name: Commit and Push changes
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add FDCP_Data.csv docs/ || true
-          # Only commit and push if there are changes
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update daily market data" && git push)
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add FDCP_Data.csv docs/
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Update daily market data"
+
+          for i in {1..3}; do
+            echo "Push attempt $i..."
+
+            git pull --rebase origin main
+
+            if git push origin main; then
+              echo "Push successful."
+              exit 0
+            fi
+
+            echo "Push failed. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+          echo "Failed to push after 3 attempts."
+          exit 1
 
   deploy-pages:
     needs: update-data
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
-      # Need to check out again to get the latest commit pushed by the previous job
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
-          
+          path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
