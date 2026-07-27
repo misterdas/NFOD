@@ -17,7 +17,7 @@ while start_date <= end_date:
        df=pd.concat([df,c],ignore_index=True,axis=0)
        print('Done for '+start_date.strftime("%d-%m-%Y"))
     except:
-       print('no data for '+start_date.strftime("%d-%m-%Y"))
+       print('No data for '+start_date.strftime("%d-%m-%Y"))
        
     start_date += delta 
 df.to_csv('FDCP_Data.csv')
