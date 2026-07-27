@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futures & Options — Participant Wise OI Analysis Dashboard</title>
+    <meta name="description"
+        content="Participant wise Open Interest (OI) changes dashboard for NSE Futures & Options using historical data.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="theme-dark">
+    <div class="app-container">
+
+        <!-- Top Header & Branding Bar -->
+        <header class="top-header">
+            <div class="brand-info">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Futures & Options — Participant Wise OI Analysis</h1>
+                    <div class="channel-links">
+                        <span><i class="fa-brands fa-telegram text-blue"></i> t.me/MarketAnalysisNiftyBankNifty</span>
+                        <span class="divider">•</span>
+                        <span><i class="fa-brands fa-youtube text-red"></i> YouTube: Market Analysis With Gopal
+                            Das</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls: Date Picker, Theme, Actions -->
+            <div class="header-controls">
+                <div class="date-selector-group">
+                    <label for="date-select"><i class="fa-regular fa-calendar"></i> Trading Date:</label>
+                    <button id="btn-prev-date" class="btn btn-icon" title="Previous Date"><i
+                            class="fa-solid fa-chevron-left"></i></button>
+                    <select id="date-select" class="form-select">
+                        <option value="">Loading dates...</option>
+                    </select>
+                    <button id="btn-next-date" class="btn btn-icon" title="Next Date"><i
+                            class="fa-solid fa-chevron-right"></i></button>
+                    <button id="btn-latest-date" class="btn btn-sm btn-outline"
+                        title="Jump to Latest Date">Latest</button>
+                </div>
+
+                <div class="action-buttons">
+
+                    <button id="btn-charts-toggle" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-chart-area"></i> Trend Charts
+                    </button>
+                    <button id="btn-theme-toggle" class="btn btn-icon" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main View Navigation Tabs -->
+        <nav class="nav-tabs-bar">
+            <button id="tab-participant-gross" class="nav-tab active">
+                <i class="fa-solid fa-users"></i> Gross Participant OI
+            </button>
+            <button id="tab-money-flow" class="nav-tab">
+                <i class="fa-solid fa-layer-group"></i> Option Chain & Operator Money Flow
+            </button>
+        </nav>
+
+        <!-- Container 1: Gross Participant View -->
+        <div id="view-participant-gross" class="tab-content active">
+
+            <!-- KPI Summary Cards Bar -->
+            <section class="kpi-bar">
+                <div class="kpi-card fno-fii">
+                    <div class="kpi-header">FII Index Futures (Net)</div>
+                    <div class="kpi-value" id="kpi-fii-futures">--</div>
+                    <div class="kpi-sub" id="kpi-fii-futures-action">--</div>
+                </div>
+                <div class="kpi-card fno-client">
+                    <div class="kpi-header">Client Index Calls (Net Today)</div>
+                    <div class="kpi-value" id="kpi-client-calls">--</div>
+                    <div class="kpi-sub" id="kpi-client-calls-action">--</div>
+                </div>
+                <div class="kpi-card fno-pro">
+                    <div class="kpi-header">Pro Index Calls (Net Today)</div>
+                    <div class="kpi-value" id="kpi-pro-calls">--</div>
+                    <div class="kpi-sub" id="kpi-pro-calls-action">--</div>
+                </div>
+                <div class="kpi-card fno-sentiment">
+                    <div class="kpi-header">Institutional Bias</div>
+                    <div class="kpi-value" id="kpi-bias">--</div>
+                    <div class="kpi-sub" id="kpi-bias-sub">Smart Money vs Retail</div>
+                </div>
+            </section>
+
+            <!-- Historical Trend Modal / Section -->
+            <section id="charts-section" class="charts-section hidden">
+                <div class="charts-card">
+                    <div class="charts-header">
+                        <h2><i class="fa-solid fa-chart-spline"></i> Participant Net Position Trends (July 2026)</h2>
+                        <button id="btn-close-charts" class="btn btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-wrapper">
+                            <h3>Index Futures Net OI Trend (FII vs Client vs Pro)</h3>
+                            <canvas id="chart-index-futures"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <h3>Index Options Net Calls & Puts (FII & Client)</h3>
+                            <canvas id="chart-index-options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Main Grid Layout -->
+            <main class="dashboard-grid">
+
+                <!-- Left & Center Column: F&O Instruments & Carried Positions -->
+                <div class="dashboard-left-center">
+
+                    <!-- Main Header Title inside Table Section -->
+                    <div class="table-section-header">
+                        <div class="col-title col-instruments">OI Changes &nbsp;|&nbsp; Futures & Options</div>
+                        <div class="col-title col-carried">Total Positions Carried (Net OI)</div>
+                    </div>
+
+                    <!-- 1. Index Futures Block -->
+                    <div class="instrument-block" id="block-index-futures">
+                        <div class="block-tables-container">
+                            <!-- Left Table: OI Changes -->
+                            <div class="table-oi-changes">
+                                <div class="block-header">Index Futures</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Index Futures Longs</th>
+                                            <th colspan="2">Index Futures Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Right Table: Total Positions Carried -->
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="th-fut-today">TODAY</th>
+                                            <th id="th-fut-1day">1 DAY AGO</th>
+                                            <th id="th-fut-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Index Call Block -->
+                    <div class="instrument-block" id="block-index-calls">
+                        <div class="block-tables-container">
+                            <div class="table-oi-changes">
+                                <div class="block-header">Index Call Longs & Shorts</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Index Call Longs</th>
+                                            <th colspan="2">Index Call Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-call-today">TODAY</th>
+                                            <th class="th-call-1day">1 DAY AGO</th>
+                                            <th class="th-call-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Index Put Block -->
+                    <div class="instrument-block" id="block-index-puts">
+                        <div class="block-tables-container">
+                            <div class="table-oi-changes">
+                                <div class="block-header">Index Put Longs & Shorts</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Index Put Longs</th>
+                                            <th colspan="2">Index Put Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-put-today">TODAY</th>
+                                            <th class="th-put-1day">1 DAY AGO</th>
+                                            <th class="th-put-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Stock Futures Block -->
+                    <div class="instrument-block" id="block-stock-futures">
+                        <div class="block-tables-container">
+                            <div class="table-oi-changes">
+                                <div class="block-header">Stock Futures</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Stock Futures Longs</th>
+                                            <th colspan="2">Stock Futures Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-stkfut-today">TODAY</th>
+                                            <th class="th-stkfut-1day">1 DAY AGO</th>
+                                            <th class="th-stkfut-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Stock Calls Block -->
+                    <div class="instrument-block" id="block-stock-calls">
+                        <div class="block-tables-container">
+                            <div class="table-oi-changes">
+                                <div class="block-header">Stock Calls Longs & Shorts</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Stock Calls Longs</th>
+                                            <th colspan="2">Stock Calls Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-stkcall-today">TODAY</th>
+                                            <th class="th-stkcall-1day">1 DAY AGO</th>
+                                            <th class="th-stkcall-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Stock Puts Block -->
+                    <div class="instrument-block" id="block-stock-puts">
+                        <div class="block-tables-container">
+                            <div class="table-oi-changes">
+                                <div class="block-header">Stock Puts Longs & Shorts</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Stock Puts Longs</th>
+                                            <th colspan="2">Stock Puts Shorts</th>
+                                            <th colspan="2">Net Buy / Sell for Today</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                            <div class="table-carried-positions">
+                                <div class="block-header">Total Positions Carried</div>
+                                <table class="dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-stkput-today">TODAY</th>
+                                            <th class="th-stkput-1day">1 DAY AGO</th>
+                                            <th class="th-stkput-2day">2 DAYS AGO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody><!-- Populated dynamically by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Positions Bought / Sold Today Summary & Rules -->
+                <div class="dashboard-right">
+
+                    <div class="positions-summary-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-list-check"></i> Positions Bought / Sold Today
+                        </div>
+                        <div class="positions-summary-body" id="positions-summary-list">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+
+            </main>
+        </div><!-- End view-participant-gross -->
+
+        <!-- Container 2: Institutional Verdict & Market Breadth View -->
+        <div id="view-money-flow" class="tab-content">
+
+            <!-- Control Bar with Timestamp -->
+            <section class="oc-control-bar">
+                <div style="font-size:14px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-building-columns text-blue"></i>
+                    <span>INSTITUTIONAL FO VERDICT & MARKET BREADTH</span>
+                </div>
+                <div class="oc-timestamp" id="oc-last-updated">
+                    <i class="fa-solid fa-clock"></i> Last Analyzed: <span>Loading...</span>
+                </div>
+            </section>
+
+            <!-- Panel 1: Executive Market Verdict Banner -->
+            <section class="smart-money-banner" id="verdict-executive-banner">
+                <div class="banner-left">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                        <span class="bias-badge" id="verdict-bias-badge">LOADING</span>
+                        <div class="banner-title" id="verdict-title">Cross-Correlating FII FDCP + Strike OI
+                            Time-Series...</div>
+                    </div>
+                    <div class="banner-desc" id="verdict-desc">Analyzing operator positioning across indices and 215 F&O
+                        stocks.</div>
+                </div>
+                <div class="banner-right" style="text-align:right;">
+                    <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Smart Money
+                        Score</div>
+                    <div style="font-size:24px; font-weight:900; font-family:var(--font-mono);" id="verdict-score">--
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 3: Index Roll Intelligence, Magnet Strike & Traps (Full Width) -->
+            <div class="card"
+                style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px;">
+                <h3
+                    style="font-size:14px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-magnet text-blue"></i> Index Rolls, Magnet Strike & Expiry Targets
+                </h3>
+                <div id="verdict-index-rolls" style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
+                    <div class="text-center" style="padding:20px; color:var(--text-muted);">Loading Index Rolls...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: FII & Pro Options Stance (Full Width Below Index Rolls) -->
+            <div class="card"
+                style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px;">
+                <h3
+                    style="font-size:14px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-user-ninja text-purple"></i> FII & Pro Daily Positioning Shift
+                </h3>
+                <div id="verdict-fii-stance" style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                    <div class="text-center" style="padding:20px; color:var(--text-muted);">Loading FII Stance...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 4: Multi-Day Strike Conviction Matrix -->
+            <section class="oc-table-section" style="margin-bottom:16px;">
+                <div class="table-card">
+                    <div class="table-card-header"
+                        style="background:#0f172a; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                        <h2><i class="fa-solid fa-cubes-stacked"></i> Multi-Day Strike Conviction Matrix (NIFTY 5-Day OI
+                            Shift)</h2>
+                        <div style="font-size:11px; color:#94a3b8; font-weight:600;">Multi-Session Accumulation vs Noise
+                        </div>
+                    </div>
+                    <div style="padding:16px; background:var(--bg-primary);">
+                        <div class="table-responsive">
+                            <table class="oc-dashboard-table" style="font-size:11px;">
+                                <thead>
+                                    <tr>
+                                        <th>CE Conviction</th>
+                                        <th>Call OI Trend (5D)</th>
+                                        <th>Strike</th>
+                                        <th>Put OI Trend (5D)</th>
+                                        <th>PE Conviction</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="multiday-conviction-body">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Loading Multi-Day Conviction Data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 4: All 215 Stocks F&O Breadth -->
+            <section class="oc-table-section" style="margin-bottom:16px;">
+                <div class="table-card">
+                    <div class="table-card-header"
+                        style="background:#0f172a; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                        <h2><i class="fa-solid fa-chart-pie"></i> Market Breadth — Top Stock Options Activity (All 215
+                            Stocks)</h2>
+                        <div style="font-size:11px; color:#94a3b8; font-weight:600;">Operators Writing vs Unwinding
+                        </div>
+                    </div>
+
+                    <div
+                        style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px; background:var(--bg-primary);">
+                        <!-- Left: Call Activity -->
+                        <div>
+                            <h4
+                                style="font-size:12px; font-weight:800; color:#b91c1c; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-arrow-down-short-wide"></i> Fresh Call Writing (Operators Capping
+                                Upside)
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="oc-dashboard-table" style="font-size:11px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>LTP</th>
+                                            <th>Top Write Strike</th>
+                                            <th>CE ΔOI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="breadth-call-writing-body">
+                                        <tr>
+                                            <td colspan="4" class="text-center">Loading...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right: Put Activity -->
+                        <div>
+                            <h4
+                                style="font-size:12px; font-weight:800; color:#15803d; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-arrow-up-short-wide"></i> Fresh Put Writing (Operators Defending
+                                Floor)
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="oc-dashboard-table" style="font-size:11px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>LTP</th>
+                                            <th>Top Write Strike</th>
+                                            <th>PE ΔOI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="breadth-put-writing-body">
+                                        <tr>
+                                            <td colspan="4" class="text-center">Loading...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div><!-- End view-money-flow -->
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                <span>Gopal Das</span>
+            </div>
+            <div class="footer-right">
+                <span id="footer-date-info">Date: --</span> &nbsp;|&nbsp; <span>NFD Participant OI Engine
+                    v2.0</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="app.js?v=2.0"></script>
+</body>
+
+</html>

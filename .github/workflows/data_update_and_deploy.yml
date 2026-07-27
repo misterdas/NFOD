@@ -1,0 +1,68 @@
+name: Daily Data Update & Deploy to Pages
+
+on:
+  schedule:
+    # 15:00 UTC is 8:30 PM IST (Mon-Fri)
+    - cron: '0 15 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.14'
+          
+      - name: Install dependencies
+        run: pip install pandas requests nsefetch
+        
+      - name: Run data fetch scripts
+        run: |
+          python FDCP.py
+          python OC.py
+          python money_flow_engine.py
+        
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add FDCP_Data.csv docs/ || true
+          # Only commit and push if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update daily market data" && git push)
+
+  deploy-pages:
+    needs: update-data
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # Need to check out again to get the latest commit pushed by the previous job
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
