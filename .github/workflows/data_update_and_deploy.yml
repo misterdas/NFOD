@@ -3,7 +3,7 @@ name: Daily Data Update & Deploy to Pages
 on:
   schedule:
     # 15:00 UTC is 8:30 PM IST (Mon-Fri)
-    - cron: '0 15 * * 1-5'
+    - cron: '0 18 * * 1-5'
   workflow_dispatch:
 
 permissions:
