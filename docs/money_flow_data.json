@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-27T16:16:20.168165+00:00",
+  "timestamp": "2026-07-27T19:23:41.180334+00:00",
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BULLISH",
     "smart_money_score": 50.0,
@@ -570,464 +570,526 @@
   "conviction_trends": {
     "NIFTY": {
       "dates": [
-        "2026-07-27"
+        "2026-07-27",
+        "2026-07-28"
       ],
       "strikes": [
         {
           "strike": 23650,
           "ce_oi_history": [
+            9911,
             9911
           ],
           "pe_oi_history": [
+            79608,
             79608
           ],
           "today_ce_doi": -7999,
           "today_pe_doi": 17429,
-          "ce_trend_delta": -7999,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 17429,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23700,
           "ce_oi_history": [
+            29170,
             29170
           ],
           "pe_oi_history": [
+            157575,
             157575
           ],
           "today_ce_doi": -32378,
           "today_pe_doi": 29725,
-          "ce_trend_delta": -32378,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 29725,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23750,
           "ce_oi_history": [
+            6507,
             6507
           ],
           "pe_oi_history": [
+            85420,
             85420
           ],
           "today_ce_doi": -20681,
           "today_pe_doi": 25526,
-          "ce_trend_delta": -20681,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 25526,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23800,
           "ce_oi_history": [
+            30866,
             30866
           ],
           "pe_oi_history": [
+            159661,
             159661
           ],
           "today_ce_doi": -80557,
           "today_pe_doi": 35101,
-          "ce_trend_delta": -80557,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 35101,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23850,
           "ce_oi_history": [
+            17785,
             17785
           ],
           "pe_oi_history": [
+            89043,
             89043
           ],
           "today_ce_doi": -37828,
           "today_pe_doi": 54521,
-          "ce_trend_delta": -37828,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 54521,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23900,
           "ce_oi_history": [
+            55077,
             55077
           ],
           "pe_oi_history": [
+            190077,
             190077
           ],
           "today_ce_doi": -35649,
           "today_pe_doi": 141236,
-          "ce_trend_delta": -35649,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 141236,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 23950,
           "ce_oi_history": [
+            57336,
             57336
           ],
           "pe_oi_history": [
+            153585,
             153585
           ],
           "today_ce_doi": 11666,
           "today_pe_doi": 133417,
-          "ce_trend_delta": 11666,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 133417,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24000,
           "ce_oi_history": [
+            191831,
             191831
           ],
           "pe_oi_history": [
+            208738,
             208738
           ],
           "today_ce_doi": -15541,
           "today_pe_doi": 136619,
-          "ce_trend_delta": -15541,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 136619,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24050,
           "ce_oi_history": [
+            96024,
             96024
           ],
           "pe_oi_history": [
+            44565,
             44565
           ],
           "today_ce_doi": 35102,
           "today_pe_doi": 33811,
-          "ce_trend_delta": 35102,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 33811,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24100,
           "ce_oi_history": [
+            160348,
             160348
           ],
           "pe_oi_history": [
+            54230,
             54230
           ],
           "today_ce_doi": 3174,
           "today_pe_doi": 15693,
-          "ce_trend_delta": 3174,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 15693,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24150,
           "ce_oi_history": [
+            86201,
             86201
           ],
           "pe_oi_history": [
+            8779,
             8779
           ],
           "today_ce_doi": 21812,
           "today_pe_doi": 3401,
-          "ce_trend_delta": 21812,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 3401,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24200,
           "ce_oi_history": [
+            226746,
             226746
           ],
           "pe_oi_history": [
+            34393,
             34393
           ],
           "today_ce_doi": 22889,
           "today_pe_doi": -8338,
-          "ce_trend_delta": 22889,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -8338,
-          "pe_conviction": "PE UNWINDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24250,
           "ce_oi_history": [
+            90216,
             90216
           ],
           "pe_oi_history": [
+            5796,
             5796
           ],
           "today_ce_doi": 29527,
           "today_pe_doi": -427,
-          "ce_trend_delta": 29527,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": -427,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 24300,
           "ce_oi_history": [
+            163501,
             163501
           ],
           "pe_oi_history": [
+            14749,
             14749
           ],
           "today_ce_doi": 25786,
           "today_pe_doi": -3311,
-          "ce_trend_delta": 25786,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": -3311,
-          "pe_conviction": "PE UNWINDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 24350,
           "ce_oi_history": [
+            55875,
             55875
           ],
           "pe_oi_history": [
+            1819,
             1819
           ],
           "today_ce_doi": 16443,
           "today_pe_doi": 25,
-          "ce_trend_delta": 16443,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 25,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         }
       ]
     },
     "BANKNIFTY": {
       "dates": [
-        "2026-07-27"
+        "2026-07-27",
+        "2026-07-28"
       ],
       "strikes": [
         {
           "strike": 56400,
           "ce_oi_history": [
+            1443,
             1443
           ],
           "pe_oi_history": [
+            8280,
             8280
           ],
           "today_ce_doi": -1048,
           "today_pe_doi": -1312,
-          "ce_trend_delta": -1048,
+          "ce_trend_delta": 0,
           "ce_conviction": "STABLE",
-          "pe_trend_delta": -1312,
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 56500,
           "ce_oi_history": [
+            9556,
             9556
           ],
           "pe_oi_history": [
+            22080,
             22080
           ],
           "today_ce_doi": -6668,
           "today_pe_doi": -2027,
-          "ce_trend_delta": -6668,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -2027,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 56600,
           "ce_oi_history": [
+            2169,
             2169
           ],
           "pe_oi_history": [
+            9330,
             9330
           ],
           "today_ce_doi": -2101,
           "today_pe_doi": 1338,
-          "ce_trend_delta": -2101,
+          "ce_trend_delta": 0,
           "ce_conviction": "STABLE",
-          "pe_trend_delta": 1338,
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 56700,
           "ce_oi_history": [
+            5147,
             5147
           ],
           "pe_oi_history": [
+            11683,
             11683
           ],
           "today_ce_doi": -10755,
           "today_pe_doi": -5935,
-          "ce_trend_delta": -10755,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -5935,
-          "pe_conviction": "PE UNWINDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 56800,
           "ce_oi_history": [
+            6378,
             6378
           ],
           "pe_oi_history": [
+            17244,
             17244
           ],
           "today_ce_doi": -11188,
           "today_pe_doi": 3896,
-          "ce_trend_delta": -11188,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 3896,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 56900,
           "ce_oi_history": [
+            6115,
             6115
           ],
           "pe_oi_history": [
+            13479,
             13479
           ],
           "today_ce_doi": -2192,
           "today_pe_doi": 8196,
-          "ce_trend_delta": -2192,
+          "ce_trend_delta": 0,
           "ce_conviction": "STABLE",
-          "pe_trend_delta": 8196,
-          "pe_conviction": "PE BUILDING"
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 57000,
           "ce_oi_history": [
+            39960,
             39960
           ],
           "pe_oi_history": [
+            39532,
             39532
           ],
           "today_ce_doi": 6128,
           "today_pe_doi": 17596,
-          "ce_trend_delta": 6128,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 17596,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 57100,
           "ce_oi_history": [
+            14087,
             14087
           ],
           "pe_oi_history": [
+            13387,
             13387
           ],
           "today_ce_doi": 7855,
           "today_pe_doi": 11391,
-          "ce_trend_delta": 7855,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 11391,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 57200,
           "ce_oi_history": [
+            22379,
             22379
           ],
           "pe_oi_history": [
+            10399,
             10399
           ],
           "today_ce_doi": 13178,
           "today_pe_doi": 8179,
-          "ce_trend_delta": 13178,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 8179,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 57300,
           "ce_oi_history": [
+            21253,
             21253
           ],
           "pe_oi_history": [
+            8772,
             8772
           ],
           "today_ce_doi": 11848,
           "today_pe_doi": 6163,
-          "ce_trend_delta": 11848,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 6163,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
+          "pe_conviction": "STABLE"
         },
         {
           "strike": 57400,
           "ce_oi_history": [
+            17974,
             17974
           ],
           "pe_oi_history": [
+            4971,
             4971
           ],
           "today_ce_doi": 8647,
           "today_pe_doi": 1785,
-          "ce_trend_delta": 8647,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 1785,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 57500,
           "ce_oi_history": [
+            38033,
             38033
           ],
           "pe_oi_history": [
+            11313,
             11313
           ],
           "today_ce_doi": 4148,
           "today_pe_doi": 669,
-          "ce_trend_delta": 4148,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 669,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 57600,
           "ce_oi_history": [
+            15868,
             15868
           ],
           "pe_oi_history": [
+            2434,
             2434
           ],
           "today_ce_doi": 7122,
           "today_pe_doi": -265,
-          "ce_trend_delta": 7122,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -265,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 57700,
           "ce_oi_history": [
+            19182,
             19182
           ],
           "pe_oi_history": [
+            3600,
             3600
           ],
           "today_ce_doi": 8689,
           "today_pe_doi": -116,
-          "ce_trend_delta": 8689,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -116,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         },
         {
           "strike": 57800,
           "ce_oi_history": [
+            15888,
             15888
           ],
           "pe_oi_history": [
+            4811,
             4811
           ],
           "today_ce_doi": 3661,
           "today_pe_doi": 261,
-          "ce_trend_delta": 3661,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 261,
+          "ce_trend_delta": 0,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": 0,
           "pe_conviction": "STABLE"
         }
       ]
