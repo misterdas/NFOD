@@ -1,33 +1,52 @@
 {
-  "timestamp": "2026-07-27T14:44:15.127953+00:00",
+  "timestamp": "2026-07-27T16:16:20.168165+00:00",
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BULLISH",
-    "smart_money_score": 65,
-    "action_desc": "FII & Pro desks are aggressively covering Call shorts and building Put floors."
+    "smart_money_score": 50.0,
+    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors."
   },
   "participant_summary": {
     "date": "27-07-2026",
     "prev_date": "24-07-2026",
-    "smart_money_score": 65,
+    "smart_money_score": 50.0,
     "bias_label": "HIGH CONFIDENCE BULLISH",
-    "action_desc": "FII & Pro desks are aggressively covering Call shorts and building Put floors.",
-    "retail_trap_alarm": null,
+    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+    "retail_trap_alarm": "\ud83d\ude80 RETAIL PUT TRAP: Retail buying puts while FIIs aggressively write puts.",
     "fii_fut_net_change": 3922.0,
-    "fii_ce_short_change": -21270.0,
     "fii_ce_long_change": 12002.0,
+    "fii_ce_short_change": -21270.0,
     "fii_ce_net_short_change": -33272.0,
-    "fii_pe_short_change": 52459.0,
     "fii_pe_long_change": -670.0,
+    "fii_pe_short_change": 52459.0,
     "fii_pe_net_short_change": 53129.0,
+    "fii_raw_score": 50,
     "pro_fut_net_change": 3426.0,
+    "pro_ce_long_change": -92323.0,
     "pro_ce_short_change": -37199.0,
-    "pro_pe_short_change": 218369.0,
     "pro_ce_net_short_change": 55124.0,
+    "pro_pe_long_change": 213492.0,
+    "pro_pe_short_change": 218369.0,
     "pro_pe_net_short_change": 4877.0,
+    "pro_raw_score": -25,
+    "dii_fut_net_change": -43.0,
+    "dii_ce_long_change": -45.0,
+    "dii_ce_short_change": -40.0,
+    "dii_ce_net_short_change": 5.0,
+    "dii_pe_long_change": 9472.0,
+    "dii_pe_short_change": 0.0,
+    "dii_pe_net_short_change": -9472.0,
+    "dii_raw_score": 0,
     "client_ce_net_buy": 21857.0,
     "client_pe_net_buy": 48533.0,
     "fii_fut_net_carried": -266925.0,
-    "pro_fut_net_carried": 32647.0
+    "pro_fut_net_carried": 32647.0,
+    "dii_fut_net_carried": 65085.0,
+    "weights": {
+      "fii": 1.0,
+      "pro": 0.6,
+      "dii": 0.4,
+      "client": 0.0
+    }
   },
   "index_rolls": {
     "NIFTY": {
