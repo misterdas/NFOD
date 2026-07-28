@@ -152,19 +152,15 @@ function renderDashboardForCurrentDate() {
         const blockEl = document.getElementById(`block-${inst.id}`);
         if (!blockEl) return;
 
-        // Update Headers for 3-Day Carried Positions
-        const thToday = blockEl.querySelector('.table-carried-positions th:nth-child(1)');
-        const th1Day = blockEl.querySelector('.table-carried-positions th:nth-child(2)');
-        const th2Day = blockEl.querySelector('.table-carried-positions th:nth-child(3)');
-        if (thToday) thToday.textContent = 'TODAY';
-        if (th1Day) th1Day.textContent = prevDate1 ? '1 DAY AGO' : '-';
-        if (th2Day) th2Day.textContent = prevDate2 ? '2 DAYS AGO' : '-';
+        // Update Headers for 3-Day Carried Positions (now in unified thead)
+        const thEls = blockEl.querySelectorAll('.unified-table thead th');
+        // th indices: 0=Participant, 1-2=Longs, 3-4=Shorts, 5-6=Net, 7=Today, 8=1D, 9=2D
+        if (thEls[7]) thEls[7].textContent = 'Today';
+        if (thEls[8]) thEls[8].textContent = prevDate1 ? '1D Ago' : '-';
+        if (thEls[9]) thEls[9].textContent = prevDate2 ? '2D Ago' : '-';
 
-        const tbodyOI = blockEl.querySelector('.table-oi-changes tbody');
-        const tbodyCarried = blockEl.querySelector('.table-carried-positions tbody');
-
-        tbodyOI.innerHTML = '';
-        tbodyCarried.innerHTML = '';
+        const tbody = blockEl.querySelector('.unified-table tbody');
+        tbody.innerHTML = '';
 
         let totalLongChange = 0;
         let totalShortChange = 0;
@@ -191,18 +187,18 @@ function renderDashboardForCurrentDate() {
             // Labels
             let longLabel = '-';
             let longClass = '';
-            if (longChange > 0) { longLabel = 'Added Longs'; longClass = 'pos-green'; }
-            else if (longChange < 0) { longLabel = 'Closed Longs'; longClass = 'pos-red'; }
+            if (longChange > 0) { longLabel = 'Added'; longClass = 'pos-green'; }
+            else if (longChange < 0) { longLabel = 'Closed'; longClass = 'pos-red'; }
 
             let shortLabel = '-';
             let shortClass = '';
-            if (shortChange > 0) { shortLabel = 'Added Shorts'; shortClass = 'pos-red'; }
-            else if (shortChange < 0) { shortLabel = 'Closed Shorts'; shortClass = 'pos-green'; }
+            if (shortChange > 0) { shortLabel = 'Added'; shortClass = 'pos-red'; }
+            else if (shortChange < 0) { shortLabel = 'Closed'; shortClass = 'pos-green'; }
 
             let netLabel = '-';
             let netClass = '';
-            if (netChange > 0) { netLabel = 'Bought Net'; netClass = 'pos-green'; }
-            else if (netChange < 0) { netLabel = 'Sold Net'; netClass = 'pos-red'; }
+            if (netChange > 0) { netLabel = 'Bought'; netClass = 'pos-green'; }
+            else if (netChange < 0) { netLabel = 'Sold'; netClass = 'pos-red'; }
 
             // Add to Right-Hand Summary
             if (netChange !== 0) {
@@ -215,9 +211,14 @@ function renderDashboardForCurrentDate() {
                 });
             }
 
-            // Create Left Row (OI Changes)
-            const trOI = document.createElement('tr');
-            trOI.innerHTML = `
+            // Carried Net Positions
+            const carriedToday = longToday - shortToday;
+            const carriedT1 = dataT1 ? (t1Row[inst.longCol] || 0) - (t1Row[inst.shortCol] || 0) : null;
+            const carriedT2 = dataT2 ? (t2Row[inst.longCol] || 0) - (t2Row[inst.shortCol] || 0) : null;
+
+            // Create unified row (10 columns)
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td class="participant-name">${p}s</td>
                 <td class="action-label ${longClass}">${longLabel}</td>
                 <td class="action-val ${longClass}">${formatIndianNum(longChange)}</td>
@@ -225,42 +226,24 @@ function renderDashboardForCurrentDate() {
                 <td class="action-val ${shortClass}">${formatIndianNum(shortChange)}</td>
                 <td class="action-label ${netClass}">${netLabel}</td>
                 <td class="action-val ${netClass}">${formatIndianNum(netChange)}</td>
-            `;
-            tbodyOI.appendChild(trOI);
-
-            // Carried Net Positions
-            const carriedToday = longToday - shortToday;
-            const carriedT1 = dataT1 ? (t1Row[inst.longCol] || 0) - (t1Row[inst.shortCol] || 0) : null;
-            const carriedT2 = dataT2 ? (t2Row[inst.longCol] || 0) - (t2Row[inst.shortCol] || 0) : null;
-
-            const trCarried = document.createElement('tr');
-            trCarried.innerHTML = `
                 <td class="action-val ${carriedToday >= 0 ? 'pos-green' : 'pos-red'}">${formatIndianNum(carriedToday)}</td>
                 <td class="action-val ${carriedT1 !== null && carriedT1 >= 0 ? 'pos-green' : 'pos-red'}">${formatIndianNum(carriedT1)}</td>
                 <td class="action-val ${carriedT2 !== null && carriedT2 >= 0 ? 'pos-green' : 'pos-red'}">${formatIndianNum(carriedT2)}</td>
             `;
-            tbodyCarried.appendChild(trCarried);
+            tbody.appendChild(tr);
         });
 
         // Add Total Row
-        const trTotalOI = document.createElement('tr');
-        trTotalOI.className = 'total-row';
-        trTotalOI.innerHTML = `
+        const trTotal = document.createElement('tr');
+        trTotal.className = 'total-row';
+        trTotal.innerHTML = `
             <td class="participant-name">Total</td>
-            <td class="action-label" colspan="2">YouTube Channel</td>
-            <td class="action-label" colspan="2">Market Analysis</td>
-            <td class="action-label" colspan="2">With Gopal Das</td>
-        `;
-        tbodyOI.appendChild(trTotalOI);
-
-        const trTotalCarried = document.createElement('tr');
-        trTotalCarried.className = 'total-row';
-        trTotalCarried.innerHTML = `
+            <td class="action-label" colspan="6">Market Analysis With Gopal Das</td>
             <td class="action-val">-</td>
             <td class="action-val">-</td>
             <td class="action-val">-</td>
         `;
-        tbodyCarried.appendChild(trTotalCarried);
+        tbody.appendChild(trTotal);
     });
 
     // Render Right-Hand Participant Summary
@@ -280,32 +263,47 @@ function getParticipantMap(dateStr) {
     return map;
 }
 
-// Render Positions Bought / Sold Summary List on Right Sidebar
+// Render Positions Bought / Sold Summary — separate table per participant
 function renderRightHandSummary(summaryItems) {
     const container = document.getElementById('positions-summary-list');
     container.innerHTML = '';
 
     PARTICIPANTS.forEach(p => {
         const pItems = summaryItems.filter(item => item.participant === p);
-        const groupEl = document.createElement('div');
-        groupEl.className = 'participant-group';
 
-        let html = `<div class="group-title">${p}s</div>`;
+        const card = document.createElement('div');
+        card.className = 'instrument-block summary-block';
+
+        let rows = '';
         if (pItems.length === 0) {
-            html += `<div class="summary-item"><span class="inst-text">No net activity today</span></div>`;
+            rows = `<tr><td colspan="3" class="text-center" style="color:var(--text-muted); padding:12px;">No net activity</td></tr>`;
         } else {
             pItems.forEach(item => {
-                html += `
-                    <div class="summary-item">
-                        <span class="action-text ${item.netClass}">${item.action}</span>
-                        <span class="inst-text">${item.instrument}</span>
-                        <span class="num-val ${item.netClass}">${formatIndianNum(item.value)}</span>
-                    </div>
-                `;
+                rows += `
+                    <tr>
+                        <td class="action-label">${item.instrument}</td>
+                        <td class="action-label ${item.netClass}">${item.action}</td>
+                        <td class="action-val ${item.netClass}">${formatIndianNum(item.value)}</td>
+                    </tr>`;
             });
         }
-        groupEl.innerHTML = html;
-        container.appendChild(groupEl);
+
+        card.innerHTML = `
+            <div class="block-header summary-block-header">${p}s</div>
+            <div class="table-scroll-wrapper">
+                <table class="dashboard-table summary-table">
+                    <thead>
+                        <tr>
+                            <th>Instrument</th>
+                            <th>Action</th>
+                            <th>Net Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>`;
+
+        container.appendChild(card);
     });
 }
 

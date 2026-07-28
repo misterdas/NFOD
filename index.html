@@ -142,12 +142,6 @@
                 <!-- Left & Center Column: F&O Instruments & Carried Positions -->
                 <div class="dashboard-left-center">
 
-                    <!-- Main Header Title inside Table Section -->
-                    <div class="table-section-header">
-                        <div class="col-title col-instruments">OI Changes &nbsp;|&nbsp; Futures & Options</div>
-                        <div class="col-title col-carried">Total Positions Carried (Net OI)</div>
-                    </div>
-
                     <!-- 1. Index Futures Block -->
                     <div class="instrument-block" id="block-index-futures">
                         <details class="block-accordion" open>
@@ -155,32 +149,21 @@
                                 <span class="block-header-text">Index Futures</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Index Futures Longs</th>
-                                                <th colspan="2">Index Futures Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th id="th-fut-today">TODAY</th>
-                                                <th id="th-fut-1day">1 DAY AGO</th>
-                                                <th id="th-fut-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th id="th-fut-today">Today</th>
+                                            <th id="th-fut-1day">1D Ago</th>
+                                            <th id="th-fut-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
@@ -189,35 +172,24 @@
                     <div class="instrument-block" id="block-index-calls">
                         <details class="block-accordion" open>
                             <summary class="block-header">
-                                <span class="block-header-text">Index Call Longs & Shorts</span>
+                                <span class="block-header-text">Index Calls</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Index Call Longs</th>
-                                                <th colspan="2">Index Call Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="th-call-today">TODAY</th>
-                                                <th class="th-call-1day">1 DAY AGO</th>
-                                                <th class="th-call-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th class="th-call-today">Today</th>
+                                            <th class="th-call-1day">1D Ago</th>
+                                            <th class="th-call-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
@@ -226,35 +198,24 @@
                     <div class="instrument-block" id="block-index-puts">
                         <details class="block-accordion" open>
                             <summary class="block-header">
-                                <span class="block-header-text">Index Put Longs & Shorts</span>
+                                <span class="block-header-text">Index Puts</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Index Put Longs</th>
-                                                <th colspan="2">Index Put Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="th-put-today">TODAY</th>
-                                                <th class="th-put-1day">1 DAY AGO</th>
-                                                <th class="th-put-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th class="th-put-today">Today</th>
+                                            <th class="th-put-1day">1D Ago</th>
+                                            <th class="th-put-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
@@ -266,32 +227,21 @@
                                 <span class="block-header-text">Stock Futures</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Stock Futures Longs</th>
-                                                <th colspan="2">Stock Futures Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="th-stkfut-today">TODAY</th>
-                                                <th class="th-stkfut-1day">1 DAY AGO</th>
-                                                <th class="th-stkfut-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th class="th-stkfut-today">Today</th>
+                                            <th class="th-stkfut-1day">1D Ago</th>
+                                            <th class="th-stkfut-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
@@ -300,35 +250,24 @@
                     <div class="instrument-block" id="block-stock-calls">
                         <details class="block-accordion" open>
                             <summary class="block-header">
-                                <span class="block-header-text">Stock Calls Longs & Shorts</span>
+                                <span class="block-header-text">Stock Calls</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Stock Calls Longs</th>
-                                                <th colspan="2">Stock Calls Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="th-stkcall-today">TODAY</th>
-                                                <th class="th-stkcall-1day">1 DAY AGO</th>
-                                                <th class="th-stkcall-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th class="th-stkcall-today">Today</th>
+                                            <th class="th-stkcall-1day">1D Ago</th>
+                                            <th class="th-stkcall-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
@@ -337,51 +276,33 @@
                     <div class="instrument-block" id="block-stock-puts">
                         <details class="block-accordion" open>
                             <summary class="block-header">
-                                <span class="block-header-text">Stock Puts Longs & Shorts</span>
+                                <span class="block-header-text">Stock Puts</span>
                                 <i class="fa-solid fa-chevron-down accordion-icon"></i>
                             </summary>
-                            <div class="block-tables-container">
-                                <div class="table-oi-changes">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Participant</th>
-                                                <th colspan="2">Stock Puts Longs</th>
-                                                <th colspan="2">Stock Puts Shorts</th>
-                                                <th colspan="2">Net Buy / Sell for Today</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <div class="table-carried-positions">
-                                    <table class="dashboard-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="th-stkput-today">TODAY</th>
-                                                <th class="th-stkput-1day">1 DAY AGO</th>
-                                                <th class="th-stkput-2day">2 DAYS AGO</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table unified-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Participant</th>
+                                            <th colspan="2">Longs</th>
+                                            <th colspan="2">Shorts</th>
+                                            <th colspan="2">Net Today</th>
+                                            <th class="th-stkput-today">Today</th>
+                                            <th class="th-stkput-1day">1D Ago</th>
+                                            <th class="th-stkput-2day">2D Ago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </details>
                     </div>
 
                 </div>
 
-                <!-- Right Column: Positions Bought / Sold Today Summary & Rules -->
-                <div class="dashboard-right">
-                    <div class="positions-summary-card">
-                        <div class="card-header">
-                            <i class="fa-solid fa-list-check"></i> Positions Bought / Sold Today
-                        </div>
-                        <div class="positions-summary-body" id="positions-summary-list">
-                            <!-- Populated dynamically by JS -->
-                        </div>
-                    </div>
+                <!-- Right Column: Positions Bought / Sold Today Summary -->
+                <div class="dashboard-right" id="positions-summary-list">
+                    <!-- Populated dynamically by JS — 4 separate tables by participant -->
                 </div>
 
             </main>
