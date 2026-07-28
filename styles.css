@@ -696,10 +696,16 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Unified single-table layout */
+/* Unified single-table layout — all 6 instrument tables match exactly */
 .unified-table {
-  min-width: 700px;
   width: 100%;
+  min-width: 1200px;
+  table-layout: fixed;
+}
+
+.unified-table th,
+.unified-table td {
+  white-space: nowrap;
 }
 
 .unified-table th,
@@ -1588,7 +1594,6 @@ body.theme-dark .block-header {
   /* Tables: scrollable */
   .dashboard-table {
     font-size: 11px;
-    min-width: 480px;
   }
 
   .dashboard-table th {
