@@ -173,6 +173,11 @@ body:not(.theme-dark) {
   --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.08);
 }
 
+/* Light theme hamburger dropdown override */
+body:not(.theme-dark) .hamburger-dropdown {
+  background: rgba(255, 255, 255, 0.95);
+}
+
 /* ─── Global Reset & Base ─── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -240,15 +245,6 @@ body.theme-light::before {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* GPU-accelerate animated elements */
-.top-header::before,
-.brand-logo,
-.instrument-block,
-.kpi-card {
-  will-change: transform;
-  transform: translateZ(0);
-}
-
 /* Contain layout reflow for table-heavy sections */
 .dashboard-left-center,
 .dashboard-right,
@@ -307,7 +303,6 @@ html {
   box-shadow: var(--shadow-md);
   animation: fade-in-up 0.5s var(--ease-out) both;
   position: relative;
-  overflow: clip;
 }
 
 /* Subtle gradient top-border accent */
@@ -316,6 +311,7 @@ html {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan), var(--accent-blue));
   background-size: 200% 100%;
   animation: aurora 6s linear infinite;
@@ -362,20 +358,6 @@ html {
   background-clip: text;
 }
 
-.channel-links {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-
-  .divider {
-    color: var(--border-color-strong);
-  }
-}
-
 .text-blue { color: #60a5fa; }
 .text-red { color: #f87171; }
 
@@ -390,6 +372,84 @@ html {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ─── Hamburger Menu ─── */
+.hamburger-wrap {
+  position: relative;
+}
+
+#btn-hamburger {
+  font-size: 18px;
+  min-width: 38px;
+  min-height: 38px;
+}
+
+.hamburger-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  min-width: 220px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  animation: fade-in-up 0.2s var(--ease-out);
+}
+
+.hamburger-dropdown.open {
+  display: block;
+}
+
+.hamburger-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.hamburger-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.hamburger-item:hover {
+  background: var(--bg-elevated);
+}
+
+.hamburger-item i {
+  width: 18px;
+  text-align: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.hamburger-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 6px 10px;
 }
 
 .date-selector-group {
@@ -703,26 +763,16 @@ html {
   background: var(--bg-elevated);
   color: var(--text-main);
   font-weight: 800;
-  padding: 8px 12px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 13px;
   border-bottom: 1px solid var(--border-color);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   backdrop-filter: blur(10px);
-  list-style: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+  justify-content: center;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-}
-
-.block-header::-webkit-details-marker {
-  display: none;
-}
-
-.block-header::marker {
-  content: '';
 }
 
 body.theme-dark .block-header {
@@ -730,36 +780,9 @@ body.theme-dark .block-header {
   color: var(--text-main);
 }
 
-/* Accordion icon */
-.accordion-icon {
-  font-size: 10px;
-  color: var(--text-muted);
-  transition: transform 0.3s var(--ease-out);
-  flex-shrink: 0;
-}
-
-details[open] > summary .accordion-icon {
-  transform: rotate(180deg);
-}
-
 /* Block header text */
 .block-header-text {
-  flex: 1;
-}
-
-/* ─── Block Accordion Animation ─── */
-.block-accordion {
-  overflow: visible;
-}
-
-.block-accordion .table-scroll-wrapper {
-  transition: opacity 0.3s var(--ease-out);
-}
-
-details:not([open]) .table-scroll-wrapper {
-  opacity: 0;
-  height: 0;
-  overflow: hidden;
+  text-align: center;
 }
 
 /* ─── Tables ─── */
@@ -1461,11 +1484,6 @@ details:not([open]) .table-scroll-wrapper {
    Responsive & Mobile-First Design
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Desktop: Accordion hidden, all open by default ─── */
-.accordion-icon {
-  display: none;
-}
-
 /* ─── Tablet (≤1200px) ─── */
 @media (max-width: 1200px) {
   .dashboard-grid {
@@ -1521,7 +1539,7 @@ details:not([open]) .table-scroll-wrapper {
 /* ─── Mobile (≤768px) ─── */
 @media (max-width: 768px) {
   .app-container {
-    padding: 8px;
+    padding: 8px 8px 24px;
   }
 
   /* ── Sticky Header ── */
@@ -1556,19 +1574,16 @@ details:not([open]) .table-scroll-wrapper {
     line-height: 1.3;
   }
 
-  .channel-links {
-    font-size: 10px;
-    gap: 4px;
-  }
-
   .header-controls {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
     width: 100%;
   }
 
   .date-selector-group {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     justify-content: space-between;
     gap: 4px;
   }
@@ -1651,23 +1666,22 @@ details:not([open]) .table-scroll-wrapper {
     font-size: 10px;
   }
 
-  /* ── Accordion: ACTIVE on mobile ── */
-  .accordion-icon {
-    display: block;
-  }
-
   .instrument-block {
     animation: none;
   }
 
-  .block-accordion .table-scroll-wrapper {
-    transition: opacity 0.25s ease;
+  /* Kill expensive background aurora on mobile */
+  body::before {
+    animation: none;
+    background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.05) 0%, transparent 60%);
   }
 
-  details:not([open]) .table-scroll-wrapper {
-    opacity: 0;
-    height: 0;
-    overflow: hidden;
+  .top-header::before {
+    animation: none;
+  }
+
+  .smart-money-banner {
+    animation: none;
   }
 
   /* Tables: scrollable */
@@ -1684,6 +1698,10 @@ details:not([open]) .table-scroll-wrapper {
   .dashboard-table td {
     padding: 4px 6px;
     font-size: 11px;
+  }
+
+  .summary-table {
+    min-width: 0;
   }
 
 
@@ -1797,9 +1815,15 @@ details:not([open]) .table-scroll-wrapper {
     flex-direction: column;
     gap: 4px;
     text-align: center;
-    padding: 10px;
+    padding: 10px 12px;
     border-radius: var(--radius-md);
     font-size: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .footer-left, .footer-right {
+    max-width: 100%;
   }
 
   /* ── Pill Tags ── */
@@ -1817,7 +1841,7 @@ details:not([open]) .table-scroll-wrapper {
 /* ─── Small Mobile (≤480px) ─── */
 @media (max-width: 480px) {
   .app-container {
-    padding: 6px;
+    padding: 6px 6px 16px;
   }
 
   .top-header {
@@ -1834,16 +1858,6 @@ details:not([open]) .table-scroll-wrapper {
 
   .brand-text h1 {
     font-size: 12px;
-  }
-
-  .channel-links {
-    font-size: 9px;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .channel-links .divider {
-    display: none;
   }
 
   /* KPI: compact 2-col */
@@ -1889,6 +1903,7 @@ details:not([open]) .table-scroll-wrapper {
   .instrument-block,
   .verdict-panel-card,
   .oc-table-section,
+  .hamburger-dropdown,
   .app-footer {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1907,14 +1922,19 @@ details:not([open]) .table-scroll-wrapper {
     animation: none;
   }
 
-  /* Accordion: tighter */
-  .block-header {
-    padding: 8px 10px;
-    font-size: 10px;
+  .top-header::before {
+    animation: none;
   }
 
-  .accordion-icon {
-    font-size: 9px;
+  .smart-money-banner {
+    animation: none;
+  }
+
+  /* Accordion: tighter */
+  .block-header {
+    padding: 10px 10px;
+    font-size: 12px;
+    justify-content: center;
   }
 }
 
@@ -2019,6 +2039,8 @@ details:not([open]) .table-scroll-wrapper {
     flex-direction: row;
     justify-content: space-between;
     padding: 6px 12px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 }
 

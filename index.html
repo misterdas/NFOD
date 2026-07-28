@@ -44,16 +44,10 @@
                 </div>
                 <div class="brand-text">
                     <h1>Futures & Options — Participant Wise OI Analysis</h1>
-                    <div class="channel-links">
-                        <span><i class="fa-brands fa-telegram text-blue"></i> t.me/MarketAnalysisNiftyBankNifty</span>
-                        <span class="divider">•</span>
-                        <span><i class="fa-brands fa-youtube text-red"></i> YouTube: Market Analysis With Gopal
-                            Das</span>
-                    </div>
                 </div>
             </div>
 
-            <!-- Controls: Date Picker, Theme, Actions -->
+            <!-- Controls: Date Picker -->
             <div class="header-controls">
                 <div class="date-selector-group">
                     <label for="date-select"><i class="fa-regular fa-calendar"></i> Trading Date:</label>
@@ -68,13 +62,33 @@
                         title="Jump to Latest Date">Latest</button>
                 </div>
 
-                <div class="action-buttons">
-                    <button id="btn-charts-toggle" class="btn btn-secondary btn-sm">
-                        <i class="fa-solid fa-chart-area"></i> Trend Charts
+                <!-- Hamburger Menu -->
+                <div class="hamburger-wrap">
+                    <button id="btn-hamburger" class="btn btn-icon" title="Menu" aria-label="Menu">
+                        <i class="fa-solid fa-bars"></i>
                     </button>
-                    <button id="btn-theme-toggle" class="btn btn-icon" title="Toggle Theme">
-                        <i class="fa-solid fa-moon"></i>
-                    </button>
+                    <div class="hamburger-dropdown" id="hamburger-dropdown">
+                        <div class="hamburger-header">Menu</div>
+
+                        <button class="hamburger-item" id="hamburger-charts">
+                            <i class="fa-solid fa-chart-area"></i> Trend Charts
+                        </button>
+                        <button class="hamburger-item" id="hamburger-theme">
+                            <i class="fa-solid fa-moon"></i> Toggle Theme
+                        </button>
+                        <button class="hamburger-item" id="hamburger-latest">
+                            <i class="fa-solid fa-calendar-day"></i> Latest Date
+                        </button>
+
+                        <div class="hamburger-divider"></div>
+
+                        <a class="hamburger-item" href="https://t.me/MarketAnalysisNiftyBankNifty" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-telegram text-blue"></i> Telegram Channel
+                        </a>
+                        <a class="hamburger-item" href="https://www.youtube.com/@MarketAnalysisWithGopalDas" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-youtube text-red"></i> YouTube Channel
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -144,158 +158,140 @@
 
                     <!-- 1. Index Futures Block -->
                     <div class="instrument-block" id="block-index-futures">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Index Futures</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th id="th-fut-today">Today</th>
-                                            <th id="th-fut-1day">1D Ago</th>
-                                            <th id="th-fut-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Index Futures</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th id="th-fut-today">Today</th>
+                                        <th id="th-fut-1day">1D Ago</th>
+                                        <th id="th-fut-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- 2. Index Call Block -->
                     <div class="instrument-block" id="block-index-calls">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Index Calls</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th class="th-call-today">Today</th>
-                                            <th class="th-call-1day">1D Ago</th>
-                                            <th class="th-call-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Index Calls</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th class="th-call-today">Today</th>
+                                        <th class="th-call-1day">1D Ago</th>
+                                        <th class="th-call-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- 3. Index Put Block -->
                     <div class="instrument-block" id="block-index-puts">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Index Puts</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th class="th-put-today">Today</th>
-                                            <th class="th-put-1day">1D Ago</th>
-                                            <th class="th-put-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Index Puts</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th class="th-put-today">Today</th>
+                                        <th class="th-put-1day">1D Ago</th>
+                                        <th class="th-put-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- 4. Stock Futures Block -->
                     <div class="instrument-block" id="block-stock-futures">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Stock Futures</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th class="th-stkfut-today">Today</th>
-                                            <th class="th-stkfut-1day">1D Ago</th>
-                                            <th class="th-stkfut-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Stock Futures</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th class="th-stkfut-today">Today</th>
+                                        <th class="th-stkfut-1day">1D Ago</th>
+                                        <th class="th-stkfut-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- 5. Stock Calls Block -->
                     <div class="instrument-block" id="block-stock-calls">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Stock Calls</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th class="th-stkcall-today">Today</th>
-                                            <th class="th-stkcall-1day">1D Ago</th>
-                                            <th class="th-stkcall-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Stock Calls</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th class="th-stkcall-today">Today</th>
+                                        <th class="th-stkcall-1day">1D Ago</th>
+                                        <th class="th-stkcall-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- 6. Stock Puts Block -->
                     <div class="instrument-block" id="block-stock-puts">
-                        <details class="block-accordion" open>
-                            <summary class="block-header">
-                                <span class="block-header-text">Stock Puts</span>
-                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            </summary>
-                            <div class="table-scroll-wrapper">
-                                <table class="dashboard-table unified-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Longs</th>
-                                            <th colspan="2">Shorts</th>
-                                            <th colspan="2">Net Today</th>
-                                            <th class="th-stkput-today">Today</th>
-                                            <th class="th-stkput-1day">1D Ago</th>
-                                            <th class="th-stkput-2day">2D Ago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </details>
+                        <div class="block-header">
+                            <span class="block-header-text">Stock Puts</span>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="dashboard-table unified-table">
+                                <thead>
+                                    <tr>
+                                        <th>Participant</th>
+                                        <th colspan="2">Longs</th>
+                                        <th colspan="2">Shorts</th>
+                                        <th colspan="2">Net Today</th>
+                                        <th class="th-stkput-today">Today</th>
+                                        <th class="th-stkput-1day">1D Ago</th>
+                                        <th class="th-stkput-2day">2D Ago</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>

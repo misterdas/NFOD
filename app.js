@@ -403,30 +403,59 @@ function setupEventListeners() {
         renderDashboardForCurrentDate();
     });
 
-    // Theme Toggle
-    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
-        document.body.classList.toggle('theme-dark');
-        const icon = document.querySelector('#btn-theme-toggle i');
-        if (document.body.classList.contains('theme-dark')) {
-            icon.className = 'fa-solid fa-sun';
-        } else {
-            icon.className = 'fa-solid fa-moon';
+    // --- Hamburger Menu ---
+    const hamburgerBtn = document.getElementById('btn-hamburger');
+    const hamburgerDropdown = document.getElementById('hamburger-dropdown');
+
+    hamburgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hamburgerDropdown.classList.toggle('open');
+        const icon = hamburgerBtn.querySelector('i');
+        icon.className = hamburgerDropdown.classList.contains('open')
+            ? 'fa-solid fa-xmark'
+            : 'fa-solid fa-bars';
+    });
+
+    // Close hamburger on outside click
+    document.addEventListener('click', (e) => {
+        if (!hamburgerBtn.contains(e.target) && !hamburgerDropdown.contains(e.target)) {
+            hamburgerDropdown.classList.remove('open');
+            hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
         }
     });
 
-    // Charts Section Toggle
-    document.getElementById('btn-charts-toggle').addEventListener('click', () => {
+    // Hamburger — Trend Charts
+    document.getElementById('hamburger-charts').addEventListener('click', () => {
         const section = document.getElementById('charts-section');
         section.classList.toggle('hidden');
         if (!section.classList.contains('hidden')) {
             renderTrendCharts();
         }
+        hamburgerDropdown.classList.remove('open');
+        hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
     });
 
-    document.getElementById('btn-close-charts').addEventListener('click', () => {
-        document.getElementById('charts-section').classList.add('hidden');
+    // Hamburger — Theme Toggle
+    document.getElementById('hamburger-theme').addEventListener('click', () => {
+        document.body.classList.toggle('theme-dark');
+        const themeIcon = document.querySelector('#hamburger-theme i');
+        if (document.body.classList.contains('theme-dark')) {
+            themeIcon.className = 'fa-solid fa-sun';
+        } else {
+            themeIcon.className = 'fa-solid fa-moon';
+        }
+        hamburgerDropdown.classList.remove('open');
+        hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
     });
 
+    // Hamburger — Latest Date
+    document.getElementById('hamburger-latest').addEventListener('click', () => {
+        currentDateIndex = availableDates.length - 1;
+        selectEl.value = currentDateIndex;
+        renderDashboardForCurrentDate();
+        hamburgerDropdown.classList.remove('open');
+        hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
+    });
 
 
     // --- Tab Switching ---
