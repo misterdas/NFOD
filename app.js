@@ -714,167 +714,277 @@ function showVerdictError(msg) {
 }
 
 // ─── Dedicated Charts View ───
-function renderChartsView() {
+let ohlcData = null;
+
+async function renderChartsView() {
     if (availableDates.length < 2) return;
 
-    // Destroy previous chart instances
     chartsInstances.forEach(c => { if (c) c.destroy(); });
     chartsInstances = [];
+
+    if (!ohlcData) {
+        try {
+            const res = await fetch('docs/ohlc_data.json');
+            if (res.ok) ohlcData = await res.json();
+        } catch (_) {}
+    }
 
     const labels = availableDates.slice(1);
     const n = labels.length;
 
-    // Pre-compute all trend data
-    const trends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] } };
-    const stockTrends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] } };
-    const totalNetFlow = [];
+    // ── Compute daily net for each participant × instrument ──
+    // trends[p].{fut,call,put} = per-day net changes
+    const trends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] }, dii: { fut: [], call: [], put: [] } };
+    // stock[p].{fut,call,put} = stock versions
+    const stock = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] }, dii: { fut: [], call: [], put: [] } };
 
     for (let i = 1; i < availableDates.length; i++) {
-        const dT = availableDates[i];
-        const dT1 = availableDates[i - 1];
-        const mT = getParticipantMap(dT);
-        const mT1 = getParticipantMap(dT1);
-
-        for (const p of ['fii', 'pro', 'client']) {
-            const key = p === 'fii' ? 'FII' : p === 'pro' ? 'Pro' : 'Client';
+        const mT = getParticipantMap(availableDates[i]);
+        const mT1 = getParticipantMap(availableDates[i - 1]);
+        for (const [key, p] of [['FII','fii'],['Pro','pro'],['Client','client'],['DII','dii']]) {
             const cur = mT[key] || {};
             const prev = mT1[key] || {};
-
-            const idxFut = (cur['Future Index Long'] || 0) - (prev['Future Index Long'] || 0)
-                         - ((cur['Future Index Short'] || 0) - (prev['Future Index Short'] || 0));
-            const idxCall = (cur['Option Index Call Long'] || 0) - (prev['Option Index Call Long'] || 0)
-                          - ((cur['Option Index Call Short'] || 0) - (prev['Option Index Call Short'] || 0));
-            const idxPut = (cur['Option Index Put Long'] || 0) - (prev['Option Index Put Long'] || 0)
-                         - ((cur['Option Index Put Short'] || 0) - (prev['Option Index Put Short'] || 0));
-            trends[p].fut.push(idxFut);
-            trends[p].call.push(idxCall);
-            trends[p].put.push(idxPut);
-
-            const stkFut = (cur['Future Stock Long'] || 0) - (prev['Future Stock Long'] || 0)
-                         - ((cur['Future Stock Short'] || 0) - (prev['Future Stock Short'] || 0));
-            const stkCall = (cur['Option Stock Call Long'] || 0) - (prev['Option Stock Call Long'] || 0)
-                          - ((cur['Option Stock Call Short'] || 0) - (prev['Option Stock Call Short'] || 0));
-            const stkPut = (cur['Option Stock Put Long'] || 0) - (prev['Option Stock Put Long'] || 0)
-                         - ((cur['Option Stock Put Short'] || 0) - (prev['Option Stock Put Short'] || 0));
-            stockTrends[p].fut.push(stkFut);
-            stockTrends[p].call.push(stkCall);
-            stockTrends[p].put.push(stkPut);
+            const net = (l, s) => ((cur[l]||0)-(prev[l]||0)) - ((cur[s]||0)-(prev[s]||0));
+            trends[p].fut.push(net('Future Index Long','Future Index Short'));
+            trends[p].call.push(net('Option Index Call Long','Option Index Call Short'));
+            trends[p].put.push(net('Option Index Put Long','Option Index Put Short'));
+            stock[p].fut.push(net('Future Stock Long','Future Stock Short'));
+            stock[p].call.push(net('Option Stock Call Long','Option Stock Call Short'));
+            stock[p].put.push(net('Option Stock Put Long','Option Stock Put Short'));
         }
-
-        // Total net flow across all participants and index instruments
-        let total = 0;
-        for (const p of ['FII', 'Pro', 'Client', 'DII']) {
-            const cur = mT[p] || {};
-            const prev = mT1[p] || {};
-            for (const col of ['Future Index Long','Future Index Short','Option Index Call Long','Option Index Call Short','Option Index Put Long','Option Index Put Short']) {
-                total += (cur[col] || 0) - (prev[col] || 0);
-            }
-        }
-        totalNetFlow.push(total);
     }
 
-    const smartFut = trends.fii.fut.map((v, i) => v + trends.pro.fut[i]);
-    const smartCall = trends.fii.call.map((v, i) => v + trends.pro.call[i]);
-    const stockSmartFut = stockTrends.fii.fut.map((v, i) => v + stockTrends.pro.fut[i]);
+    // ── Derived series ──
+    const smartFut = trends.fii.fut.map((v,i) => v + trends.pro.fut[i]);
+    const smartCall = trends.fii.call.map((v,i) => v + trends.pro.call[i]);
+    const smartPut = trends.fii.put.map((v,i) => v + trends.pro.put[i]);
 
-    const COLORS = { fii: '#3b82f6', pro: '#f59e0b', client: '#ef4444', smart: '#8b5cf6' };
+    // Cumulative smart money net (accumulation/distribution)
+    let cum = 0;
+    const cumSmart = trends.fii.fut.map((_,i) => {
+        cum += smartFut[i] + smartCall[i] + smartPut[i];
+        return cum;
+    });
+
+    // PCR per participant: net put change / net call change (clamped)
+    function calcPcr(pCall, pPut) {
+        return pCall.map((c, i) => {
+            const denom = Math.abs(c);
+            if (denom < 100) return null;
+            const val = (pPut[i] || 0) / denom;
+            return Math.max(-5, Math.min(5, val));
+        });
+    }
+    const fiiPcr = calcPcr(trends.fii.call, trends.fii.put);
+    const proPcr = calcPcr(trends.pro.call, trends.pro.put);
+    const cliPcr = calcPcr(trends.client.call, trends.client.put);
+
+    // Smart money total (fut+call+put per day)
+    const smartTotal = smartFut.map((v,i) => v + smartCall[i] + smartPut[i]);
+    const clientTotal = trends.client.fut.map((v,i) => v + trends.client.call[i] + trends.client.put[i]);
+
+    // Divergence: when smart and client move opposite directions
+    const divergence = smartTotal.map((v, i) => {
+        if (i === 0) return 0;
+        const sDir = v - smartTotal[i-1];
+        const cDir = clientTotal[i] - clientTotal[i-1];
+        // divergence magnitude = opposite movement product
+        const div = (sDir > 0 && cDir < -5000) ? Math.abs(sDir) :
+                    (sDir < 0 && cDir > 5000) ? Math.abs(sDir) : 0;
+        return sDir > 0 ? div : -div;
+    });
+
+    // NIFTY close overlay
+    const niftyClose = [];
+    if (ohlcData && ohlcData.nifty) {
+        const m = {};
+        ohlcData.nifty.forEach(r => { m[r.date] = r.close; });
+        labels.forEach(d => niftyClose.push(m[d] || null));
+    }
+
+    const C = { fii: '#3b82f6', pro: '#f59e0b', client: '#ef4444', dii: '#10b981', smart: '#8b5cf6', price: '#22d3ee' };
 
     function makeChart(id, type, data, opts = {}) {
         const el = document.getElementById(id);
         if (!el) return;
         const ctx = el.getContext('2d');
         const chart = new Chart(ctx, {
-            type,
-            data,
+            type, data,
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 10 } } } },
-                scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 } } } },
+                scales: {
+                    x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+                    y: { ticks: { font: { size: 9 } }, position: 'left' }
+                },
                 ...opts
             }
         });
         chartsInstances.push(chart);
     }
 
-    // 1. FII Net by Instrument
-    makeChart('ch-fii-breakdown', 'line', {
-        labels,
-        datasets: [
-            { label: 'Index Futures', data: trends.fii.fut, borderColor: COLORS.fii, backgroundColor: COLORS.fii + '20', fill: true, tension: 0.2, pointRadius: 2 },
-            { label: 'Index Calls', data: trends.fii.call, borderColor: '#06b6d4', backgroundColor: '#06b6d420', fill: true, tension: 0.2, pointRadius: 2 },
-            { label: 'Index Puts', data: trends.fii.put, borderColor: '#10b981', backgroundColor: '#10b98120', fill: true, tension: 0.2, pointRadius: 2 }
-        ]
-    });
+    function niftyOverlay(datasets, scales) {
+        const has = niftyClose.some(v => v !== null);
+        if (has) {
+            datasets.push({
+                label: 'NIFTY Close', data: niftyClose, borderColor: C.price,
+                backgroundColor: C.price, tension: 0.2, pointRadius: 1,
+                pointHitRadius: 8, borderWidth: 1.5, yAxisID: 'y1', order: 0
+            });
+            scales.y1 = {
+                position: 'right', grid: { drawOnChartArea: false },
+                ticks: { font: { size: 8 }, callback: v => v.toLocaleString('en-IN') },
+                title: { display: true, text: 'NIFTY', font: { size: 9 } }
+            };
+        }
+        return has;
+    }
 
-    // 2. Pro Net by Instrument
-    makeChart('ch-pro-breakdown', 'line', {
-        labels,
-        datasets: [
-            { label: 'Index Futures', data: trends.pro.fut, borderColor: COLORS.pro, backgroundColor: COLORS.pro + '20', fill: true, tension: 0.2, pointRadius: 2 },
-            { label: 'Index Calls', data: trends.pro.call, borderColor: '#06b6d4', backgroundColor: '#06b6d420', fill: true, tension: 0.2, pointRadius: 2 },
-            { label: 'Index Puts', data: trends.pro.put, borderColor: '#10b981', backgroundColor: '#10b98120', fill: true, tension: 0.2, pointRadius: 2 }
-        ]
-    });
-
-    // 3. Client vs Smart Money in Index Futures
-    makeChart('ch-client-smart', 'line', {
-        labels,
-        datasets: [
-            { label: 'Client', data: trends.client.fut, borderColor: COLORS.client, backgroundColor: COLORS.client + '20', fill: true, tension: 0.2, pointRadius: 2 },
-            { label: 'FII + Pro (Smart)', data: smartFut, borderColor: COLORS.smart, backgroundColor: COLORS.smart + '20', fill: true, tension: 0.2, pointRadius: 2 }
-        ]
-    });
-
-    // 4. Current Day: All Participants (bar)
-    const cdIdx = currentDateIndex >= 1 ? currentDateIndex : n;
-    const cdData = {
-        participants: ['Client', 'DII', 'FII', 'Pro'],
-        instruments: ['Idx Futures', 'Idx Calls', 'Idx Puts', 'Stk Futures', 'Stk Calls', 'Stk Puts']
-    };
-    const cdValues = cdData.participants.map(p => {
-        const cur = getParticipantMap(availableDates[cdIdx])[p] || {};
-        const prev = getParticipantMap(availableDates[cdIdx - 1])[p] || {};
-        return cdData.instruments.map((_, j) => {
-            const [type, instr] = [['Future','Index'],['Call','Index'],['Put','Index'],['Future','Stock'],['Call','Stock'],['Put','Stock']][j];
-            const longCol = `Option ${instr} ${type} Long`;
-            const shortCol = `Option ${instr} ${type} Short`;
-            const longKey = type === 'Future' ? `${instr === 'Index' ? 'Future Index' : 'Future Stock'} Long` : longCol;
-            const shortKey = type === 'Future' ? `${instr === 'Index' ? 'Future Index' : 'Future Stock'} Short` : shortCol;
-            return ((cur[longKey] || 0) - (prev[longKey] || 0)) - ((cur[shortKey] || 0) - (prev[shortKey] || 0));
-        });
-    });
-
-    makeChart('ch-current-day', 'bar', {
-        labels: cdData.instruments,
-        datasets: cdData.participants.map((p, i) => ({
-            label: p,
-            data: cdValues[i],
-            backgroundColor: [COLORS.fii, COLORS.client, '#10b981', COLORS.pro][i] + 'cc'
-        }))
-    });
-
-    // 5. Stock Futures Net (FII + Pro)
-    makeChart('ch-stock-futures', 'line', {
-        labels,
-        datasets: [
-            { label: 'FII Stock Futures', data: stockTrends.fii.fut, borderColor: COLORS.fii, tension: 0.2, pointRadius: 2 },
-            { label: 'Pro Stock Futures', data: stockTrends.pro.fut, borderColor: COLORS.pro, tension: 0.2, pointRadius: 2 },
-            { label: 'FII+Pro Stock Futures', data: stockSmartFut, borderColor: COLORS.smart, tension: 0.2, pointRadius: 2 }
-        ]
-    });
-
-    // 6. Total Market Net Flow
-    makeChart('ch-total-flow', 'bar', {
+    // ════════════════════════════════════════
+    //  1 — Smart Money Cumulative Net
+    // ════════════════════════════════════════
+    makeChart('ch-cumulative', 'line', {
         labels,
         datasets: [{
-            label: 'Total Net (All Participants)',
-            data: totalNetFlow,
-            backgroundColor: totalNetFlow.map(v => v >= 0 ? '#34d39988' : '#f8717188'),
-            borderColor: totalNetFlow.map(v => v >= 0 ? '#34d399' : '#f87171'),
-            borderWidth: 1
+            label: 'FII+Pro Cumulative Net',
+            data: cumSmart,
+            borderColor: C.smart, backgroundColor: C.smart + '20',
+            fill: true, tension: 0.15, pointRadius: cumSmart.map(v =>
+                Math.abs(v) === Math.max(...cumSmart.map(Math.abs)) ? 4 : 1
+            ),
+            pointBackgroundColor: cumSmart.map((v,i) =>
+                i > 0 && v > cumSmart[i-1] ? '#34d399' : '#f87171'
+            )
         }]
+    }, {
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ctx.parsed.y.toLocaleString('en-IN') } }
+        },
+        scales: {
+            x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+            y: { ticks: { font: { size: 9 }, callback: v => (v/1000).toFixed(0)+'K' } }
+        }
     });
+
+    // ════════════════════════════════════════
+    //  2 — Put-Call Ratio by Participant
+    // ════════════════════════════════════════
+    const pcrRefLine = { label: 'Neutral (1:1)', data: Array(n).fill(1), borderColor: '#64748b', borderDash: [3,3], pointRadius: 0, borderWidth: 1 };
+    makeChart('ch-pcr', 'line', {
+        labels,
+        datasets: [
+            pcrRefLine,
+            { label: 'FII PCR', data: fiiPcr, borderColor: C.fii, tension: 0.2, pointRadius: 2 },
+            { label: 'Pro PCR', data: proPcr, borderColor: C.pro, tension: 0.2, pointRadius: 2 },
+            { label: 'Client PCR', data: cliPcr, borderColor: C.client, tension: 0.2, pointRadius: 2 }
+        ]
+    }, {
+        scales: {
+            x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+            y: { ticks: { font: { size: 9 } }, title: { display: true, text: 'Put/Call Ratio', font: { size: 9 } } }
+        }
+    });
+
+    // ════════════════════════════════════════
+    //  3 — Smart Money vs Retail: Index Futures + NIFTY
+    // ════════════════════════════════════════
+    {
+        const d = [
+            { label: 'Client Net', data: trends.client.fut, borderColor: C.client, backgroundColor: C.client + '20', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' },
+            { label: 'Smart (FII+Pro)', data: smartFut, borderColor: C.smart, backgroundColor: C.smart + '20', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' }
+        ];
+        const s = {
+            x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+            y: { ticks: { font: { size: 9 } }, position: 'left', title: { display: true, text: 'Net Contracts', font: { size: 9 } } }
+        };
+        niftyOverlay(d, s);
+        makeChart('ch-smart-futures', 'line', { labels, datasets: d }, { scales: s });
+    }
+
+    // ════════════════════════════════════════
+    //  4 — Daily Net by Participant (Today)
+    // ════════════════════════════════════════
+    const cdIdx = currentDateIndex >= 1 ? currentDateIndex : n;
+    const instrLabels = ['Idx Fut','Idx Call','Idx Put','Stk Fut','Stk Call','Stk Put'];
+    const instrKeys = [
+        ['Future Index Long','Future Index Short'],
+        ['Option Index Call Long','Option Index Call Short'],
+        ['Option Index Put Long','Option Index Put Short'],
+        ['Future Stock Long','Future Stock Short'],
+        ['Option Stock Call Long','Option Stock Call Short'],
+        ['Option Stock Put Long','Option Stock Put Short']
+    ];
+    const parts = ['FII','Pro','Client','DII'];
+    const partColors = [C.fii, C.pro, C.client, C.dii];
+    const dailyVals = parts.map(p => {
+        const cur = getParticipantMap(availableDates[cdIdx])[p] || {};
+        const prev = getParticipantMap(availableDates[cdIdx - 1])[p] || {};
+        return instrKeys.map(([l, s]) => ((cur[l]||0)-(prev[l]||0)) - ((cur[s]||0)-(prev[s]||0)));
+    });
+
+    makeChart('ch-daily-net', 'bar', {
+        labels: instrLabels,
+        datasets: parts.map((p, i) => ({
+            label: p, data: dailyVals[i],
+            backgroundColor: partColors[i] + 'cc'
+        }))
+    }, {
+        plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 10 } } }
+        }
+    });
+
+    // ════════════════════════════════════════
+    //  5 — Smart Money vs Retail: Options + NIFTY
+    // ════════════════════════════════════════
+    {
+        const clientOpt = trends.client.call.map((v,i) => v + trends.client.put[i]);
+        const smartOpt = trends.fii.call.map((v,i) => v + trends.pro.call[i] + trends.fii.put[i] + trends.pro.put[i]);
+        const d = [
+            { label: 'Client Options', data: clientOpt, borderColor: C.client, backgroundColor: C.client + '20', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' },
+            { label: 'Smart Options', data: smartOpt, borderColor: '#a855f7', backgroundColor: '#a855f720', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' }
+        ];
+        const s = {
+            x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+            y: { ticks: { font: { size: 9 } }, position: 'left', title: { display: true, text: 'Net Contracts', font: { size: 9 } } }
+        };
+        niftyOverlay(d, s);
+        makeChart('ch-smart-options', 'line', { labels, datasets: d }, { scales: s });
+    }
+
+    // ════════════════════════════════════════
+    //  6 — Divergence Monitor
+    // ════════════════════════════════════════
+    {
+        makeChart('ch-divergence', 'line', {
+            labels,
+            datasets: [
+                { label: 'Smart Money (FII+Pro)', data: smartTotal, borderColor: C.smart, backgroundColor: C.smart + '20', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' },
+                { label: 'Client (Retail)', data: clientTotal, borderColor: C.client, backgroundColor: C.client + '20', fill: true, tension: 0.2, pointRadius: 2, yAxisID: 'y' }
+            ]
+        }, {
+            scales: {
+                x: { ticks: { font: { size: 9 }, maxRotation: 40 } },
+                y: { ticks: { font: { size: 9 } }, position: 'left', title: { display: true, text: 'Net Contracts', font: { size: 9 } } }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(items) {
+                            const i = items[0].dataIndex;
+                            const sv = smartTotal[i], cv = clientTotal[i];
+                            if ((sv > 0 && cv < -5000) || (sv < 0 && cv > 5000))
+                                return '⚠️ DIVERGENCE: Smart & Retail on opposite sides';
+                            if (sv > 0 && cv > 0) return '✅ Aligned Bullish';
+                            if (sv < 0 && cv < 0) return '🔴 Aligned Bearish';
+                            return '';
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 
 // Initialize on DOM Ready

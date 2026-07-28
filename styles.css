@@ -1493,6 +1493,19 @@ body.theme-dark .block-header {
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ch-hint {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 .chart-card canvas {
