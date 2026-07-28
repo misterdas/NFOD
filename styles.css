@@ -1029,64 +1029,7 @@ body.theme-dark .block-header {
   animation: fade-in-up 0.5s var(--ease-out) 0.3s both;
 }
 
-/* ─── Charts Section ─── */
-.charts-section {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-lg);
-  animation: scale-in 0.3s var(--ease-out) both;
-}
 
-.charts-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-
-  h2 {
-    font-size: 15px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--text-main), var(--text-accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.chart-wrapper {
-  background: var(--bg-elevated);
-  padding: 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  transition: all var(--duration-normal) var(--ease-out);
-
-  &:hover {
-    border-color: var(--border-color-strong);
-    box-shadow: var(--shadow-sm);
-  }
-
-  h3 {
-    font-size: 12px;
-    margin-bottom: 10px;
-    font-weight: 700;
-    color: var(--text-secondary);
-  }
-}
-
-.hidden {
-  display: none !important;
-}
 
 /* ═══════════════════════════════════════════════════════════
    Option Chain & Money Flow View
@@ -1495,6 +1438,91 @@ body.theme-dark .block-header {
   text-align: center;
 }
 
+/* ─── Charts View ─── */
+.charts-view {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  animation: fade-in-up 0.4s var(--ease-out) both;
+}
+
+.charts-view-header {
+  margin-bottom: 18px;
+}
+
+.charts-view-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.charts-view-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+.charts-view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: border-color var(--duration-normal) var(--ease-out);
+}
+
+.chart-card:hover {
+  border-color: var(--border-color-strong);
+}
+
+.chart-card h3 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.chart-card canvas {
+  width: 100% !important;
+  max-height: 240px;
+}
+
+@media (max-width: 1200px) {
+  .charts-view-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .charts-view {
+    padding: 12px;
+    border-radius: var(--radius-md);
+  }
+  .charts-view-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .chart-card {
+    padding: 12px;
+  }
+  .chart-card canvas {
+    max-height: 200px;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    Responsive & Mobile-First Design
    ═══════════════════════════════════════════════════════════ */
@@ -1513,9 +1541,6 @@ body.theme-dark .block-header {
     grid-template-columns: 1fr;
   }
 
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ─── Small Tablet (≤992px) ─── */
@@ -1665,17 +1690,6 @@ body.theme-dark .block-header {
     min-width: 0;
   }
 
-
-  /* ── Charts ── */
-  .charts-section {
-    padding: 12px;
-    border-radius: var(--radius-md);
-  }
-
-  .charts-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
 
   /* ── Money Flow Tab ── */
   .oc-control-bar {

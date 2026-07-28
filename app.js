@@ -6,8 +6,7 @@
 let rawCSVData = [];
 let availableDates = [];
 let currentDateIndex = -1;
-let indexFuturesChart = null;
-let indexOptionsChart = null;
+let chartsInstances = [];
 
 // Instruments metadata
 const INSTRUMENTS = [
@@ -424,17 +423,6 @@ function setupEventListeners() {
         }
     });
 
-    // Hamburger — Trend Charts
-    document.getElementById('hamburger-charts').addEventListener('click', () => {
-        const section = document.getElementById('charts-section');
-        section.classList.toggle('hidden');
-        if (!section.classList.contains('hidden')) {
-            renderTrendCharts();
-        }
-        hamburgerDropdown.classList.remove('open');
-        hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
-    });
-
     // Hamburger — Theme Toggle
     document.getElementById('hamburger-theme').addEventListener('click', () => {
         document.body.classList.toggle('theme-dark');
@@ -454,6 +442,11 @@ function setupEventListeners() {
     document.getElementById('tab-money-flow').addEventListener('click', () => {
         switchTab('money-flow');
         loadMoneyFlowView();
+    });
+
+    document.getElementById('tab-charts').addEventListener('click', () => {
+        switchTab('charts');
+        renderChartsView();
     });
 
     // --- Symbol tabs inside Money Flow view ---
@@ -720,87 +713,167 @@ function showVerdictError(msg) {
     if (title) title.textContent = 'ERROR: ' + msg;
 }
 
-// Render Trend Line Charts using Chart.js
-function renderTrendCharts() {
+// ─── Dedicated Charts View ───
+function renderChartsView() {
     if (availableDates.length < 2) return;
 
-    // Calculate historical net positions across all dates
-    const labels = availableDates.slice(1); // date T requires T-1
-    const fiiFutTrend = [];
-    const clientFutTrend = [];
-    const proFutTrend = [];
+    // Destroy previous chart instances
+    chartsInstances.forEach(c => { if (c) c.destroy(); });
+    chartsInstances = [];
 
-    const fiiCallTrend = [];
-    const clientCallTrend = [];
+    const labels = availableDates.slice(1);
+    const n = labels.length;
+
+    // Pre-compute all trend data
+    const trends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] } };
+    const stockTrends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] } };
+    const totalNetFlow = [];
 
     for (let i = 1; i < availableDates.length; i++) {
-        const dToday = availableDates[i];
+        const dT = availableDates[i];
         const dT1 = availableDates[i - 1];
+        const mT = getParticipantMap(dT);
+        const mT1 = getParticipantMap(dT1);
 
-        const mapToday = getParticipantMap(dToday);
-        const mapT1 = getParticipantMap(dT1);
+        for (const p of ['fii', 'pro', 'client']) {
+            const key = p === 'fii' ? 'FII' : p === 'pro' ? 'Pro' : 'Client';
+            const cur = mT[key] || {};
+            const prev = mT1[key] || {};
 
-        // FII Index Futures Net
-        const fiiLChg = (mapToday['FII']?.['Future Index Long'] || 0) - (mapT1['FII']?.['Future Index Long'] || 0);
-        const fiiSChg = (mapToday['FII']?.['Future Index Short'] || 0) - (mapT1['FII']?.['Future Index Short'] || 0);
-        fiiFutTrend.push(fiiLChg - fiiSChg);
+            const idxFut = (cur['Future Index Long'] || 0) - (prev['Future Index Long'] || 0)
+                         - ((cur['Future Index Short'] || 0) - (prev['Future Index Short'] || 0));
+            const idxCall = (cur['Option Index Call Long'] || 0) - (prev['Option Index Call Long'] || 0)
+                          - ((cur['Option Index Call Short'] || 0) - (prev['Option Index Call Short'] || 0));
+            const idxPut = (cur['Option Index Put Long'] || 0) - (prev['Option Index Put Long'] || 0)
+                         - ((cur['Option Index Put Short'] || 0) - (prev['Option Index Put Short'] || 0));
+            trends[p].fut.push(idxFut);
+            trends[p].call.push(idxCall);
+            trends[p].put.push(idxPut);
 
-        // Client Index Futures Net
-        const cliLChg = (mapToday['Client']?.['Future Index Long'] || 0) - (mapT1['Client']?.['Future Index Long'] || 0);
-        const cliSChg = (mapToday['Client']?.['Future Index Short'] || 0) - (mapT1['Client']?.['Future Index Short'] || 0);
-        clientFutTrend.push(cliLChg - cliSChg);
+            const stkFut = (cur['Future Stock Long'] || 0) - (prev['Future Stock Long'] || 0)
+                         - ((cur['Future Stock Short'] || 0) - (prev['Future Stock Short'] || 0));
+            const stkCall = (cur['Option Stock Call Long'] || 0) - (prev['Option Stock Call Long'] || 0)
+                          - ((cur['Option Stock Call Short'] || 0) - (prev['Option Stock Call Short'] || 0));
+            const stkPut = (cur['Option Stock Put Long'] || 0) - (prev['Option Stock Put Long'] || 0)
+                         - ((cur['Option Stock Put Short'] || 0) - (prev['Option Stock Put Short'] || 0));
+            stockTrends[p].fut.push(stkFut);
+            stockTrends[p].call.push(stkCall);
+            stockTrends[p].put.push(stkPut);
+        }
 
-        // Pro Index Futures Net
-        const proLChg = (mapToday['Pro']?.['Future Index Long'] || 0) - (mapT1['Pro']?.['Future Index Long'] || 0);
-        const proSChg = (mapToday['Pro']?.['Future Index Short'] || 0) - (mapT1['Pro']?.['Future Index Short'] || 0);
-        proFutTrend.push(proLChg - proSChg);
-
-        // FII Calls
-        const fiiCLChg = (mapToday['FII']?.['Option Index Call Long'] || 0) - (mapT1['FII']?.['Option Index Call Long'] || 0);
-        const fiiCSChg = (mapToday['FII']?.['Option Index Call Short'] || 0) - (mapT1['FII']?.['Option Index Call Short'] || 0);
-        fiiCallTrend.push(fiiCLChg - fiiCSChg);
-
-        // Client Calls
-        const cliCLChg = (mapToday['Client']?.['Option Index Call Long'] || 0) - (mapT1['Client']?.['Option Index Call Long'] || 0);
-        const cliCSChg = (mapToday['Client']?.['Option Index Call Short'] || 0) - (mapT1['Client']?.['Option Index Call Short'] || 0);
-        clientCallTrend.push(cliCLChg - cliCSChg);
+        // Total net flow across all participants and index instruments
+        let total = 0;
+        for (const p of ['FII', 'Pro', 'Client', 'DII']) {
+            const cur = mT[p] || {};
+            const prev = mT1[p] || {};
+            for (const col of ['Future Index Long','Future Index Short','Option Index Call Long','Option Index Call Short','Option Index Put Long','Option Index Put Short']) {
+                total += (cur[col] || 0) - (prev[col] || 0);
+            }
+        }
+        totalNetFlow.push(total);
     }
 
-    // Chart 1: Index Futures
-    const ctx1 = document.getElementById('chart-index-futures').getContext('2d');
-    if (indexFuturesChart) indexFuturesChart.destroy();
-    indexFuturesChart = new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'FII Net Index Futures', data: fiiFutTrend, borderColor: '#2563eb', tension: 0.2, fill: false },
-                { label: 'Client Net Index Futures', data: clientFutTrend, borderColor: '#16a34a', tension: 0.2, fill: false },
-                { label: 'Pro Net Index Futures', data: proFutTrend, borderColor: '#d97706', tension: 0.2, fill: false }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } }
-        }
+    const smartFut = trends.fii.fut.map((v, i) => v + trends.pro.fut[i]);
+    const smartCall = trends.fii.call.map((v, i) => v + trends.pro.call[i]);
+    const stockSmartFut = stockTrends.fii.fut.map((v, i) => v + stockTrends.pro.fut[i]);
+
+    const COLORS = { fii: '#3b82f6', pro: '#f59e0b', client: '#ef4444', smart: '#8b5cf6' };
+
+    function makeChart(id, type, data, opts = {}) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const ctx = el.getContext('2d');
+        const chart = new Chart(ctx, {
+            type,
+            data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 10 } } } },
+                scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 } } } },
+                ...opts
+            }
+        });
+        chartsInstances.push(chart);
+    }
+
+    // 1. FII Net by Instrument
+    makeChart('ch-fii-breakdown', 'line', {
+        labels,
+        datasets: [
+            { label: 'Index Futures', data: trends.fii.fut, borderColor: COLORS.fii, backgroundColor: COLORS.fii + '20', fill: true, tension: 0.2, pointRadius: 2 },
+            { label: 'Index Calls', data: trends.fii.call, borderColor: '#06b6d4', backgroundColor: '#06b6d420', fill: true, tension: 0.2, pointRadius: 2 },
+            { label: 'Index Puts', data: trends.fii.put, borderColor: '#10b981', backgroundColor: '#10b98120', fill: true, tension: 0.2, pointRadius: 2 }
+        ]
     });
 
-    // Chart 2: Index Call Options
-    const ctx2 = document.getElementById('chart-index-options').getContext('2d');
-    if (indexOptionsChart) indexOptionsChart.destroy();
-    indexOptionsChart = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'FII Net Index Calls', data: fiiCallTrend, backgroundColor: '#3b82f6' },
-                { label: 'Client Net Index Calls', data: clientCallTrend, backgroundColor: '#ef4444' }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } }
-        }
+    // 2. Pro Net by Instrument
+    makeChart('ch-pro-breakdown', 'line', {
+        labels,
+        datasets: [
+            { label: 'Index Futures', data: trends.pro.fut, borderColor: COLORS.pro, backgroundColor: COLORS.pro + '20', fill: true, tension: 0.2, pointRadius: 2 },
+            { label: 'Index Calls', data: trends.pro.call, borderColor: '#06b6d4', backgroundColor: '#06b6d420', fill: true, tension: 0.2, pointRadius: 2 },
+            { label: 'Index Puts', data: trends.pro.put, borderColor: '#10b981', backgroundColor: '#10b98120', fill: true, tension: 0.2, pointRadius: 2 }
+        ]
+    });
+
+    // 3. Client vs Smart Money in Index Futures
+    makeChart('ch-client-smart', 'line', {
+        labels,
+        datasets: [
+            { label: 'Client', data: trends.client.fut, borderColor: COLORS.client, backgroundColor: COLORS.client + '20', fill: true, tension: 0.2, pointRadius: 2 },
+            { label: 'FII + Pro (Smart)', data: smartFut, borderColor: COLORS.smart, backgroundColor: COLORS.smart + '20', fill: true, tension: 0.2, pointRadius: 2 }
+        ]
+    });
+
+    // 4. Current Day: All Participants (bar)
+    const cdIdx = currentDateIndex >= 1 ? currentDateIndex : n;
+    const cdData = {
+        participants: ['Client', 'DII', 'FII', 'Pro'],
+        instruments: ['Idx Futures', 'Idx Calls', 'Idx Puts', 'Stk Futures', 'Stk Calls', 'Stk Puts']
+    };
+    const cdValues = cdData.participants.map(p => {
+        const cur = getParticipantMap(availableDates[cdIdx])[p] || {};
+        const prev = getParticipantMap(availableDates[cdIdx - 1])[p] || {};
+        return cdData.instruments.map((_, j) => {
+            const [type, instr] = [['Future','Index'],['Call','Index'],['Put','Index'],['Future','Stock'],['Call','Stock'],['Put','Stock']][j];
+            const longCol = `Option ${instr} ${type} Long`;
+            const shortCol = `Option ${instr} ${type} Short`;
+            const longKey = type === 'Future' ? `${instr === 'Index' ? 'Future Index' : 'Future Stock'} Long` : longCol;
+            const shortKey = type === 'Future' ? `${instr === 'Index' ? 'Future Index' : 'Future Stock'} Short` : shortCol;
+            return ((cur[longKey] || 0) - (prev[longKey] || 0)) - ((cur[shortKey] || 0) - (prev[shortKey] || 0));
+        });
+    });
+
+    makeChart('ch-current-day', 'bar', {
+        labels: cdData.instruments,
+        datasets: cdData.participants.map((p, i) => ({
+            label: p,
+            data: cdValues[i],
+            backgroundColor: [COLORS.fii, COLORS.client, '#10b981', COLORS.pro][i] + 'cc'
+        }))
+    });
+
+    // 5. Stock Futures Net (FII + Pro)
+    makeChart('ch-stock-futures', 'line', {
+        labels,
+        datasets: [
+            { label: 'FII Stock Futures', data: stockTrends.fii.fut, borderColor: COLORS.fii, tension: 0.2, pointRadius: 2 },
+            { label: 'Pro Stock Futures', data: stockTrends.pro.fut, borderColor: COLORS.pro, tension: 0.2, pointRadius: 2 },
+            { label: 'FII+Pro Stock Futures', data: stockSmartFut, borderColor: COLORS.smart, tension: 0.2, pointRadius: 2 }
+        ]
+    });
+
+    // 6. Total Market Net Flow
+    makeChart('ch-total-flow', 'bar', {
+        labels,
+        datasets: [{
+            label: 'Total Net (All Participants)',
+            data: totalNetFlow,
+            backgroundColor: totalNetFlow.map(v => v >= 0 ? '#34d39988' : '#f8717188'),
+            borderColor: totalNetFlow.map(v => v >= 0 ? '#34d399' : '#f87171'),
+            borderWidth: 1
+        }]
     });
 }
 

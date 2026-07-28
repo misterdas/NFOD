@@ -77,12 +77,10 @@
                         <button class="ham-item ham-tab" id="tab-money-flow">
                             <i class="fa-solid fa-layer-group"></i> Money Flow
                         </button>
-
-                        <div class="ham-divider"></div>
-
-                        <button class="ham-item" id="hamburger-charts">
-                            <i class="fa-regular fa-chart-bar"></i> Trend Charts
+                        <button class="ham-item ham-tab" id="tab-charts">
+                            <i class="fa-solid fa-chart-line"></i> Charts
                         </button>
+
                         <button class="ham-item" id="hamburger-theme">
                             <i class="fa-solid fa-moon"></i> Theme
                         </button>
@@ -115,26 +113,6 @@
                     <div class="kpi-header">Institutional Bias</div>
                     <div class="kpi-value" id="kpi-bias">--</div>
                     <div class="kpi-sub" id="kpi-bias-sub">Smart Money vs Retail</div>
-                </div>
-            </section>
-
-            <!-- Historical Trend Modal / Section -->
-            <section id="charts-section" class="charts-section hidden">
-                <div class="charts-card">
-                    <div class="charts-header">
-                        <h2><i class="fa-solid fa-chart-spline"></i> Participant Net Position Trends (July 2026)</h2>
-                        <button id="btn-close-charts" class="btn btn-icon"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <div class="charts-grid">
-                        <div class="chart-wrapper">
-                            <h3>Index Futures Net OI Trend (FII vs Client vs Pro)</h3>
-                            <canvas id="chart-index-futures"></canvas>
-                        </div>
-                        <div class="chart-wrapper">
-                            <h3>Index Options Net Calls & Puts (FII & Client)</h3>
-                            <canvas id="chart-index-options"></canvas>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -438,6 +416,42 @@
             </section>
 
         </div><!-- End view-money-flow -->
+
+        <!-- Container 3: Charts View -->
+        <div id="view-charts" class="tab-content">
+            <section class="charts-view">
+                <div class="charts-view-header">
+                    <h2><i class="fa-solid fa-chart-line"></i> Participant Activity Charts</h2>
+                    <span class="charts-view-sub">Historical trends across all instruments</span>
+                </div>
+                <div class="charts-view-grid">
+                    <div class="chart-card">
+                        <h3>FII Net by Instrument</h3>
+                        <canvas id="ch-fii-breakdown"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Pro Net by Instrument</h3>
+                        <canvas id="ch-pro-breakdown"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Client vs Smart Money (Index Futures)</h3>
+                        <canvas id="ch-client-smart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Current Day: All Participants</h3>
+                        <canvas id="ch-current-day"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Stock Futures Net (FII + Pro)</h3>
+                        <canvas id="ch-stock-futures"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Total Market Net Flow</h3>
+                        <canvas id="ch-total-flow"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <!-- Footer -->
         <footer class="app-footer">
