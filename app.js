@@ -470,8 +470,8 @@ function setupEventListeners() {
 let moneyFlowData = null;
 
 function switchTab(tabName) {
-    // Toggle hamburger-tab active
-    document.querySelectorAll('.hamburger-tab').forEach(t => t.classList.remove('active'));
+    // Toggle ham-tab active
+    document.querySelectorAll('.ham-tab').forEach(t => t.classList.remove('active'));
     document.getElementById(`tab-${tabName}`).classList.add('active');
 
     // Toggle tab-content active

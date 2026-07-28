@@ -279,10 +279,12 @@ html {
   background: var(--bg-card-solid);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 10px 16px;
+  padding: 14px 20px;
   margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
-  position: relative;
+  position: sticky;
+  top: 6px;
+  z-index: 100;
 }
 
 /* Minimal accent line */
@@ -351,6 +353,7 @@ html {
   border-radius: var(--radius-sm);
   background: transparent;
   border-color: transparent;
+  transition: background 0.15s;
 }
 
 #btn-hamburger:hover {
@@ -358,117 +361,163 @@ html {
   border-color: var(--border-color);
 }
 
+/* ─── Dropdown with smooth animation ─── */
 .hamburger-dropdown {
-  display: none;
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
   z-index: 200;
-  min-width: 220px;
+  min-width: 200px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  padding: 4px;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.15s;
 }
 
 .hamburger-dropdown.open {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.hamburger-header {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  padding: 6px 10px 8px;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 4px;
-}
-
-.hamburger-item {
+/* ─── Menu Items ─── */
+.ham-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 7px 10px;
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-main);
+  font-weight: 500;
+  color: var(--text-secondary);
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   text-decoration: none;
   font-family: inherit;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background 0.12s;
+  position: relative;
 }
 
-.hamburger-item:hover {
+.ham-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+}
+
+.ham-item i {
+  width: 16px;
+  text-align: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.ham-item:hover i {
+  opacity: 1;
+}
+
+/* Active tab — subtle left accent */
+.ham-tab.active {
+  color: var(--text-main);
   background: var(--bg-elevated);
 }
 
-.hamburger-item i {
-  width: 18px;
-  text-align: center;
-  font-size: 14px;
-  flex-shrink: 0;
+.ham-tab.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent-blue);
 }
 
-.hamburger-divider {
+.ham-tab.active i {
+  color: var(--accent-blue);
+  opacity: 1;
+}
+
+/* ─── Divider ─── */
+.ham-divider {
   height: 1px;
   background: var(--border-color);
-  margin: 6px 10px;
+  margin: 4px 8px;
 }
 
-/* ─── Date Changer inside Hamburger ─── */
+/* ─── Date Controls ─── */
 .hamburger-date-section {
-  padding: 8px 10px;
+  padding: 6px 8px 2px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .hamburger-date-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
-.hamburger-date-controls .form-select-sm {
+.ham-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.ham-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+}
+
+.ham-select {
   flex: 1;
   min-width: 0;
-  padding: 5px 6px;
+  padding: 4px 6px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  cursor: pointer;
+  outline: none;
 }
 
-.btn-icon-sm {
-  padding: 5px 8px;
-  font-size: 12px;
-  min-width: 32px;
-  min-height: 32px;
-}
-
-.btn-full {
+.ham-btn-latest {
   width: 100%;
-  justify-content: center;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-blue);
+  cursor: pointer;
+  transition: background 0.12s;
 }
 
-/* ─── Hamburger Tab Items ─── */
-.hamburger-tab.active {
-  background: linear-gradient(135deg, var(--accent-blue), #818cf8);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-}
-
-.hamburger-tab.active i {
-  color: #ffffff;
-}
-
-.hamburger-tab.active:hover {
-  background: linear-gradient(135deg, var(--accent-blue), #818cf8);
+.ham-btn-latest:hover {
+  background: var(--bg-elevated);
 }
 
 
@@ -658,7 +707,7 @@ html {
 /* ─── Dashboard Grid Layout ─── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr;
   gap: 16px;
   overflow-x: hidden;
 }
@@ -843,11 +892,17 @@ body.theme-dark .block-header {
 
 /* ─── Right Column ─── */
 .dashboard-right {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
   min-width: 0;
   overflow-x: hidden;
+}
+
+@media (min-width: 1201px) {
+  .dashboard-right {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .rules-card {
@@ -1446,8 +1501,8 @@ body.theme-dark .block-header {
 
 /* ─── Tablet (≤1200px) ─── */
 @media (max-width: 1200px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+  .dashboard-right {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .kpi-bar {
@@ -1708,6 +1763,7 @@ body.theme-dark .block-header {
 
   /* ── Right Sidebar ── */
   .dashboard-right {
+    grid-template-columns: 1fr;
     margin-top: 4px;
   }
 
@@ -1899,18 +1955,6 @@ body.theme-dark .block-header {
   .header-controls {
     flex-direction: row;
     flex-wrap: nowrap;
-  }
-
-  .hamburger-date-controls .form-select-sm {
-    font-size: 11px;
-    padding: 4px 5px;
-  }
-
-  .btn-icon-sm {
-    padding: 4px 6px;
-    min-width: 28px;
-    min-height: 28px;
-    font-size: 11px;
   }
 
   .kpi-bar {
