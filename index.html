@@ -7,11 +7,11 @@
     <title>Futures & Options — Participant Wise OI Analysis Dashboard</title>
     <meta name="description"
         content="Participant wise Open Interest (OI) changes dashboard for NSE Futures & Options using historical data.">
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Variable) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=JetBrains+Mono:wght@100..800&display=swap"
         rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -360,7 +360,7 @@
 
             <!-- Control Bar with Timestamp -->
             <section class="oc-control-bar">
-                <div style="font-size:14px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                <div class="oc-control-title">
                     <i class="fa-solid fa-building-columns text-blue"></i>
                     <span>INSTITUTIONAL FO VERDICT & MARKET BREADTH</span>
                 </div>
@@ -372,7 +372,7 @@
             <!-- Panel 1: Executive Market Verdict Banner -->
             <section class="smart-money-banner" id="verdict-executive-banner">
                 <div class="banner-left">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                    <div class="banner-badge-row">
                         <span class="bias-badge" id="verdict-bias-badge">LOADING</span>
                         <div class="banner-title" id="verdict-title">Cross-Correlating FII FDCP + Strike OI
                             Time-Series...</div>
@@ -380,53 +380,43 @@
                     <div class="banner-desc" id="verdict-desc">Analyzing operator positioning across indices and 215 F&O
                         stocks.</div>
                 </div>
-                <div class="banner-right" style="text-align:right;">
-                    <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Smart Money
-                        Score</div>
-                    <div style="font-size:24px; font-weight:900; font-family:var(--font-mono);" id="verdict-score">--
-                    </div>
+                <div class="banner-right">
+                    <div class="banner-score-label">Smart Money Score</div>
+                    <div class="banner-score-value" id="verdict-score">--</div>
                 </div>
             </section>
 
             <!-- Panel 3: Index Roll Intelligence, Magnet Strike & Traps (Full Width) -->
-            <div class="card"
-                style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px;">
-                <h3
-                    style="font-size:14px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <div class="verdict-panel-card">
+                <h3 class="panel-heading">
                     <i class="fa-solid fa-magnet text-blue"></i> Index Rolls, Magnet Strike & Expiry Targets
                 </h3>
-                <div id="verdict-index-rolls" style="display:flex; flex-direction:column; gap:10px; font-size:12px;">
-                    <div class="text-center" style="padding:20px; color:var(--text-muted);">Loading Index Rolls...
-                    </div>
+                <div id="verdict-index-rolls" class="panel-body">
+                    <div class="text-center panel-loading">Loading Index Rolls...</div>
                 </div>
             </div>
 
             <!-- Panel 2: FII & Pro Options Stance (Full Width Below Index Rolls) -->
-            <div class="card"
-                style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:16px; margin-bottom:16px;">
-                <h3
-                    style="font-size:14px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+            <div class="verdict-panel-card">
+                <h3 class="panel-heading">
                     <i class="fa-solid fa-user-ninja text-purple"></i> FII & Pro Daily Positioning Shift
                 </h3>
-                <div id="verdict-fii-stance" style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
-                    <div class="text-center" style="padding:20px; color:var(--text-muted);">Loading FII Stance...
-                    </div>
+                <div id="verdict-fii-stance" class="panel-body">
+                    <div class="text-center panel-loading">Loading FII Stance...</div>
                 </div>
             </div>
 
             <!-- Panel 4: Multi-Day Strike Conviction Matrix -->
-            <section class="oc-table-section" style="margin-bottom:16px;">
+            <section class="oc-table-section">
                 <div class="table-card">
-                    <div class="table-card-header"
-                        style="background:#0f172a; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="table-card-header">
                         <h2><i class="fa-solid fa-cubes-stacked"></i> Multi-Day Strike Conviction Matrix (NIFTY 5-Day OI
                             Shift)</h2>
-                        <div style="font-size:11px; color:#94a3b8; font-weight:600;">Multi-Session Accumulation vs Noise
-                        </div>
+                        <div class="table-card-subtitle">Multi-Session Accumulation vs Noise</div>
                     </div>
-                    <div style="padding:16px; background:var(--bg-primary);">
+                    <div class="table-card-body">
                         <div class="table-responsive">
-                            <table class="oc-dashboard-table" style="font-size:11px;">
+                            <table class="oc-dashboard-table">
                                 <thead>
                                     <tr>
                                         <th>CE Conviction</th>
@@ -448,27 +438,23 @@
             </section>
 
             <!-- Panel 4: All 215 Stocks F&O Breadth -->
-            <section class="oc-table-section" style="margin-bottom:16px;">
+            <section class="oc-table-section">
                 <div class="table-card">
-                    <div class="table-card-header"
-                        style="background:#0f172a; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="table-card-header">
                         <h2><i class="fa-solid fa-chart-pie"></i> Market Breadth — Top Stock Options Activity (All 215
                             Stocks)</h2>
-                        <div style="font-size:11px; color:#94a3b8; font-weight:600;">Operators Writing vs Unwinding
-                        </div>
+                        <div class="table-card-subtitle">Operators Writing vs Unwinding</div>
                     </div>
 
-                    <div
-                        style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px; background:var(--bg-primary);">
+                    <div class="breadth-grid">
                         <!-- Left: Call Activity -->
                         <div>
-                            <h4
-                                style="font-size:12px; font-weight:800; color:#b91c1c; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <h4 class="breadth-heading breadth-heading-bearish">
                                 <i class="fa-solid fa-arrow-down-short-wide"></i> Fresh Call Writing (Operators Capping
                                 Upside)
                             </h4>
                             <div class="table-responsive">
-                                <table class="oc-dashboard-table" style="font-size:11px;">
+                                <table class="oc-dashboard-table">
                                     <thead>
                                         <tr>
                                             <th>Symbol</th>
@@ -488,13 +474,12 @@
 
                         <!-- Right: Put Activity -->
                         <div>
-                            <h4
-                                style="font-size:12px; font-weight:800; color:#15803d; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                            <h4 class="breadth-heading breadth-heading-bullish">
                                 <i class="fa-solid fa-arrow-up-short-wide"></i> Fresh Put Writing (Operators Defending
                                 Floor)
                             </h4>
                             <div class="table-responsive">
-                                <table class="oc-dashboard-table" style="font-size:11px;">
+                                <table class="oc-dashboard-table">
                                     <thead>
                                         <tr>
                                             <th>Symbol</th>
