@@ -448,15 +448,6 @@ function setupEventListeners() {
         hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
     });
 
-    // Hamburger — Latest Date
-    document.getElementById('hamburger-latest').addEventListener('click', () => {
-        currentDateIndex = availableDates.length - 1;
-        selectEl.value = currentDateIndex;
-        renderDashboardForCurrentDate();
-        hamburgerDropdown.classList.remove('open');
-        hamburgerBtn.querySelector('i').className = 'fa-solid fa-bars';
-    });
-
 
     // --- Tab Switching ---
     document.getElementById('tab-participant-gross').addEventListener('click', () => switchTab('participant-gross'));
@@ -479,13 +470,21 @@ function setupEventListeners() {
 let moneyFlowData = null;
 
 function switchTab(tabName) {
-    // Toggle nav-tab active
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    // Toggle hamburger-tab active
+    document.querySelectorAll('.hamburger-tab').forEach(t => t.classList.remove('active'));
     document.getElementById(`tab-${tabName}`).classList.add('active');
 
     // Toggle tab-content active
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`view-${tabName}`).classList.add('active');
+
+    // Close hamburger after switching tabs
+    const dropdown = document.getElementById('hamburger-dropdown');
+    const btn = document.getElementById('btn-hamburger');
+    if (dropdown && btn) {
+        dropdown.classList.remove('open');
+        btn.querySelector('i').className = 'fa-solid fa-bars';
+    }
 }
 
 async function loadMoneyFlowView() {

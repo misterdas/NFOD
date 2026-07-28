@@ -39,30 +39,14 @@
         <!-- Top Header & Branding Bar -->
         <header class="top-header">
             <div class="brand-info">
-                <div class="brand-logo">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
+                <img class="brand-logo" src="favicon/favicon.svg" alt="F&O Dashboard">
                 <div class="brand-text">
-                    <h1>Futures & Options — Participant Wise OI Analysis</h1>
+                    <h1>OI Analysis</h1>
                 </div>
             </div>
 
-            <!-- Controls: Date Picker -->
+            <!-- Controls: Hamburger Menu (Date Changer inside) -->
             <div class="header-controls">
-                <div class="date-selector-group">
-                    <label for="date-select"><i class="fa-regular fa-calendar"></i> Trading Date:</label>
-                    <button id="btn-prev-date" class="btn btn-icon" title="Previous Date"><i
-                            class="fa-solid fa-chevron-left"></i></button>
-                    <select id="date-select" class="form-select">
-                        <option value="">Loading dates...</option>
-                    </select>
-                    <button id="btn-next-date" class="btn btn-icon" title="Next Date"><i
-                            class="fa-solid fa-chevron-right"></i></button>
-                    <button id="btn-latest-date" class="btn btn-sm btn-outline"
-                        title="Jump to Latest Date">Latest</button>
-                </div>
-
-                <!-- Hamburger Menu -->
                 <div class="hamburger-wrap">
                     <button id="btn-hamburger" class="btn btn-icon" title="Menu" aria-label="Menu">
                         <i class="fa-solid fa-bars"></i>
@@ -70,38 +54,43 @@
                     <div class="hamburger-dropdown" id="hamburger-dropdown">
                         <div class="hamburger-header">Menu</div>
 
+                        <!-- Date Changer inside Hamburger -->
+                        <div class="hamburger-date-section">
+                            <div class="hamburger-date-controls">
+                                <button id="btn-prev-date" class="btn btn-icon btn-icon-sm" title="Previous Date">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <select id="date-select" class="form-select form-select-sm">
+                                    <option value="">Loading dates...</option>
+                                </select>
+                                <button id="btn-next-date" class="btn btn-icon btn-icon-sm" title="Next Date">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <button id="btn-latest-date" class="btn btn-sm btn-outline btn-full">Latest</button>
+                        </div>
+
+                        <div class="hamburger-divider"></div>
+
+                        <button class="hamburger-item hamburger-tab active" id="tab-participant-gross">
+                            <i class="fa-solid fa-users"></i> Gross Participant OI
+                        </button>
+                        <button class="hamburger-item hamburger-tab" id="tab-money-flow">
+                            <i class="fa-solid fa-layer-group"></i> Option Chain & Money Flow
+                        </button>
+
+                        <div class="hamburger-divider"></div>
+
                         <button class="hamburger-item" id="hamburger-charts">
                             <i class="fa-solid fa-chart-area"></i> Trend Charts
                         </button>
                         <button class="hamburger-item" id="hamburger-theme">
                             <i class="fa-solid fa-moon"></i> Toggle Theme
                         </button>
-                        <button class="hamburger-item" id="hamburger-latest">
-                            <i class="fa-solid fa-calendar-day"></i> Latest Date
-                        </button>
-
-                        <div class="hamburger-divider"></div>
-
-                        <a class="hamburger-item" href="https://t.me/MarketAnalysisNiftyBankNifty" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-telegram text-blue"></i> Telegram Channel
-                        </a>
-                        <a class="hamburger-item" href="https://www.youtube.com/@MarketAnalysisWithGopalDas" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-youtube text-red"></i> YouTube Channel
-                        </a>
                     </div>
                 </div>
             </div>
         </header>
-
-        <!-- Main View Navigation Tabs -->
-        <nav class="nav-tabs-bar">
-            <button id="tab-participant-gross" class="nav-tab active">
-                <i class="fa-solid fa-users"></i> Gross Participant OI
-            </button>
-            <button id="tab-money-flow" class="nav-tab">
-                <i class="fa-solid fa-layer-group"></i> Option Chain & Operator Money Flow
-            </button>
-        </nav>
 
         <!-- Container 1: Gross Participant View -->
         <div id="view-participant-gross" class="tab-content active">
