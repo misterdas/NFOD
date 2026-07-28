@@ -768,7 +768,7 @@ details:not([open]) .table-scroll-wrapper {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   overflow: hidden;
 }
 
