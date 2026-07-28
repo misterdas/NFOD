@@ -7,10 +7,17 @@
     <title>Futures & Options — Participant Wise OI Analysis Dashboard</title>
     <meta name="description"
         content="Participant wise Open Interest (OI) changes dashboard for NSE Futures & Options using historical data.">
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="shortcut icon" href="/favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
     <!-- Mobile Web App & Theme -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="F&O Dashboard">
     <meta name="theme-color" content="#050810" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f0f4f8" media="(prefers-color-scheme: light)">
     <!-- Google Fonts (Variable) -->
@@ -62,7 +69,6 @@
                 </div>
 
                 <div class="action-buttons">
-
                     <button id="btn-charts-toggle" class="btn btn-secondary btn-sm">
                         <i class="fa-solid fa-chart-area"></i> Trend Charts
                     </button>
@@ -144,210 +150,230 @@
 
                     <!-- 1. Index Futures Block -->
                     <div class="instrument-block" id="block-index-futures">
-                        <div class="block-tables-container">
-                            <!-- Left Table: OI Changes -->
-                            <div class="table-oi-changes">
-                                <div class="block-header">Index Futures</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Index Futures Longs</th>
-                                            <th colspan="2">Index Futures Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Index Futures</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Index Futures Longs</th>
+                                                <th colspan="2">Index Futures Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th id="th-fut-today">TODAY</th>
+                                                <th id="th-fut-1day">1 DAY AGO</th>
+                                                <th id="th-fut-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-
-                            <!-- Right Table: Total Positions Carried -->
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th id="th-fut-today">TODAY</th>
-                                            <th id="th-fut-1day">1 DAY AGO</th>
-                                            <th id="th-fut-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                     <!-- 2. Index Call Block -->
                     <div class="instrument-block" id="block-index-calls">
-                        <div class="block-tables-container">
-                            <div class="table-oi-changes">
-                                <div class="block-header">Index Call Longs & Shorts</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Index Call Longs</th>
-                                            <th colspan="2">Index Call Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Index Call Longs & Shorts</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Index Call Longs</th>
+                                                <th colspan="2">Index Call Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-call-today">TODAY</th>
+                                                <th class="th-call-1day">1 DAY AGO</th>
+                                                <th class="th-call-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-call-today">TODAY</th>
-                                            <th class="th-call-1day">1 DAY AGO</th>
-                                            <th class="th-call-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                     <!-- 3. Index Put Block -->
                     <div class="instrument-block" id="block-index-puts">
-                        <div class="block-tables-container">
-                            <div class="table-oi-changes">
-                                <div class="block-header">Index Put Longs & Shorts</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Index Put Longs</th>
-                                            <th colspan="2">Index Put Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Index Put Longs & Shorts</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Index Put Longs</th>
+                                                <th colspan="2">Index Put Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-put-today">TODAY</th>
+                                                <th class="th-put-1day">1 DAY AGO</th>
+                                                <th class="th-put-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-put-today">TODAY</th>
-                                            <th class="th-put-1day">1 DAY AGO</th>
-                                            <th class="th-put-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                     <!-- 4. Stock Futures Block -->
                     <div class="instrument-block" id="block-stock-futures">
-                        <div class="block-tables-container">
-                            <div class="table-oi-changes">
-                                <div class="block-header">Stock Futures</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Stock Futures Longs</th>
-                                            <th colspan="2">Stock Futures Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Stock Futures</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Stock Futures Longs</th>
+                                                <th colspan="2">Stock Futures Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-stkfut-today">TODAY</th>
+                                                <th class="th-stkfut-1day">1 DAY AGO</th>
+                                                <th class="th-stkfut-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-stkfut-today">TODAY</th>
-                                            <th class="th-stkfut-1day">1 DAY AGO</th>
-                                            <th class="th-stkfut-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                     <!-- 5. Stock Calls Block -->
                     <div class="instrument-block" id="block-stock-calls">
-                        <div class="block-tables-container">
-                            <div class="table-oi-changes">
-                                <div class="block-header">Stock Calls Longs & Shorts</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Stock Calls Longs</th>
-                                            <th colspan="2">Stock Calls Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Stock Calls Longs & Shorts</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Stock Calls Longs</th>
+                                                <th colspan="2">Stock Calls Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-stkcall-today">TODAY</th>
+                                                <th class="th-stkcall-1day">1 DAY AGO</th>
+                                                <th class="th-stkcall-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-stkcall-today">TODAY</th>
-                                            <th class="th-stkcall-1day">1 DAY AGO</th>
-                                            <th class="th-stkcall-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                     <!-- 6. Stock Puts Block -->
                     <div class="instrument-block" id="block-stock-puts">
-                        <div class="block-tables-container">
-                            <div class="table-oi-changes">
-                                <div class="block-header">Stock Puts Longs & Shorts</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Participant</th>
-                                            <th colspan="2">Stock Puts Longs</th>
-                                            <th colspan="2">Stock Puts Shorts</th>
-                                            <th colspan="2">Net Buy / Sell for Today</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
+                        <details class="block-accordion" open>
+                            <summary class="block-header">
+                                <span class="block-header-text">Stock Puts Longs & Shorts</span>
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            </summary>
+                            <div class="block-tables-container">
+                                <div class="table-oi-changes">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Participant</th>
+                                                <th colspan="2">Stock Puts Longs</th>
+                                                <th colspan="2">Stock Puts Shorts</th>
+                                                <th colspan="2">Net Buy / Sell for Today</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="table-carried-positions">
+                                    <table class="dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-stkput-today">TODAY</th>
+                                                <th class="th-stkput-1day">1 DAY AGO</th>
+                                                <th class="th-stkput-2day">2 DAYS AGO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="table-carried-positions">
-                                <div class="block-header">Total Positions Carried</div>
-                                <table class="dashboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-stkput-today">TODAY</th>
-                                            <th class="th-stkput-1day">1 DAY AGO</th>
-                                            <th class="th-stkput-2day">2 DAYS AGO</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><!-- Populated dynamically by JS --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                        </details>
                     </div>
 
                 </div>
 
                 <!-- Right Column: Positions Bought / Sold Today Summary & Rules -->
                 <div class="dashboard-right">
-
                     <div class="positions-summary-card">
                         <div class="card-header">
                             <i class="fa-solid fa-list-check"></i> Positions Bought / Sold Today
@@ -356,7 +382,7 @@
                             <!-- Populated dynamically by JS -->
                         </div>
                     </div>
-
+                </div>
 
             </main>
         </div><!-- End view-participant-gross -->
@@ -392,7 +418,7 @@
                 </div>
             </section>
 
-            <!-- Panel 3: Index Roll Intelligence, Magnet Strike & Traps (Full Width) -->
+            <!-- Panel 3: Index Roll Intelligence, Magnet Strike & Traps -->
             <div class="verdict-panel-card">
                 <h3 class="panel-heading">
                     <i class="fa-solid fa-magnet text-blue"></i> Index Rolls, Magnet Strike & Expiry Targets
@@ -402,7 +428,7 @@
                 </div>
             </div>
 
-            <!-- Panel 2: FII & Pro Options Stance (Full Width Below Index Rolls) -->
+            <!-- Panel 2: FII & Pro Options Stance -->
             <div class="verdict-panel-card">
                 <h3 class="panel-heading">
                     <i class="fa-solid fa-user-ninja text-purple"></i> FII & Pro Daily Positioning Shift
@@ -443,7 +469,7 @@
                 </div>
             </section>
 
-            <!-- Panel 4: All 215 Stocks F&O Breadth -->
+            <!-- Panel 5: All 215 Stocks F&O Breadth -->
             <section class="oc-table-section">
                 <div class="table-card">
                     <div class="table-card-header">
@@ -452,9 +478,9 @@
                         <div class="table-card-subtitle">Operators Writing vs Unwinding</div>
                     </div>
 
+                    <!-- Desktop: side-by-side grid -->
                     <div class="breadth-grid">
-                        <!-- Left: Call Activity -->
-                        <div>
+                        <div class="breadth-col">
                             <h4 class="breadth-heading breadth-heading-bearish">
                                 <i class="fa-solid fa-arrow-down-short-wide"></i> Fresh Call Writing (Operators Capping
                                 Upside)
@@ -478,8 +504,7 @@
                             </div>
                         </div>
 
-                        <!-- Right: Put Activity -->
-                        <div>
+                        <div class="breadth-col">
                             <h4 class="breadth-heading breadth-heading-bullish">
                                 <i class="fa-solid fa-arrow-up-short-wide"></i> Fresh Put Writing (Operators Defending
                                 Floor)
