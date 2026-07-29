@@ -28,8 +28,8 @@
         rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -427,27 +427,43 @@
                 <div class="charts-view-grid">
                     <div class="chart-card">
                         <h3>Smart Money Cumulative Net <span class="ch-hint">FII+Pro running total</span></h3>
-                        <canvas id="ch-cumulative"></canvas>
+                        <div id="ch-cumulative"></div>
                     </div>
                     <div class="chart-card">
                         <h3>Put-Call Ratio by Participant <span class="ch-hint">&gt;1 = more puts</span></h3>
-                        <canvas id="ch-pcr"></canvas>
+                        <div id="ch-pcr"></div>
                     </div>
                     <div class="chart-card">
                         <h3>Smart Money vs Retail: Index Futures <span class="ch-hint">+ NIFTY overlay</span></h3>
-                        <canvas id="ch-smart-futures"></canvas>
+                        <div id="ch-smart-futures"></div>
                     </div>
                     <div class="chart-card">
                         <h3>Daily Net by Participant <span class="ch-hint">today's activity</span></h3>
-                        <canvas id="ch-daily-net"></canvas>
+                        <div id="ch-daily-net"></div>
                     </div>
                     <div class="chart-card">
                         <h3>Smart Money vs Retail: Options <span class="ch-hint">+ NIFTY overlay</span></h3>
-                        <canvas id="ch-smart-options"></canvas>
+                        <div id="ch-smart-options"></div>
                     </div>
                     <div class="chart-card">
                         <h3>Divergence Monitor <span class="ch-hint">SM vs Retail disagreement</span></h3>
-                        <canvas id="ch-divergence"></canvas>
+                        <div id="ch-divergence"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>FII Net Option Holding <span class="ch-hint">+ NIFTY OHLC</span></h3>
+                        <div id="ch-fii-options"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>DII Net Option Holding <span class="ch-hint">+ NIFTY OHLC</span></h3>
+                        <div id="ch-dii-options"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Pro Net Option Holding <span class="ch-hint">+ NIFTY OHLC</span></h3>
+                        <div id="ch-pro-options"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Client Net Option Holding <span class="ch-hint">+ NIFTY OHLC</span></h3>
+                        <div id="ch-client-options"></div>
                     </div>
                 </div>
             </section>
@@ -466,7 +482,7 @@
 
     </div>
 
-    <script src="app.js?v=2.0"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 
 </html>

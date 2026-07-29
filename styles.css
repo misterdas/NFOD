@@ -1508,9 +1508,9 @@ body.theme-dark .block-header {
   opacity: 0.7;
 }
 
-.chart-card canvas {
-  width: 100% !important;
-  max-height: 240px;
+.chart-card > div {
+  width: 100%;
+  min-height: 240px;
 }
 
 @media (max-width: 1200px) {
@@ -1531,8 +1531,8 @@ body.theme-dark .block-header {
   .chart-card {
     padding: 12px;
   }
-  .chart-card canvas {
-    max-height: 200px;
+  .chart-card > div {
+    min-height: 200px;
   }
 }
 
