@@ -742,7 +742,8 @@ function renderFIIStance(ps) {
 }
 
 /**
- * Render a human-readable FII-DII & Smart Money analysis commentary from participant_summary data.
+ * Render a fully dynamic FII-DII & Smart Money analysis commentary from participant_summary data.
+ * All text is generated from actual data — no hardcoded narratives.
  */
 function renderCommentary(ps) {
     const card = document.getElementById('commentary-card');
@@ -754,156 +755,367 @@ function renderCommentary(ps) {
         return;
     }
 
-    // Helper: action word for index calls
-    function callAction(netShortChange) {
-        // netShortChange = short - long. Negative means net buying (covering) — bullish.
-        const net = -netShortChange; // flip to "net bought" semantics
-        if (net > 20000) return 'Bought Index Calls ➕' + formatIndianNum(net) + ' Lots 🚀';
-        if (net > 5000) return 'Bought Index Calls ➕' + formatIndianNum(net) + ' Lots 📈';
-        if (net < -20000) return 'Sold Index Calls ➖' + formatIndianNum(-net) + ' Lots';
-        if (net < -5000) return 'Sold Index Calls ➖' + formatIndianNum(-net) + ' Lots';
-        return 'Flat Index Calls';
+    const formatNum = v => formatIndianNum(v);
+    const abs = v => Math.abs(v);
+
+    // ── Date / Expiry Detection ──
+    const ds = ps.date || '';
+    let expiryLabel = '';
+    if (ds) {
+        const parts = ds.split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt('20' + parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            const lastThu = new Date(d);
+            lastThu.setMonth(lastThu.getMonth() + 1, 1);
+            lastThu.setDate(lastThu.getDate() + (4 - lastThu.getDay() + 7) % 7);
+            lastThu.setDate(lastThu.getDate() - 7);
+            while (lastThu.getMonth() === d.getMonth()) {
+                const next = new Date(lastThu);
+                next.setDate(lastThu.getDate() + 7);
+                if (next.getMonth() !== d.getMonth()) break;
+                lastThu.setDate(lastThu.getDate() + 7);
+            }
+            const diff = Math.round((lastThu - d) / 86400000);
+            if (diff === 0) expiryLabel = '🗓️ Monthly Expiry Day';
+            else if (diff === 1) expiryLabel = '🗓️ Monthly Expiry Tomorrow';
+            else if (diff === -1) expiryLabel = '🗓️ Post Monthly Expiry';
+            else if (diff > 0 && diff <= 4) expiryLabel = '🗓️ Monthly Expiry Week — ' + diff + ' day(s) to expiry';
+        }
     }
 
-    // Helper: action word for index puts
-    function putAction(netShortChange) {
-        // netShortChange = short - long. Positive means net writing (floor) — bullish.
-        const net = -netShortChange; // flip: positive = net sold (writing), negative = net bought (long)
-        if (net > 20000) return 'Sold Index Puts ➖' + formatIndianNum(net) + ' Lots ⚠️';
-        if (net > 5000) return 'Sold Index Puts ➖' + formatIndianNum(net) + ' Lots';
-        if (net < -20000) return 'Bought Index Puts ➕' + formatIndianNum(-net) + ' Lots';
-        if (net < -5000) return 'Bought Index Puts ➕' + formatIndianNum(-net) + ' Lots';
-        return 'Flat Index Puts';
+    // ── Build participant rows ──
+    function mkRows(p, prefix) {
+        const fut = p[prefix + 'fut_net_change'] || 0;
+        const futLong = p[prefix + 'fut_long_change'] || 0;
+        const futShort = p[prefix + 'fut_short_change'] || 0;
+        const ceLong = p[prefix + 'ce_long_change'] || 0;
+        const ceShort = p[prefix + 'ce_short_change'] || 0;
+        const peLong = p[prefix + 'pe_long_change'] || 0;
+        const peShort = p[prefix + 'pe_short_change'] || 0;
+        const stkFut = p[prefix + 'stk_fut_net_change'] || 0;
+        const stkFutLong = p[prefix + 'stk_fut_long_change'] || 0;
+        const stkFutShort = p[prefix + 'stk_fut_short_change'] || 0;
+        const stkCe = p[prefix + 'stk_ce_net_change'] || 0;
+        const stkPe = p[prefix + 'stk_pe_net_change'] || 0;
+        // stkCe negative = net bought; positive = net sold (short)
+        // stkPe negative = net bought (long puts); positive = net sold (short)
+
+        const rows = [];
+
+        // Index Futures
+        if (fut !== 0) {
+            const emoji = fut > 0 ? '🟢' : '🔴';
+            const action = fut > 0 ? 'Bought' : 'Sold';
+            const arrow = fut > 0 ? '➕' : '➖';
+            let detailParts = [];
+            if (futLong > 0) detailParts.push(`Added Longs: ${formatNum(futLong)}`);
+            else if (futLong < 0) detailParts.push(`Closed Longs: ${formatNum(abs(futLong))}`);
+            if (futShort > 0) detailParts.push(`Added Shorts: ${formatNum(futShort)}`);
+            else if (futShort < 0) detailParts.push(`Closed Shorts: ${formatNum(abs(futShort))}`);
+            detail = detailParts.length ? ' — ' + detailParts.join(' • ') : '';
+            const boost = abs(fut) > 30000 ? ' 🚀' : abs(fut) > 10000 ? ' 💪' : '';
+            rows.push({ emoji, cls: fut > 0 ? 'bg-green' : 'bg-red', text: `${action} Index Futures ${arrow}${formatNum(abs(fut))} Lots${boost}${detail}` });
+        }
+        // Index Calls
+        if (ceLong !== 0 || ceShort !== 0) {
+            const netCall = ceShort - ceLong; // +ve = writing, -ve = covering
+            if (abs(ceLong) > abs(ceShort)) {
+                // net long calls (buying)
+                const emoji = ceLong > 0 ? '🟢' : '🔴';
+                rows.push({ emoji, cls: ceLong > 0 ? 'bg-green' : 'bg-red', text: `${ceLong > 0 ? 'Bought' : 'Sold'} Index Calls ${ceLong > 0 ? '➕' : '➖'}${formatNum(abs(ceLong))} Lots${abs(ceLong) > 50000 ? ' 🚀' : ''}` });
+            } else {
+                const emoji = ceShort > 0 ? '🔴' : '🟢';
+                rows.push({ emoji, cls: ceShort > 0 ? 'bg-red' : 'bg-green', text: `${ceShort > 0 ? 'Sold' : 'Covered'} Index Calls ${ceShort > 0 ? '➖' : '➕'}${formatNum(abs(ceShort))} Lots` });
+            }
+        }
+        // Index Puts
+        if (peLong !== 0 || peShort !== 0) {
+            if (abs(peShort) >= abs(peLong)) {
+                // Short (writing) dominant
+                const emoji = peShort > 0 ? '🔴' : '🟢';
+                const action = peShort > 0 ? 'Sold' : 'Covered';
+                const arrow = peShort > 0 ? '➖' : '➕';
+                rows.push({ emoji, cls: peShort > 0 ? 'bg-red' : 'bg-green', text: `${action} Index Puts ${arrow}${formatNum(abs(peShort))} Lots${abs(peShort) > 50000 ? ' ⚠️' : ''}` });
+            } else {
+                // Long (buying) dominant
+                const emoji = peLong > 0 ? '🟢' : '🔴';
+                const action = peLong > 0 ? 'Bought' : 'Sold';
+                const arrow = peLong > 0 ? '➕' : '➖';
+                rows.push({ emoji, cls: peLong > 0 ? 'bg-green' : 'bg-red', text: `${action} Index Puts ${arrow}${formatNum(abs(peLong))} Lots${abs(peLong) > 30000 ? ' 🛡️' : ''}` });
+            }
+        }
+        // Stock Futures
+        if (stkFut !== 0) {
+            const emoji = stkFut > 0 ? '🟢' : '🔴';
+            const action = stkFut > 0 ? 'Bought' : 'Sold';
+            const arrow = stkFut > 0 ? '➕' : '➖';
+            let detailParts = [];
+            if (stkFutLong > 0) detailParts.push(`Added Longs: ${formatNum(stkFutLong)}`);
+            else if (stkFutLong < 0) detailParts.push(`Closed Longs: ${formatNum(abs(stkFutLong))}`);
+            if (stkFutShort > 0) detailParts.push(`Added Shorts: ${formatNum(stkFutShort)}`);
+            else if (stkFutShort < 0) detailParts.push(`Closed Shorts: ${formatNum(abs(stkFutShort))}`);
+            const detail = detailParts.length ? ' — ' + detailParts.join(' • ') : '';
+            const boost = abs(stkFut) > 50000 ? ' 💪' : '';
+            rows.push({ emoji, cls: stkFut > 0 ? 'bg-green' : 'bg-red', text: `${action} Stock Futures ${arrow}${formatNum(abs(stkFut))} Lots${boost}${detail}` });
+        }
+        // Stock Calls
+        if (stkCe !== 0) {
+            const emoji = stkCe < 0 ? '🟢' : '🔴';
+            const action = stkCe < 0 ? 'Bought' : 'Sold';
+            const arrow = stkCe < 0 ? '➕' : '➖';
+            rows.push({ emoji, cls: stkCe < 0 ? 'bg-green' : 'bg-red', text: `${action} Stock Calls ${arrow}${formatNum(abs(stkCe))} Lots${abs(stkCe) > 50000 ? ' 💪' : ''}` });
+        }
+        // Stock Puts
+        if (stkPe !== 0) {
+            const emoji = stkPe < 0 ? '🔴' : '🟢'; // buying puts is bearish/hedge
+            const action = stkPe < 0 ? 'Bought' : 'Sold';
+            const arrow = stkPe < 0 ? '➕' : '➖';
+            rows.push({ emoji, cls: stkPe < 0 ? 'bg-red' : 'bg-green', text: `${action} Stock Puts ${arrow}${formatNum(abs(stkPe))} Lots` });
+        }
+
+        return rows;
     }
 
-    // Build participant block
-    function participantBlock(label, icon, data) {
-        const fut = data.fut || 0;
-        const ceIdx = data.ceIdx || 0;
-        const peIdx = data.peIdx || 0;
-        const stkFut = data.stkFut || 0;
-        const stkCe = data.stkCe || 0;  // negative = net long (bought), positive = net short (sold)
-        const stkPe = data.stkPe || 0;  // negative = net long (bought puts), positive = net short (sold puts)
+    // ── Count bullish/bearish signals for a participant ──
+    function countSignals(prefix) {
+        const fut = ps[prefix + 'fut_net_change'] || 0;
+        const ceLong = ps[prefix + 'ce_long_change'] || 0;
+        const ceShort = ps[prefix + 'ce_short_change'] || 0;
+        const peLong = ps[prefix + 'pe_long_change'] || 0;
+        const peShort = ps[prefix + 'pe_short_change'] || 0;
+        const stkFut = ps[prefix + 'stk_fut_net_change'] || 0;
+        const stkCe = ps[prefix + 'stk_ce_net_change'] || 0;
+        const stkPe = ps[prefix + 'stk_pe_net_change'] || 0;
 
-        // Stock call direction
-        const stkCeAction = stkCe < 0 ? 'Bought' : 'Sold';
-        const stkCeArrow = stkCe < 0 ? '➕' : '➖';
-        const stkCeColor = stkCe < 0 ? 'bg-green' : 'bg-red';
-        const stkCeEmoji = stkCe < 0 ? '🟢' : '🔴';
+        let bullish = 0, bearish = 0;
+        if (fut > 0) bullish++; else if (fut < 0) bearish++;
+        if (ceLong > abs(ceShort) && ceLong > 0) bullish++;
+        if (ceShort > abs(ceLong) && ceShort > 0) bearish++;
+        if (ceLong > abs(ceShort) && ceLong < 0) bearish++; // selling long calls
+        if (ceShort > abs(ceLong) && ceShort < 0) bullish++; // covering short calls
+        if (peShort > abs(peLong) && peShort > 0) bullish++; // writing puts
+        if (peShort > abs(peLong) && peShort < 0) bearish++; // covering put shorts
+        if (peLong > abs(peShort) && peLong > 0) bearish++; // buying puts
+        if (peLong > abs(peShort) && peLong < 0) bullish++; // selling puts
+        if (stkFut > 0) bullish++; else if (stkFut < 0) bearish++;
+        if (stkCe < 0) bullish++; else if (stkCe > 0) bearish++;
+        if (stkPe < 0) bearish++; else if (stkPe > 0) bullish++;
+        return { bullish, bearish };
+    }
 
-        // Stock put direction
-        const stkPeAction = stkPe < 0 ? 'Bought' : 'Sold';
-        const stkPeArrow = stkPe < 0 ? '➕' : '➖';
-        const stkPeColor = stkPe < 0 ? 'bg-green' : 'bg-red';
-        const stkPeEmoji = stkPe < 0 ? '🟢' : '🔴';
+    // ── Generate interpretation note ──
+    function generateNote(prefix, label) {
+        const sig = countSignals(prefix);
+        const parts = [];
 
+        const fut = ps[prefix + 'fut_net_change'] || 0;
+        const ceLong = ps[prefix + 'ce_long_change'] || 0;
+        const ceShort = ps[prefix + 'ce_short_change'] || 0;
+        const peLong = ps[prefix + 'pe_long_change'] || 0;
+        const peShort = ps[prefix + 'pe_short_change'] || 0;
+        const stkFut = ps[prefix + 'stk_fut_net_change'] || 0;
+        const netCarried = ps[prefix + 'fut_net_carried'] || 0;
+
+        const netCall = ceShort - ceLong;
+        const netPut = peShort - peLong;
+        const sentences = [];
+
+        if (sig.bullish > sig.bearish + 1) {
+            let s = `${label} are predominantly bullish today`;
+            const strong = [];
+            if (fut > 20000) strong.push(`aggressively added Index Futures (${formatNum(abs(fut))} lots)`);
+            else if (fut > 5000) strong.push(`added Index Futures (${formatNum(abs(fut))} lots)`);
+            if (ceLong > 50000) strong.push(`aggressively bought Index Calls (${formatNum(abs(ceLong))} lots)`);
+            else if (ceLong > 20000) strong.push(`bought Index Calls (${formatNum(abs(ceLong))} lots)`);
+            if (peShort > 50000) strong.push(`wrote Index Puts at scale (${formatNum(abs(peShort))} lots)`);
+            else if (peShort > 20000) strong.push(`wrote Index Puts (${formatNum(abs(peShort))} lots)`);
+            if (stkFut > 30000) strong.push(`showed strong Stock Futures buying (${formatNum(abs(stkFut))} lots)`);
+            else if (stkFut > 10000) strong.push(`added Stock Futures (${formatNum(abs(stkFut))} lots)`);
+            if (strong.length) s += `. They ` + strong.join(', ');
+            sentences.push(s);
+            if (peLong > 30000) sentences.push(`However, they also added Put hedges (${formatNum(abs(peLong))} lots) as protection`);
+            if (ceShort > 30000) sentences.push(`Some Call writing (${formatNum(abs(ceShort))} lots) may cap upside moves`);
+            parts.push(sentences.join('. ') + '. 📈');
+        } else if (sig.bearish > sig.bullish + 1) {
+            let s = `${label} have turned defensive today`;
+            const bear = [];
+            if (fut < -20000) bear.push(`aggressively sold Index Futures (${formatNum(abs(fut))} lots)`);
+            else if (fut < -5000) bear.push(`sold Index Futures (${formatNum(abs(fut))} lots)`);
+            if (ceShort > 50000) bear.push(`wrote heavy Calls (${formatNum(abs(ceShort))} lots)`);
+            else if (ceShort > 20000) bear.push(`wrote Calls (${formatNum(abs(ceShort))} lots)`);
+            if (peLong > 30000) bear.push(`added significant Put hedges (${formatNum(abs(peLong))} lots)`);
+            else if (peLong > 10000) bear.push(`bought Puts for protection (${formatNum(abs(peLong))} lots)`);
+            if (stkFut < -20000) bear.push(`reduced Stock Futures significantly (${formatNum(abs(stkFut))} lots)`);
+            else if (stkFut < -5000) bear.push(`trimmed Stock Futures (${formatNum(abs(stkFut))} lots)`);
+            if (bear.length) s += `. They ` + bear.join(', ');
+            sentences.push(s);
+            if (peShort > 30000) sentences.push(`Some Put writing (${formatNum(abs(peShort))} lots) provides floor support`);
+            if (ceLong > 30000) sentences.push(`Call buying (${formatNum(abs(ceLong))} lots) adds a bullish tilt`);
+            parts.push(sentences.join('. ') + '. ⚠️');
+        } else {
+            let s = `${label} activity is mixed with no clear directional conviction`;
+            const mixed = [];
+            if (fut > 0) mixed.push('adding Index Futures');
+            else if (fut < 0) mixed.push('reducing Index Futures');
+            if (netCall < -10000) mixed.push('covering Calls');
+            else if (netCall > 10000) mixed.push('writing Calls');
+            if (netPut > 10000) mixed.push('writing Puts');
+            else if (netPut < -10000) mixed.push('adding Put hedges');
+            if (stkFut > 10000) mixed.push('buying Stock Futures');
+            else if (stkFut < -10000) mixed.push('selling Stock Futures');
+            if (mixed.length <= 1) {
+                if (abs(fut) > 0 && abs(fut) <= 5000) mixed.push('minimal Index Futures changes');
+                if (ceLong > 0 && ceLong <= 10000) mixed.push('minor Call buying');
+                if (peShort > 0 && peShort <= 10000) mixed.push('light Put writing');
+            }
+            if (mixed.length) s += `. They are ` + mixed.join(', ');
+            sentences.push(s);
+            parts.push(sentences.join('. ') + '. ⚖️');
+        }
+
+        if (abs(netCarried) > 100000 && prefix === 'fii_') {
+            parts.push(`FIIs still hold a net ${netCarried < 0 ? 'SHORT' : 'LONG'} of ${formatNum(abs(netCarried))} Index Futures position.`);
+        }
+
+        return parts.join(' ');
+    }
+
+    // ── Generate key takeaways ──
+    function generateTakeaways() {
+        const items = [];
+        const fiiFut = ps.fii_fut_net_change || 0;
+        const fiiCeLong = ps.fii_ce_long_change || 0;
+        const fiiCeShort = ps.fii_ce_short_change || 0;
+        const fiiPeShort = ps.fii_pe_short_change || 0;
+        const fiiPeLong = ps.fii_pe_long_change || 0;
+        const proFut = ps.pro_fut_net_change || 0;
+        const proCeLong = ps.pro_ce_long_change || 0;
+        const proPeShort = ps.pro_pe_short_change || 0;
+        const fiiStkFut = ps.fii_stk_fut_net_change || 0;
+        const score = ps.smart_money_score || 0;
+        const fiiNetCarried = ps.fii_fut_net_carried || 0;
+
+        const fiiNetCallWrite = fiiCeShort - fiiCeLong;  // +ve = writing, -ve = covering
+        const fiiNetPutBuy = fiiPeLong - fiiPeShort;     // +ve = net long puts (bearish), -ve = net writing (bullish)
+        const fiiBullish = fiiFut > 0 || fiiCeLong > 20000 || fiiPeShort > 20000 || fiiStkFut > 20000;
+        const fiiBearish = fiiFut < -5000 || fiiNetCallWrite > 30000 || fiiNetPutBuy > 20000;
+        const proBullish = proFut > 0 || proCeLong > 20000 || proPeShort > 20000;
+        const proBearish = proFut < -5000;
+
+        // FII bullish signals
+        if (fiiBullish && !fiiBearish) {
+            items.push('🟢 FIIs have built broad-based bullish positions across Index Futures, Calls and Put writing — a strongly constructive signal. 🐂');
+        } else if (fiiBullish && fiiBearish) {
+            items.push('🟡 FII positioning is mixed — bullish on some fronts but bearish on others. Expect range-bound volatility. ⚡');
+            if (fiiNetCarried < -100000) {
+                items.push('🔴 Despite today\'s buying, FIIs still hold a massive net short in Index Futures (' + formatNum(abs(fiiNetCarried)) + ' lots) — structural bearishness persists.');
+            }
+        } else if (fiiBearish) {
+            items.push('🔴 FIIs continue to build bearish Index exposure through Futures selling and Call writing. ⚠️');
+        }
+
+        // Pro alignment
+        if (proBullish && fiiBullish) {
+            items.push('🟢 FIIs and Proprietary traders are aligned on the bullish side — smart money convergence. 💪');
+        } else if (proBullish && fiiBearish) {
+            items.push('🟡 Pros are bullish while FIIs are bearish — a tug of war that keeps volatility elevated. ⚡');
+        } else if (proBearish && fiiBullish) {
+            items.push('🟡 FIIs are bullish but Pros have turned defensive — divergence warrants caution.');
+        }
+
+        // Retail trap/confirmation
+        const retailTrap = ps.retail_trap_alarm;
+        const retailConf = ps.retail_confirmation_message;
+        if (retailTrap) {
+            items.push(`🔴 ${retailTrap} 😨`);
+        } else if (retailConf) {
+            items.push(`🟢 ${retailConf}`);
+        }
+
+        // FII stock futures
+        if (fiiStkFut > 30000) {
+            items.push(`🟢 Strong FII buying in Stock Futures (${formatNum(abs(fiiStkFut))} lots) reflects confidence in stock-specific strength.`);
+        } else if (fiiStkFut < -30000) {
+            items.push(`🔴 FIIs reduced Stock Futures exposure significantly (${formatNum(abs(fiiStkFut))} lots) — caution on equities.`);
+        }
+
+        // Pro call buying
+        if (proCeLong > 50000) {
+            items.push(`🟢 PROs massive Call buying (${formatNum(abs(proCeLong))} lots) reinforces positive outlook in selected stocks. 📈`);
+        }
+
+        // Score-based conclusion
+        if (score >= 40) {
+            items.push('🟢 Overall institutional positioning remains strongly bullish — align with smart money direction.');
+        } else if (score >= 15) {
+            items.push('🟢 Overall institutional bias is moderately bullish — look for price confirmation before aggressive entries.');
+        } else if (score <= -40) {
+            items.push('🔴 Overall institutional positioning is bearish — consider defensive positioning. ⚠️');
+        } else if (score <= -15) {
+            items.push('🔴 Overall institutional bias is bearish — remain cautious with new longs.');
+        } else {
+            items.push('🟡 Overall institutional positioning is neutral to mixed — wait for clearer directional signal.');
+        }
+
+        // Expiry context — only pre-expiry days, not post-expiry
+        if (expiryLabel && !expiryLabel.includes('Post') && expiryLabel.includes('Expiry')) {
+            items.push('⚠️ ' + expiryLabel + ' — a significant portion of today\'s activity reflects unwinding and rollover rather than fresh directional bets. The next 2-3 sessions will provide clearer signals.');
+        }
+
+        return items;
+    }
+
+    // ── Build participant data ──
+    function buildParticipantData(prefix, noteLabel) {
+        const rows = mkRows(ps, prefix);
+        if (rows.length === 0) return null;
+        const note = generateNote(prefix, noteLabel);
+        return { rows, note };
+    }
+
+    const fiiData = buildParticipantData('fii_', 'FIIs');
+    const diiData = buildParticipantData('dii_', 'DIIs');
+    const proData = buildParticipantData('pro_', 'Pros');
+    const clientData = buildParticipantData('client_', 'Retail participants');
+
+    function participantCard(label, icon, headerClass, data) {
+        if (!data || !data.rows.length) return '';
+        const rowsHtml = data.rows.map(r =>
+            `<div class="commentary-row"><span class="commentary-badge ${r.cls}">${r.emoji} ${r.text}</span></div>`
+        ).join('');
         return `
             <div class="commentary-participant">
-                <div class="commentary-participant-header ${data.headerClass || ''}">
-                    ${icon} ${label}
-                </div>
-                <div class="commentary-participant-rows">
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${fut > 0 ? 'bg-green' : 'bg-red'}">${fut > 0 ? '🟢' : '🔴'} ${fut > 0 ? 'Bought' : 'Sold'} Index Futures ${fut > 0 ? '➕' : '➖'}${formatIndianNum(Math.abs(fut))} Lots ${fut > 10000 ? '📈' : fut < -10000 ? '📉' : ''}</span>
-                    </div>
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${ceIdx > 0 ? 'bg-green' : 'bg-red'}">${ceIdx > 0 ? '🟢' : '🔴'} ${callAction(-ceIdx)}</span>
-                    </div>
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${peIdx < 0 ? 'bg-green' : 'bg-red'}">${peIdx < 0 ? '🟢' : '🔴'} ${putAction(-peIdx)}</span>
-                    </div>
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${stkFut > 0 ? 'bg-green' : 'bg-red'}">${stkFut > 0 ? '🟢' : '🔴'} ${stkFut > 0 ? 'Bought' : 'Sold'} Stock Futures ${stkFut > 0 ? '➕' : '➖'}${formatIndianNum(Math.abs(stkFut))} Lots ${Math.abs(stkFut) > 20000 ? '💪' : ''}</span>
-                    </div>
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${stkCeColor}">${stkCeEmoji} ${stkCeAction} Stock Calls ${stkCeArrow}${formatIndianNum(Math.abs(stkCe))} Lots</span>
-                    </div>
-                    <div class="commentary-row">
-                        <span class="commentary-badge ${stkPeColor}">${stkPeEmoji} ${stkPeAction} Stock Puts ${stkPeArrow}${formatIndianNum(Math.abs(stkPe))} Lots</span>
-                    </div>
-                </div>
-                ${data.note ? `<div class="commentary-note">${data.note}</div>` : ''}
+                <div class="commentary-participant-header ${headerClass}">${icon} ${label}</div>
+                <div class="commentary-participant-rows">${rowsHtml}</div>
+                <div class="commentary-note">➡️ ${data.note}</div>
             </div>
         `;
     }
 
-    // Net index call/put flow: "net short change" → "net bought" (-ce_net_short_change = net call buying)
-    const fiiCeFlow = -(ps.fii_ce_net_short_change || 0);
-    const fiiPeFlow = -(ps.fii_pe_net_short_change || 0);
-    const proCeFlow = -(ps.pro_ce_net_short_change || 0);
-    const proPeFlow = -(ps.pro_pe_net_short_change || 0);
-    const diiCeFlow = -(ps.dii_ce_net_short_change || 0);
-    const diiPeFlow = -(ps.dii_pe_net_short_change || 0);
-    const clientCeFlow = ps.client_ce_net_buy || 0; // already net bought
-    const clientPeFlow = ps.client_pe_net_buy || 0; // already net bought
-
-    const fiiNote = 'FIIs have turned aggressive buyers in Index Futures and Calls, showing confidence in an upside move. However, selling of Index Puts suggests they are keeping hedges in place and expect volatility. 📊';
-    const diiNote = 'DII activity remained largely defensive with no strong directional conviction. ⚖️';
-    const proNote = 'Pros have built fresh bullish positions in Index Futures and Calls, reinforcing the positive undertone. 📈';
-    const clientNote = 'Retail participants continue to remain cautious and have increased downside protection through Put buying, while reducing long exposure. 😟';
-
-    // Key takeaways
     const score = ps.smart_money_score || 0;
-    const bias = ps.bias_label || 'NEUTRAL';
     let sentimentEmoji = score >= 15 ? '🟢' : score <= -15 ? '🔴' : '🟡';
-    let sentimentText = score >= 40 ? 'POSITIVE' : score >= 15 ? 'MODERATELY POSITIVE' : score <= -40 ? 'STRONGLY NEGATIVE' : score <= -15 ? 'MODERATELY NEGATIVE' : 'MIXED / NEUTRAL';
+    let sentimentText = score >= 40 ? 'STRONGLY POSITIVE' : score >= 15 ? 'POSITIVE' : score <= -40 ? 'STRONGLY NEGATIVE' : score <= -15 ? 'NEGATIVE' : 'MIXED / NEUTRAL';
+
+    const takeaways = generateTakeaways();
 
     let html = `
         <div class="commentary-header">
-            <div class="commentary-date">📅 Trading Session: ${ps.date || '--'}</div>
-            <div class="commentary-sentiment">${sentimentEmoji} Overall Sentiment: <strong>${sentimentText}</strong> <span class="${score >= 0 ? 'pos-green' : 'pos-red'}">(${ps.bias_label || 'NEUTRAL'})</span></div>
+            <div class="commentary-date">📊 FII–DII F&O Data Analysis | Trading Session: ${ps.date || '--'} ${expiryLabel}</div>
+            <div class="commentary-sentiment">${sentimentEmoji} Overall Sentiment: <strong>${sentimentText}</strong> <span class="${score >= 0 ? 'pos-green' : 'pos-red'}">(${ps.bias_label || 'NEUTRAL'})</span> | Smart Money Score: <strong>${score > 0 ? '+' : ''}${score}</strong></div>
         </div>
         <div class="commentary-grid">
-            ${participantBlock('FIIs (Smart Money)', '💰 🏦', {
-                fut: ps.fii_fut_net_change || 0,
-                ceIdx: fiiCeFlow,
-                peIdx: fiiPeFlow,
-                stkFut: ps.fii_stk_fut_net_change || 0,
-                stkCe: ps.fii_stk_ce_net_change || 0,
-                stkPe: ps.fii_stk_pe_net_change || 0,
-                headerClass: 'commentary-header-fii',
-                note: fiiNote
-            })}
-            ${participantBlock('DIIs', '🏛️', {
-                fut: ps.dii_fut_net_change || 0,
-                ceIdx: diiCeFlow,
-                peIdx: diiPeFlow,
-                stkFut: ps.dii_stk_fut_net_change || 0,
-                stkCe: ps.dii_stk_ce_net_change || 0,
-                stkPe: ps.dii_stk_pe_net_change || 0,
-                headerClass: 'commentary-header-dii',
-                note: diiNote
-            })}
-            ${participantBlock('Proprietary Traders (Pros)', '🔥', {
-                fut: ps.pro_fut_net_change || 0,
-                ceIdx: proCeFlow,
-                peIdx: proPeFlow,
-                stkFut: ps.pro_stk_fut_net_change || 0,
-                stkCe: ps.pro_stk_ce_net_change || 0,
-                stkPe: ps.pro_stk_pe_net_change || 0,
-                headerClass: 'commentary-header-pro',
-                note: proNote
-            })}
-            ${participantBlock('Clients (Retail)', '👥', {
-                fut: ps.client_fut_net_change || 0,
-                ceIdx: clientCeFlow,
-                peIdx: clientPeFlow,
-                stkFut: ps.client_stk_fut_net_change || 0,
-                stkCe: ps.client_stk_ce_net_change || 0,
-                stkPe: ps.client_stk_pe_net_change || 0,
-                headerClass: 'commentary-header-client',
-                note: clientNote
-            })}
+            ${participantCard('FIIs (Smart Money)', '🏦', 'commentary-header-fii', fiiData)}
+            ${participantCard('DIIs (Domestic)', '🏛️', 'commentary-header-dii', diiData)}
+            ${participantCard('Proprietary Traders (Pros)', '🔥', 'commentary-header-pro', proData)}
+            ${participantCard('Clients (Retail)', '👥', 'commentary-header-client', clientData)}
         </div>
+        ${takeaways.length ? `
         <div class="commentary-takeaways">
             <div class="commentary-takeaways-title">🎯 Key Takeaways:</div>
             <div class="commentary-takeaways-list">
-                <div class="commentary-takeaway-item">🟢 FIIs & Pros have added fresh Index Futures and Index Call positions – a constructive signal for bulls. 🐂</div>
-                <div class="commentary-takeaway-item">🟢 Cash Market data is also supportive with FIIs buying <strong>₹2,982 Cr</strong> and DIIs buying <strong>₹998 Cr</strong>. 💰</div>
-                <div class="commentary-takeaway-item">🟡 FII selling in Index Puts indicates expectations of higher volatility, so sharp intraday swings cannot be ruled out. ⚡</div>
-                <div class="commentary-takeaway-item">🟢 Overall institutional positioning remains bullish, but traders should respect important support and resistance levels before taking aggressive positions.</div>
+                ${takeaways.map(t => `<div class="commentary-takeaway-item">${t}</div>`).join('')}
             </div>
-        </div>
+        </div>` : ''}
         <div class="commentary-footer">
             📌 Trade with proper risk management. Position sizing and stop-loss remain the key. 🙏
         </div>

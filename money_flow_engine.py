@@ -174,18 +174,24 @@ def load_participant_data(iv_modifier=0):
             uses them - a participant adding both long and short calls at once should
             not register as pure directional writing.
             """
-            fut_chg = calc_chg(row_t, row_p, 'Future Index Long') - calc_chg(row_t, row_p, 'Future Index Short')
+            fut_long_chg = calc_chg(row_t, row_p, 'Future Index Long')
+            fut_short_chg = calc_chg(row_t, row_p, 'Future Index Short')
+            fut_chg = fut_long_chg - fut_short_chg
             ce_long_chg = calc_chg(row_t, row_p, 'Option Index Call Long')
             ce_short_chg = calc_chg(row_t, row_p, 'Option Index Call Short')
             pe_long_chg = calc_chg(row_t, row_p, 'Option Index Put Long')
             pe_short_chg = calc_chg(row_t, row_p, 'Option Index Put Short')
-            stk_fut_chg = calc_chg(row_t, row_p, 'Future Stock Long') - calc_chg(row_t, row_p, 'Future Stock Short')
+            stk_fut_long_chg = calc_chg(row_t, row_p, 'Future Stock Long')
+            stk_fut_short_chg = calc_chg(row_t, row_p, 'Future Stock Short')
+            stk_fut_chg = stk_fut_long_chg - stk_fut_short_chg
             stk_ce_long_chg = calc_chg(row_t, row_p, 'Option Stock Call Long')
             stk_ce_short_chg = calc_chg(row_t, row_p, 'Option Stock Call Short')
             stk_pe_long_chg = calc_chg(row_t, row_p, 'Option Stock Put Long')
             stk_pe_short_chg = calc_chg(row_t, row_p, 'Option Stock Put Short')
             return {
                 "fut_chg": fut_chg,
+                "fut_long_chg": fut_long_chg,
+                "fut_short_chg": fut_short_chg,
                 "ce_long_chg": ce_long_chg,
                 "ce_short_chg": ce_short_chg,
                 "pe_long_chg": pe_long_chg,
@@ -193,6 +199,8 @@ def load_participant_data(iv_modifier=0):
                 "ce_net_short_chg": ce_short_chg - ce_long_chg,
                 "pe_net_short_chg": pe_short_chg - pe_long_chg,
                 "stk_fut_chg": stk_fut_chg,
+                "stk_fut_long_chg": stk_fut_long_chg,
+                "stk_fut_short_chg": stk_fut_short_chg,
                 "stk_ce_long_chg": stk_ce_long_chg,
                 "stk_ce_short_chg": stk_ce_short_chg,
                 "stk_pe_long_chg": stk_pe_long_chg,
@@ -328,6 +336,8 @@ def load_participant_data(iv_modifier=0):
             "weighted_clipped_before_adjustments": weighted_clipped_before_adjustments,
 
             "fii_fut_net_change": fii["fut_chg"],
+            "fii_fut_long_change": fii["fut_long_chg"],
+            "fii_fut_short_change": fii["fut_short_chg"],
             "fii_ce_long_change": fii["ce_long_chg"],
             "fii_ce_short_change": fii["ce_short_chg"],
             "fii_ce_net_short_change": fii["ce_net_short_chg"],
@@ -336,10 +346,14 @@ def load_participant_data(iv_modifier=0):
             "fii_pe_net_short_change": fii["pe_net_short_chg"],
             "fii_raw_score": fii_raw_score,
             "fii_stk_fut_net_change": fii["stk_fut_chg"],
+            "fii_stk_fut_long_change": fii["stk_fut_long_chg"],
+            "fii_stk_fut_short_change": fii["stk_fut_short_chg"],
             "fii_stk_ce_net_change": fii["stk_ce_short_chg"] - fii["stk_ce_long_chg"],
             "fii_stk_pe_net_change": fii["stk_pe_short_chg"] - fii["stk_pe_long_chg"],
 
             "pro_fut_net_change": pro["fut_chg"],
+            "pro_fut_long_change": pro["fut_long_chg"],
+            "pro_fut_short_change": pro["fut_short_chg"],
             "pro_ce_long_change": pro["ce_long_chg"],
             "pro_ce_short_change": pro["ce_short_chg"],
             "pro_ce_net_short_change": pro["ce_net_short_chg"],
@@ -348,10 +362,14 @@ def load_participant_data(iv_modifier=0):
             "pro_pe_net_short_change": pro["pe_net_short_chg"],
             "pro_raw_score": pro_raw_score,
             "pro_stk_fut_net_change": pro["stk_fut_chg"],
+            "pro_stk_fut_long_change": pro["stk_fut_long_chg"],
+            "pro_stk_fut_short_change": pro["stk_fut_short_chg"],
             "pro_stk_ce_net_change": pro["stk_ce_short_chg"] - pro["stk_ce_long_chg"],
             "pro_stk_pe_net_change": pro["stk_pe_short_chg"] - pro["stk_pe_long_chg"],
 
             "dii_fut_net_change": dii["fut_chg"],
+            "dii_fut_long_change": dii["fut_long_chg"],
+            "dii_fut_short_change": dii["fut_short_chg"],
             "dii_ce_long_change": dii["ce_long_chg"],
             "dii_ce_short_change": dii["ce_short_chg"],
             "dii_ce_net_short_change": dii["ce_net_short_chg"],
@@ -360,13 +378,23 @@ def load_participant_data(iv_modifier=0):
             "dii_pe_net_short_change": dii["pe_net_short_chg"],
             "dii_raw_score": dii_raw_score,
             "dii_stk_fut_net_change": dii["stk_fut_chg"],
+            "dii_stk_fut_long_change": dii["stk_fut_long_chg"],
+            "dii_stk_fut_short_change": dii["stk_fut_short_chg"],
             "dii_stk_ce_net_change": dii["stk_ce_short_chg"] - dii["stk_ce_long_chg"],
             "dii_stk_pe_net_change": dii["stk_pe_short_chg"] - dii["stk_pe_long_chg"],
 
             "client_ce_net_buy": client_ce_net_buy,
             "client_pe_net_buy": client_pe_net_buy,
+            "client_ce_long_change": client["ce_long_chg"],
+            "client_ce_short_change": client["ce_short_chg"],
+            "client_pe_long_change": client["pe_long_chg"],
+            "client_pe_short_change": client["pe_short_chg"],
             "client_fut_net_change": client["fut_chg"],
+            "client_fut_long_change": client["fut_long_chg"],
+            "client_fut_short_change": client["fut_short_chg"],
             "client_stk_fut_net_change": client["stk_fut_chg"],
+            "client_stk_fut_long_change": client["stk_fut_long_chg"],
+            "client_stk_fut_short_change": client["stk_fut_short_chg"],
             "client_stk_ce_net_change": client["stk_ce_short_chg"] - client["stk_ce_long_chg"],
             "client_stk_pe_net_change": client["stk_pe_short_chg"] - client["stk_pe_long_chg"],
 
