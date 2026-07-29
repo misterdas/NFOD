@@ -338,19 +338,36 @@
                             <table class="oc-dashboard-table">
                                 <thead>
                                     <tr>
+                                        <th>CE Flow</th>
                                         <th>CE Conviction</th>
                                         <th>Call OI Trend (5D)</th>
                                         <th>Strike</th>
                                         <th>Put OI Trend (5D)</th>
                                         <th>PE Conviction</th>
+                                        <th>PE Flow</th>
                                     </tr>
                                 </thead>
                                 <tbody id="multiday-conviction-body">
                                     <tr>
-                                        <td colspan="5" class="text-center">Loading Multi-Day Conviction Data...</td>
+                                        <td colspan="7" class="text-center">Loading Multi-Day Conviction Data...</td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 4b: Flow Divergence Table -->
+            <section class="oc-table-section" id="flow-divergence-section" style="display:none;">
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h2><i class="fa-solid fa-bolt"></i> Flow Divergence — Strike-Level Conflicts</h2>
+                        <div class="table-card-subtitle">Where institutional flow opposes strike OI movement</div>
+                    </div>
+                    <div class="table-card-body">
+                        <div id="flow-divergence-body" class="flow-divergence-section">
+                            <div class="text-center panel-loading">Analyzing flow divergences...</div>
                         </div>
                     </div>
                 </div>
@@ -377,10 +394,11 @@
                                             <th>LTP</th>
                                             <th>Top Strike</th>
                                             <th>CE ΔOI</th>
+                                            <th>Flow</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-call-writing-body">
-                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -396,10 +414,11 @@
                                             <th>LTP</th>
                                             <th>Top Strike</th>
                                             <th>PE ΔOI</th>
+                                            <th>Flow</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-put-writing-body">
-                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -415,10 +434,11 @@
                                             <th>LTP</th>
                                             <th>Top Strike</th>
                                             <th>CE ΔOI</th>
+                                            <th>Flow</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-call-unwind-body">
-                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -434,10 +454,11 @@
                                             <th>LTP</th>
                                             <th>Top Strike</th>
                                             <th>PE ΔOI</th>
+                                            <th>Flow</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-put-unwind-body">
-                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>

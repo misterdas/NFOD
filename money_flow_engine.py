@@ -487,7 +487,7 @@ def detect_index_rolls(stock_data):
     return results
 
 
-def scan_stock_breadth(stock_data):
+def scan_stock_breadth(stock_data, participant_summary=None):
     """
     Scans all 215 stocks in option chain data to find top 10 market leaders in:
     1. Fresh Call Writing (Operators Capping Upside → Bearish Stocks)
@@ -536,6 +536,35 @@ def scan_stock_breadth(stock_data):
         ce_threshold = max(500, net_ce_oi * 0.05) if net_ce_oi > 0 else 500
         pe_threshold = max(500, net_pe_oi * 0.05) if net_pe_oi > 0 else 500
 
+        # Smart Money Breadth Alignment: does this stock's OI move align with FII macro stance?
+        alignment = "NEUTRAL"
+        if participant_summary:
+            fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
+            fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
+            fii_call_bearish = fii_ce_short > FII_OPT_THRESHOLD
+            fii_call_bullish = fii_ce_short < -FII_OPT_THRESHOLD
+            fii_put_bullish = fii_pe_short > FII_OPT_THRESHOLD
+            fii_put_bearish = fii_pe_short < -FII_OPT_THRESHOLD
+
+            if net_ce_doi > ce_threshold and fii_call_bearish:
+                alignment = "ALIGNED"
+            elif net_ce_doi < -ce_threshold and fii_call_bullish:
+                alignment = "ALIGNED"
+            elif net_pe_doi > pe_threshold and fii_put_bullish:
+                alignment = "ALIGNED"
+            elif net_pe_doi < -pe_threshold and fii_put_bearish:
+                alignment = "ALIGNED"
+            elif net_ce_doi > ce_threshold and fii_call_bullish:
+                alignment = "OPPOSED"
+            elif net_pe_doi > pe_threshold and fii_put_bearish:
+                alignment = "OPPOSED"
+            elif net_ce_doi < -ce_threshold and fii_call_bearish:
+                alignment = "OPPOSED"
+            elif net_pe_doi < -pe_threshold and fii_put_bullish:
+                alignment = "OPPOSED"
+
+        stock_summary["alignment"] = alignment
+
         if net_ce_doi > ce_threshold:
             call_writing.append(stock_summary)
         elif net_ce_doi < -ce_threshold:
@@ -565,6 +594,119 @@ def scan_stock_breadth(stock_data):
     }
 
 
+def detect_flow_divergence(stock_data, participant_summary):
+    """
+    Identifies strikes where institutional flow and strike OI movement diverge,
+    signalling potential traps, squeezes, or conflicting battles.
+    """
+    divergences = []
+    if not participant_summary:
+        return divergences
+
+    fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
+    fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
+
+    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+        if sym not in stock_data:
+            continue
+        raw = stock_data[sym]
+        ltp = raw.get("ltp")
+        strikes = raw.get("strikes", [])
+        if not ltp or not strikes:
+            continue
+        strikes = sorted(strikes, key=lambda x: x["strike"])
+        near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.04]
+
+        for s in near:
+            st = s["strike"]
+            ce_doi = s.get("ce_change_oi", 0)
+            pe_doi = s.get("pe_change_oi", 0)
+
+            # Conflict: Both CE and PE building at same strike (conflicting bets)
+            if ce_doi > 5000 and pe_doi > 5000:
+                divergences.append({
+                    "symbol": sym,
+                    "strike": st,
+                    "type": "CONFLICT_ZONE",
+                    "signal": "CE + PE both building",
+                    "desc": f"Both Calls (+{ce_doi:,}) and Puts (+{pe_doi:,}) building at {st}. Major battle zone — expect high volatility."
+                })
+                continue
+
+            # FII writing calls (bearish macro) but CE is unwinding here (bullish at this strike)
+            if fii_ce_short > FII_OPT_THRESHOLD and ce_doi < -5000:
+                divergences.append({
+                    "symbol": sym,
+                    "strike": st,
+                    "type": "BULLISH_DIVERGENCE",
+                    "signal": "FII bearish but CE unwinding",
+                    "desc": f"FII writing calls ({fii_ce_short:,.0f}) yet CE unwinding at {st} ({ce_doi:,}). Local short squeeze — opposes macro view."
+                })
+                continue
+
+            # FII writing puts (bullish macro) but PE is unwinding here (bearish at this strike)
+            if fii_pe_short > FII_OPT_THRESHOLD and pe_doi < -5000:
+                divergences.append({
+                    "symbol": sym,
+                    "strike": st,
+                    "type": "BEARISH_DIVERGENCE",
+                    "signal": "FII bullish but PE unwinding",
+                    "desc": f"FII writing puts ({fii_pe_short:,.0f}) yet PE unwinding at {st} ({pe_doi:,}). Local floor breakdown — opposes macro view."
+                })
+                continue
+
+            # Price above strike but CE building (resistance getting stronger against the trend)
+            if ltp > st and ce_doi > 8000:
+                divergences.append({
+                    "symbol": sym,
+                    "strike": st,
+                    "type": "RESISTANCE_BUILDING",
+                    "signal": "Price above yet CE building",
+                    "desc": f"LTP {ltp:,.1f} > {st} but CE OI building (+{ce_doi:,}). Smart money adding resistance above — rally cap imminent?"
+                })
+                continue
+
+            # Price below strike but PE unwinding (support fading below the price)
+            if ltp < st and pe_doi < -5000:
+                divergences.append({
+                    "symbol": sym,
+                    "strike": st,
+                    "type": "FLOOR_WEAKENING",
+                    "signal": "Price below yet PE unwinding",
+                    "desc": f"LTP {ltp:,.1f} < {st} but PE unwinding ({pe_doi:,}). Support below price fading — further downside risk."
+                })
+                continue
+
+    divergences = divergences[:8]
+    return divergences
+
+
+def _attribute_ce_flow(ce_doi, fii_ce_short, client_ce_buy):
+    """Heuristic attribution for who is behind CE OI change at a strike."""
+    if ce_doi > 5000 and fii_ce_short > FII_OPT_THRESHOLD:
+        return "FII WRITING"
+    elif ce_doi > 5000 and client_ce_buy > RETAIL_TRAP_THRESHOLD:
+        return "RETAIL BUYING"
+    elif ce_doi > 5000:
+        return "WRITING"
+    elif ce_doi < -5000:
+        return "COVERING"
+    return "--"
+
+
+def _attribute_pe_flow(pe_doi, fii_pe_short, client_pe_buy):
+    """Heuristic attribution for who is behind PE OI change at a strike."""
+    if pe_doi > 5000 and fii_pe_short > FII_OPT_THRESHOLD:
+        return "FII FLOOR"
+    elif pe_doi > 5000 and client_pe_buy > RETAIL_TRAP_THRESHOLD:
+        return "RETAIL HEDGING"
+    elif pe_doi > 5000:
+        return "WRITING"
+    elif pe_doi < -5000:
+        return "UNWINDING"
+    return "--"
+
+
 def cleanup_old_history(history_dir, max_days=30):
     """Removes archived JSON files older than max_days in docs/oc_history/."""
     if not os.path.exists(history_dir):
@@ -581,7 +723,7 @@ def cleanup_old_history(history_dir, max_days=30):
             pass
 
 
-def build_multiday_conviction(history_dir):
+def build_multiday_conviction(history_dir, participant_summary=None):
     """
     Reads archived daily OC JSON files from docs/oc_history/
     to compute multi-day strike conviction trends for NIFTY and BANKNIFTY.
@@ -688,6 +830,43 @@ def build_multiday_conviction(history_dir):
             item["pe_trend_delta"] = pe_diff
             item["pe_conviction"] = "SOLID FLOOR" if pe_diff > hard_res_th else "PE BUILDING" if pe_diff > building_th else "PE UNWINDING" if pe_diff < -unwind_th else "STABLE"
 
+            # Stance-to-Strike Alignment + Flow Attribution
+            if participant_summary:
+                fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
+                fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
+                client_ce_buy = participant_summary.get("client_ce_net_buy", 0)
+                client_pe_buy = participant_summary.get("client_pe_net_buy", 0)
+
+                fii_call_bearish = fii_ce_short > FII_OPT_THRESHOLD
+                fii_call_bullish = fii_ce_short < -FII_OPT_THRESHOLD
+                fii_put_bullish = fii_pe_short > FII_OPT_THRESHOLD
+                fii_put_bearish = fii_pe_short < -FII_OPT_THRESHOLD
+
+                # CE alignment: does strike-level CE change move with or against FII macro?
+                if (fii_call_bearish and ce_diff > building_th) or (fii_call_bullish and ce_diff < -unwind_th):
+                    item["ce_alignment"] = "ALIGNED"
+                elif (fii_call_bullish and ce_diff > building_th) or (fii_call_bearish and ce_diff < -unwind_th):
+                    item["ce_alignment"] = "OPPOSED"
+                else:
+                    item["ce_alignment"] = "NEUTRAL"
+
+                # PE alignment: does strike-level PE change move with or against FII macro?
+                if (fii_put_bullish and pe_diff > building_th) or (fii_put_bearish and pe_diff < -unwind_th):
+                    item["pe_alignment"] = "ALIGNED"
+                elif (fii_put_bearish and pe_diff > building_th) or (fii_put_bullish and pe_diff < -unwind_th):
+                    item["pe_alignment"] = "OPPOSED"
+                else:
+                    item["pe_alignment"] = "NEUTRAL"
+
+                # Flow attribution — heuristic who is behind this OI move
+                item["ce_flow_attr"] = _attribute_ce_flow(ce_diff, fii_ce_short, client_ce_buy)
+                item["pe_flow_attr"] = _attribute_pe_flow(pe_diff, fii_pe_short, client_pe_buy)
+            else:
+                item["ce_alignment"] = "NEUTRAL"
+                item["pe_alignment"] = "NEUTRAL"
+                item["ce_flow_attr"] = "--"
+                item["pe_flow_attr"] = "--"
+
         conviction[sym] = {
             "dates": dates,
             "strikes": sorted_strikes
@@ -712,8 +891,9 @@ def run_engine():
 
     participant_summary = load_participant_data()
     index_rolls = detect_index_rolls(stocks)
-    stock_breadth = scan_stock_breadth(stocks)
-    conviction_trends = build_multiday_conviction(HISTORY_DIR)
+    stock_breadth = scan_stock_breadth(stocks, participant_summary)
+    conviction_trends = build_multiday_conviction(HISTORY_DIR, participant_summary)
+    flow_divergence = detect_flow_divergence(stocks, participant_summary)
 
     score_breakdown = {}
     if participant_summary:
@@ -740,6 +920,7 @@ def run_engine():
         "index_rolls": index_rolls,
         "stock_breadth": stock_breadth,
         "conviction_trends": conviction_trends,
+        "flow_divergence": flow_divergence,
         "stock_count": len(stocks),
     }
 
@@ -752,6 +933,7 @@ def run_engine():
     print(f"   Bias: {verdict_payload['executive_summary']['bias_label']}")
     print(f"   Index Rolls: {list(index_rolls.keys())}")
     print(f"   Stock Breadth: Call Write={len(stock_breadth['call_writing_bearish'])}, Put Write={len(stock_breadth['put_writing_bullish'])}")
+    print(f"   Flow Divergences: {len(flow_divergence)}")
 
 
 if __name__ == "__main__":

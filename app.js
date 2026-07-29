@@ -491,6 +491,15 @@ function buildConvictionTag(type) {
 }
 
 /**
+ * Returns an alignment badge HTML string for Smart Money Breadth / Conviction alignment.
+ */
+function alignmentBadge(align) {
+    const a = (align || 'NEUTRAL').toUpperCase();
+    const cls = a === 'ALIGNED' ? 'aligned' : a === 'OPPOSED' ? 'opposed' : 'neutral';
+    return `<span class="alignment-badge ${cls}">${a}</span>`;
+}
+
+/**
  * Returns a stance badge HTML string based on the action description.
  * Maps keywords in the action to bullish/bearish/neutral.
  */
@@ -587,11 +596,14 @@ async function loadMoneyFlowView() {
         // Render Panel 5: Stock Options Breadth
         renderStockBreadth(moneyFlowData.stock_breadth || {});
 
+        // Render Panel 4b: Flow Divergence
+        renderFlowDivergence(moneyFlowData.flow_divergence || []);
+
     } catch (err) {
         showVerdictError('Error fetching verdict data: ' + err.message, true);
         // Show failure in all panels
-        const panels = ['verdict-fii-stance', 'verdict-index-rolls', 'multiday-conviction-body', 'breadth-call-writing-body', 'breadth-put-writing-body'];
-        panels.forEach(id => {
+        const errPanels = ['verdict-fii-stance', 'verdict-index-rolls', 'multiday-conviction-body', 'breadth-call-writing-body', 'breadth-put-writing-body', 'breadth-call-unwind-body', 'breadth-put-unwind-body'];
+        errPanels.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerHTML = '<div style="color:var(--text-muted);padding:12px;text-align:center;">Failed to load data. Please try again.</div>';
         });
@@ -781,7 +793,7 @@ function renderMultiDayConviction(trends, symbol) {
     const sym = symbol || 'NIFTY';
     const trend = trends[sym];
     if (!trend || !trend.strikes || trend.strikes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
         return;
     }
 
@@ -794,14 +806,20 @@ function renderMultiDayConviction(trends, symbol) {
     tbody.innerHTML = trend.strikes.map(s => {
         const ceTag = buildConvictionTag(s.ce_conviction);
         const peTag = buildConvictionTag(s.pe_conviction);
+        const ceAlign = alignmentBadge(s.ce_alignment);
+        const peAlign = alignmentBadge(s.pe_alignment);
+        const ceAttr = s.ce_flow_attr && s.ce_flow_attr !== '--' ? `<span class="flow-attr">${s.ce_flow_attr}</span>` : '';
+        const peAttr = s.pe_flow_attr && s.pe_flow_attr !== '--' ? `<span class="flow-attr">${s.pe_flow_attr}</span>` : '';
 
         return `
             <tr>
+                <td>${ceAlign}${ceAttr}</td>
                 <td>${ceTag}</td>
                 <td class="${s.ce_trend_delta > 0 ? 'pos-red' : s.ce_trend_delta < 0 ? 'pos-green' : ''} font-mono">${s.ce_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.ce_trend_delta)}</td>
                 <td style="font-weight:800; color:#38bdf8;">${s.strike.toLocaleString('en-IN')}</td>
                 <td class="${s.pe_trend_delta > 0 ? 'pos-green' : s.pe_trend_delta < 0 ? 'pos-red' : ''} font-mono">${s.pe_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.pe_trend_delta)}</td>
                 <td>${peTag}</td>
+                <td>${peAlign}${peAttr}</td>
             </tr>
         `;
     }).join('');
@@ -818,8 +836,10 @@ function renderStockBreadth(breadth) {
     const callUnwindList = breadth.call_unwinding_bullish || [];
     const putUnwindList = breadth.put_unwinding_bearish || [];
 
+    const alignBadge = (s) => alignmentBadge(s.alignment);
+
     if (callList.length === 0) {
-        callBody.innerHTML = '<tr><td colspan="4" class="text-center">No significant call writing today.</td></tr>';
+        callBody.innerHTML = '<tr><td colspan="5" class="text-center">No significant call writing today.</td></tr>';
     } else {
         callBody.innerHTML = callList.map(s => `
             <tr>
@@ -827,12 +847,13 @@ function renderStockBreadth(breadth) {
                 <td>${(s.ltp ?? 0).toLocaleString('en-IN')}</td>
                 <td>${(s.top_ce_write_strike ?? 0).toLocaleString('en-IN')} CE</td>
                 <td class="pos-red">+${formatIndianNum(s.top_ce_write_doi || 0)}</td>
+                <td>${alignBadge(s)}</td>
             </tr>
         `).join('');
     }
 
     if (putList.length === 0) {
-        putBody.innerHTML = '<tr><td colspan="4" class="text-center">No significant put writing today.</td></tr>';
+        putBody.innerHTML = '<tr><td colspan="5" class="text-center">No significant put writing today.</td></tr>';
     } else {
         putBody.innerHTML = putList.map(s => `
             <tr>
@@ -840,6 +861,7 @@ function renderStockBreadth(breadth) {
                 <td>${(s.ltp ?? 0).toLocaleString('en-IN')}</td>
                 <td>${(s.top_pe_write_strike ?? 0).toLocaleString('en-IN')} PE</td>
                 <td class="pos-green">+${formatIndianNum(s.top_pe_write_doi || 0)}</td>
+                <td>${alignBadge(s)}</td>
             </tr>
         `).join('');
     }
@@ -847,7 +869,7 @@ function renderStockBreadth(breadth) {
     // Call Unwinding table
     if (!callUnwindBody) return;
     if (callUnwindList.length === 0) {
-        callUnwindBody.innerHTML = '<tr><td colspan="4" class="text-center">No significant call unwinding today.</td></tr>';
+        callUnwindBody.innerHTML = '<tr><td colspan="5" class="text-center">No significant call unwinding today.</td></tr>';
     } else {
         callUnwindBody.innerHTML = callUnwindList.map(s => `
             <tr>
@@ -855,6 +877,7 @@ function renderStockBreadth(breadth) {
                 <td>${(s.ltp ?? 0).toLocaleString('en-IN')}</td>
                 <td>${(s.top_ce_unwind_strike ?? 0).toLocaleString('en-IN')} CE</td>
                 <td class="pos-green">${formatIndianNum(s.top_ce_unwind_doi || 0)}</td>
+                <td>${alignBadge(s)}</td>
             </tr>
         `).join('');
     }
@@ -862,7 +885,7 @@ function renderStockBreadth(breadth) {
     // Put Unwinding table
     if (!putUnwindBody) return;
     if (putUnwindList.length === 0) {
-        putUnwindBody.innerHTML = '<tr><td colspan="4" class="text-center">No significant put unwinding today.</td></tr>';
+        putUnwindBody.innerHTML = '<tr><td colspan="5" class="text-center">No significant put unwinding today.</td></tr>';
     } else {
         putUnwindBody.innerHTML = putUnwindList.map(s => `
             <tr>
@@ -870,6 +893,7 @@ function renderStockBreadth(breadth) {
                 <td>${(s.ltp ?? 0).toLocaleString('en-IN')}</td>
                 <td>${(s.top_pe_unwind_strike ?? 0).toLocaleString('en-IN')} PE</td>
                 <td class="pos-red">${formatIndianNum(s.top_pe_unwind_doi || 0)}</td>
+                <td>${alignBadge(s)}</td>
             </tr>
         `).join('');
     }
@@ -897,6 +921,33 @@ function showVerdictError(msg, showRetry) {
             banner.appendChild(btn);
         }
     }
+}
+
+function renderFlowDivergence(divergence) {
+    const container = document.getElementById('flow-divergence-body');
+    const section = document.getElementById('flow-divergence-section');
+    if (!container || !section) return;
+
+    if (!divergence || divergence.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = '<div class="flow-divergence-list">' +
+        divergence.map(d => {
+            const typeKey = (d.type || 'CONFLICT_ZONE').toLowerCase().replace(/\s+/g, '-');
+            const strikeStr = d.strike != null ? d.strike.toLocaleString('en-IN') : '--';
+            return `
+                <div class="flow-divergence-item">
+                    <span class="divg-symbol">${d.symbol || '--'}</span>
+                    <span class="divg-strike">${strikeStr}</span>
+                    <span class="divg-badge ${typeKey}">${d.type || 'CONFLICT'}</span>
+                    <span class="divg-desc">${d.desc || ''}</span>
+                </div>
+            `;
+        }).join('') +
+        '</div>';
 }
 
 // ─── Dedicated Charts View ───
