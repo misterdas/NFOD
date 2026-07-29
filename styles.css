@@ -216,7 +216,7 @@ body.theme-light::before {
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-primary, #0f0f1a);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -1316,21 +1316,14 @@ body.theme-dark .block-header {
 
 .table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 0;
-}
-
-.table-responsive::-webkit-scrollbar {
-  height: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-  background: var(--border-color-strong);
-  border-radius: 10px;
 }
 
 /* ─── OC Dashboard Table ─── */
 .oc-dashboard-table {
   width: 100%;
+  min-width: 700px;
   border-collapse: collapse;
   font-size: 12px;
 
@@ -1778,7 +1771,7 @@ body.theme-dark .block-header {
   /* OC tables */
   .oc-dashboard-table {
     font-size: 10px;
-    min-width: 380px;
+    min-width: 700px;
   }
 
   .oc-dashboard-table th {
@@ -2140,7 +2133,7 @@ body.theme-dark .block-header {
 /* Breadth Grid (summary-block children) */
 .breadth-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
   padding: 14px;
   background: var(--bg-primary);

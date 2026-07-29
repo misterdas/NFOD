@@ -119,6 +119,9 @@ async function initDashboard() {
         // Render Dashboard
         renderDashboardForCurrentDate();
 
+        // Load participant summary for Gross OI takeaways (non-blocking)
+        loadParticipantSummaryForTakeaways();
+
         // Setup Event Listeners
         setupEventListeners();
 
@@ -469,6 +472,7 @@ function setupEventListeners() {
 // Global state for money flow data
 let moneyFlowData = null;
 let moneyFlowLoadInProgress = false;
+let participantSummaryData = null; // for Gross OI takeaways
 
 // ─── Money Flow Helpers ───
 
@@ -592,9 +596,6 @@ async function loadMoneyFlowView() {
         // Render Panel 2: FII & Pro Stance
         renderFIIStance(moneyFlowData.participant_summary || {});
 
-        // Render Panel 2b: Commentary
-        renderCommentary(moneyFlowData.participant_summary || {});
-
         // Render Panel 3: Index Roll Tracker, Magnet Strike & Traps
         renderIndexRolls(moneyFlowData.index_rolls || {});
 
@@ -618,6 +619,142 @@ async function loadMoneyFlowView() {
     } finally {
         moneyFlowLoadInProgress = false;
     }
+}
+
+/**
+ * Load participant_summary from money_flow_data.json for Gross OI takeaways.
+ */
+async function loadParticipantSummaryForTakeaways() {
+    try {
+        const res = await fetch('docs/money_flow_data.json');
+        if (!res.ok) return;
+        const data = await res.json();
+        participantSummaryData = data.participant_summary || null;
+        renderGrossOITakeaways();
+    } catch (e) {
+        // Silently fail — takeaways are non-critical
+    }
+}
+
+/**
+ * Render Key Takeaways into Gross OI page using participant_summary data.
+ */
+function renderGrossOITakeaways() {
+    const container = document.getElementById('gross-oi-takeaways');
+    const list = document.getElementById('gross-oi-takeaways-list');
+    if (!container || !list) return;
+
+    const ps = participantSummaryData;
+    if (!ps || Object.keys(ps).length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    const fmt = v => formatIndianNum(Math.abs(v));
+
+    // ── Expiry detection ──
+    const ds = ps.date || '';
+    let expiryLabel = '';
+    let expiryDays = null;
+    if (ds) {
+        const p = ds.split('-');
+        if (p.length === 3) {
+            const d = new Date(+('20' + p[2]), +p[1] - 1, +p[0]);
+            const nm = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+            const lt = new Date(nm);
+            lt.setDate(lt.getDate() - ((nm.getDay() - 2 + 7) % 7 || 7));
+            expiryDays = Math.round((lt - d) / 86400000);
+            if (expiryDays === 0) expiryLabel = '| Monthly Expiry Today';
+            else if (expiryDays === 1) expiryLabel = '| Monthly Expiry Tomorrow';
+            else if (expiryDays === 2) expiryLabel = '| Monthly Expiry in 2 Days';
+            else if (expiryDays >= 2 && expiryDays <= 5) expiryLabel = `| Monthly Expiry in ${expiryDays} Days`;
+            else if (expiryDays === -1) expiryLabel = '| Post Monthly Expiry';
+            else if (expiryDays <= -2 && expiryDays >= -7) expiryLabel = `| ${Math.abs(expiryDays)} Days Post Monthly Expiry`;
+        }
+    }
+
+    // ── Build takeaways ──
+    const takeaways = [];
+    const score = ps.smart_money_score || 0;
+
+    // Directional
+    const dirEmoji = score >= 15 ? '🟢' : score <= -15 ? '🔴' : '🟡';
+    const dirLabel = score >= 40 ? 'Strongly Bullish' : score >= 15 ? 'Bullish' : score <= -40 ? 'Strongly Bearish' : score <= -15 ? 'Bearish' : 'Mixed / Neutral';
+    takeaways.push(`${dirEmoji} <strong>${dirLabel}</strong> — Smart Money Score: <strong class="${score >= 0 ? 'pos-green' : 'pos-red'}">${score > 0 ? '+' : ''}${score}</strong>`);
+
+    const sessionLabel = ps.date ? `Trading Session: ${ps.date} ${expiryLabel}` : '';
+    if (sessionLabel) takeaways.push(`📅 ${sessionLabel}`);
+
+    // FII actions
+    const fiiFut = ps.fii_fut_net_change || 0;
+    const fiiCeL = ps.fii_ce_long_change || 0;
+    const fiiCeS = ps.fii_ce_short_change || 0;
+    const fiiPeS = ps.fii_pe_short_change || 0;
+    const fiiPeL = ps.fii_pe_long_change || 0;
+    const fiiStkF = ps.fii_stk_fut_net_change || 0;
+    const fiiActs = [];
+    if (fiiFut > 5000) fiiActs.push(`bought ${fmt(fiiFut)} Index Futures`);
+    else if (fiiFut < -5000) fiiActs.push(`sold ${fmt(fiiFut)} Index Futures`);
+    if (fiiCeL > 20000) fiiActs.push(`bought ${fmt(fiiCeL)} Calls`);
+    if (fiiCeS > 20000) fiiActs.push(`wrote ${fmt(fiiCeS)} Calls`);
+    if (fiiPeS > 20000) fiiActs.push(`wrote ${fmt(fiiPeS)} Puts`);
+    if (fiiPeL > 20000) fiiActs.push(`bought ${fmt(fiiPeL)} Puts (hedge)`);
+    if (fiiStkF > 10000) fiiActs.push(`bought ${fmt(fiiStkF)} Stock Futs`);
+    else if (fiiStkF < -10000) fiiActs.push(`sold ${fmt(fiiStkF)} Stock Futs`);
+    if (fiiActs.length) {
+        const bCnt = [fiiFut > 0, fiiCeL > 10000, fiiPeS > 10000, fiiStkF > 10000].filter(Boolean).length;
+        const beCnt = [fiiFut < 0, fiiCeS > 10000, fiiPeL > 10000, fiiStkF < -10000].filter(Boolean).length;
+        const tag = bCnt > beCnt + 1 ? '🟢' : beCnt > bCnt + 1 ? '🔴' : '🟡';
+        takeaways.push(`${tag} <strong>FII:</strong> ${fiiActs.join('; ')}.`);
+        if (Math.abs(ps.fii_fut_net_carried || 0) > 100000) {
+            const nc = ps.fii_fut_net_carried;
+            takeaways.push(`<span class="text-muted">📌 FII net carried: ${nc < 0 ? 'SHORT' : 'LONG'} ${fmt(nc)}</span>`);
+        }
+    }
+
+    // Pro actions
+    const proFut = ps.pro_fut_net_change || 0;
+    const proCeL = ps.pro_ce_long_change || 0;
+    const proPeS = ps.pro_pe_short_change || 0;
+    const proActs = [];
+    if (proFut > 5000) proActs.push(`bought ${fmt(proFut)} Index Futures`);
+    else if (proFut < -5000) proActs.push(`sold ${fmt(proFut)} Index Futures`);
+    if (proCeL > 20000) proActs.push(`bought ${fmt(proCeL)} Calls`);
+    if (proPeS > 20000) proActs.push(`wrote ${fmt(proPeS)} Puts`);
+    if (proActs.length) takeaways.push(`🔥 <strong>Pros:</strong> ${proActs.join('; ')}.`);
+
+    // Retail actions
+    const clientFut = ps.client_fut_net_change || 0;
+    const clientCeNB = ps.client_ce_net_buy || 0;
+    const clientPeNB = ps.client_pe_net_buy || 0;
+    const cliActs = [];
+    if (clientFut > 5000) cliActs.push(`bought ${fmt(clientFut)} Index Futures`);
+    else if (clientFut < -5000) cliActs.push(`sold ${fmt(clientFut)} Index Futures`);
+    if (clientCeNB > 20000) cliActs.push(`bought ${fmt(clientCeNB)} Calls`);
+    else if (clientCeNB < -20000) cliActs.push(`sold ${fmt(clientCeNB)} Calls`);
+    if (clientPeNB > 20000) cliActs.push(`bought ${fmt(clientPeNB)} Puts`);
+    else if (clientPeNB < -20000) cliActs.push(`sold ${fmt(clientPeNB)} Puts`);
+    if (cliActs.length) takeaways.push(`👥 <strong>Retail:</strong> ${cliActs.join('; ')}.`);
+
+    // FII-Pro alignment
+    if (fiiFut > 0 && proFut > 0) takeaways.push('🟢 FII + Pros aligned bullish.');
+    else if (fiiFut < 0 && proFut < 0) takeaways.push('🔴 FII + Pros aligned bearish.');
+    else if (fiiFut > 0 && proFut < -3000) takeaways.push('🟡 FII-Pro divergence — caution.');
+    else if (fiiFut < 0 && proFut > 3000) takeaways.push('🟡 Pro-FII tug of war — elevated volatility.');
+
+    // Retail trap / confirmation
+    const trap = ps.retail_trap_alarm;
+    if (trap) takeaways.push(`🔴 ${trap}`);
+    else if (ps.retail_confirmation_message) takeaways.push(`🟢 ${ps.retail_confirmation_message}`);
+
+    // Expiry context
+    if (expiryDays === 0) takeaways.push('⚠️ Monthly Expiry Today — activity reflects settlement/rollover.');
+    else if (expiryDays === 1) takeaways.push('⚠️ Monthly Expiry Tomorrow — rollover may distort signals.');
+    else if (expiryDays >= 2 && expiryDays <= 5) takeaways.push(`⚠️ Monthly Expiry in ${expiryDays} days — watch for rollover.`);
+    else if (expiryDays >= -2 && expiryDays < 0) takeaways.push('📌 Post Monthly Expiry — new series building.');
+
+    list.innerHTML = takeaways.map(t => `<div class="commentary-takeaway-item">${t}</div>`).join('');
+    container.style.display = 'block';
 }
 
 function renderExecutiveVerdict(exec) {
@@ -777,53 +914,6 @@ function renderCommentary(ps) {
         }
     }
 
-    // ── Helper: format a value with color ──
-    function val(v) {
-        const c = v > 0 ? 'pos-green' : 'pos-red';
-        return `<span class="${c}">${v > 0 ? '+' : ''}${formatIndianNum(v)}</span>`;
-    }
-
-    // ── Build a section (rows of label: value) ──
-    function section(rows) {
-        return rows.filter(r => r).map(r =>
-            `<div class="participant-data-row"><span class="label">${r.label}</span><span class="value ${r.cls || ''}">${r.html}</span></div>`
-        ).join('');
-    }
-
-    // ── Participant data rows ──
-    function pRows(prefix, showOpts) {
-        const rows = [];
-        const fut = ps[prefix + 'fut_net_change'] || 0;
-        if (fut) rows.push({ label: 'Index Futures', html: val(fut) + (fut > 0 ? ' <i class="fa-solid fa-arrow-trend-up"></i>' : ' <i class="fa-solid fa-arrow-trend-down"></i>') });
-
-        const ceL = ps[prefix + 'ce_long_change'] || 0;
-        const ceS = ps[prefix + 'ce_short_change'] || 0;
-        const netIdxCe = ceS - ceL; // +ve = writing, -ve = covering
-        if (netIdxCe) {
-            const d = -netIdxCe; // flip to "net bought"
-            rows.push({ label: 'Index Calls', html: val(d) + (d > 0 ? ' <i class="fa-solid fa-up-long"></i>' : ' <i class="fa-solid fa-down-long"></i>') });
-        }
-
-        const peL = ps[prefix + 'pe_long_change'] || 0;
-        const peS = ps[prefix + 'pe_short_change'] || 0;
-        const netIdxPe = peS - peL;
-        if (netIdxPe) {
-            const d = -netIdxPe; // flip
-            rows.push({ label: 'Index Puts', html: val(d) + (d < 0 ? ' <i class="fa-solid fa-shield-halved"></i>' : '') });
-        }
-
-        const stkF = ps[prefix + 'stk_fut_net_change'] || 0;
-        if (stkF) rows.push({ label: 'Stock Futures', html: val(stkF) });
-
-        const stkCe = ps[prefix + 'stk_ce_net_change'] || 0;
-        if (stkCe) rows.push({ label: 'Stock Calls', html: val(-stkCe) }); // flip: negative = net bought
-
-        const stkPe = ps[prefix + 'stk_pe_net_change'] || 0;
-        if (stkPe) rows.push({ label: 'Stock Puts', html: val(-stkPe) });
-
-        return rows;
-    }
-
     // ── Generate takeaway items ──
     const takeaways = [];
     const score = ps.smart_money_score || 0;
@@ -901,31 +991,11 @@ function renderCommentary(ps) {
     else if (expiryDays >= 2 && expiryDays <= 5) takeaways.push(`⚠️ Monthly Expiry in ${expiryDays} days — watch for rollover.`);
     else if (expiryDays >= -2 && expiryDays < 0) takeaways.push('📌 Post Monthly Expiry — new series building.');
 
-    // ── Build HTML ──
-    const fiiRows = pRows('fii_');
-    const proRows = pRows('pro_');
-    const diiRows = pRows('dii_');
-    const cliRows = pRows('client_');
-
-    function panelCard(title, icon, sectionClass, rows) {
-        if (!rows.length) return '';
-        return `
-            <div class="commentary-participant">
-                <div class="commentary-participant-header ${sectionClass}"><i class="${icon}"></i> ${title}</div>
-                <div class="commentary-participant-rows">${section(rows)}</div>
-            </div>`;
-    }
-
+    // ── Build HTML (without participant tables — moved to Gross OI page) ──
     let html = `
         <div class="commentary-header">
             <div class="commentary-date">Trading Session: ${ps.date || '--'} ${expiryLabel}</div>
             <div class="commentary-sentiment">Institutional Verdict: <span class="${score >= 0 ? 'pos-green' : 'pos-red'}">${ps.bias_label || 'NEUTRAL'}</span> · Score: <strong>${score > 0 ? '+' : ''}${score}</strong></div>
-        </div>
-        <div class="commentary-grid">
-            ${panelCard('FIIs (Smart Money)', 'fa-solid fa-building-columns', 'commentary-header-fii', fiiRows)}
-            ${panelCard('DIIs (Domestic)', 'fa-solid fa-landmark', 'commentary-header-dii', diiRows)}
-            ${panelCard('Proprietary Traders', 'fa-solid fa-user-ninja', 'commentary-header-pro', proRows)}
-            ${panelCard('Clients (Retail)', 'fa-solid fa-users', 'commentary-header-client', cliRows)}
         </div>
         <div class="commentary-takeaways">
             <div class="commentary-takeaways-title"><i class="fa-solid fa-list-check"></i> Key Takeaways</div>

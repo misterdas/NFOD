@@ -268,6 +268,14 @@
                 </div>
 
             </main>
+
+            <!-- Key Takeaways (from Smart Money Analysis) -->
+            <div id="gross-oi-takeaways" style="display:none; margin-top:14px;">
+                <div class="commentary-takeaways">
+                    <div class="commentary-takeaways-title"><i class="fa-solid fa-list-check"></i> Key Takeaways</div>
+                    <div class="commentary-takeaways-list" id="gross-oi-takeaways-list"></div>
+                </div>
+            </div>
         </div><!-- End view-participant-gross -->
 
         <!-- Container 2: Institutional Verdict & Market Breadth View -->
@@ -322,16 +330,6 @@
                 </div>
             </div>
 
-            <!-- Panel 3b: FII-DII Smart Money Analysis Commentary -->
-            <div class="verdict-panel-card" id="commentary-card" style="display:none;">
-                <h3 class="panel-heading">
-                    <i class="fa-solid fa-newspaper text-orange"></i> FII-DII & Smart Money Analysis Commentary
-                </h3>
-                <div id="verdict-commentary" class="panel-body">
-                    <div class="text-center panel-loading">Building commentary...</div>
-                </div>
-            </div>
-
             <!-- Panel 4: Multi-Day Strike Conviction Matrix -->
             <section class="oc-table-section">
                 <div class="table-card">
@@ -344,8 +342,8 @@
                             <button class="conviction-tab active" data-symbol="NIFTY">NIFTY</button>
                             <button class="conviction-tab" data-symbol="BANKNIFTY">BANKNIFTY</button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="oc-dashboard-table">
+                        <div class="table-scroll-wrapper">
+                            <table class="unified-table">
                                 <thead>
                                     <tr>
                                         <th>CE Flow</th>
