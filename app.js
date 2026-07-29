@@ -1074,7 +1074,7 @@ function renderMultiDayConviction(trends, symbol) {
     const sym = symbol || 'NIFTY';
     const trend = trends[sym];
     if (!trend || !trend.strikes || trend.strikes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
         return;
     }
 
