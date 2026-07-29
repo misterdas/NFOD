@@ -1,46 +1,46 @@
 {
-  "timestamp": "2026-07-28T15:09:39.274312+00:00",
+  "timestamp": "2026-07-29T16:01:00.276694+00:00",
   "executive_summary": {
-    "bias_label": "HIGH CONFIDENCE BEARISH",
-    "smart_money_score": -55.0,
-    "action_desc": "FIIs are adding heavy Call shorts while unwinding Put support."
+    "bias_label": "HIGH CONFIDENCE BULLISH",
+    "smart_money_score": 100,
+    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors."
   },
   "participant_summary": {
-    "date": "28-07-2026",
-    "prev_date": "27-07-2026",
-    "smart_money_score": -55.0,
-    "bias_label": "HIGH CONFIDENCE BEARISH",
-    "action_desc": "FIIs are adding heavy Call shorts while unwinding Put support.",
-    "retail_trap_alarm": "\u26a0\ufe0f RETAIL CALL TRAP: Retail buying calls while FIIs aggressively write calls.",
-    "fii_fut_net_change": 61324.0,
-    "fii_ce_long_change": -388990.0,
-    "fii_ce_short_change": -366981.0,
-    "fii_ce_net_short_change": 22009.0,
-    "fii_pe_long_change": -391322.0,
-    "fii_pe_short_change": -431173.0,
-    "fii_pe_net_short_change": -39851.0,
-    "fii_raw_score": -25,
-    "pro_fut_net_change": -34770.0,
-    "pro_ce_long_change": -701443.0,
-    "pro_ce_short_change": -605285.0,
-    "pro_ce_net_short_change": 96158.0,
-    "pro_pe_long_change": -716833.0,
-    "pro_pe_short_change": -658395.0,
-    "pro_pe_net_short_change": 58438.0,
-    "pro_raw_score": -25,
-    "dii_fut_net_change": -10614.0,
-    "dii_ce_long_change": -4410.0,
-    "dii_ce_short_change": -155.0,
-    "dii_ce_net_short_change": 4255.0,
-    "dii_pe_long_change": -12544.0,
-    "dii_pe_short_change": -100.0,
-    "dii_pe_net_short_change": 12444.0,
+    "date": "29-07-2026",
+    "prev_date": "28-07-2026",
+    "smart_money_score": 100,
+    "bias_label": "HIGH CONFIDENCE BULLISH",
+    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+    "retail_trap_alarm": "\ud83d\ude80 RETAIL PUT TRAP: Retail buying puts while FIIs aggressively write puts.",
+    "fii_fut_net_change": 10783.0,
+    "fii_ce_long_change": 97478.0,
+    "fii_ce_short_change": 8144.0,
+    "fii_ce_net_short_change": -89334.0,
+    "fii_pe_long_change": 44502.0,
+    "fii_pe_short_change": 89226.0,
+    "fii_pe_net_short_change": 44724.0,
+    "fii_raw_score": 75,
+    "pro_fut_net_change": 7359.0,
+    "pro_ce_long_change": 183106.0,
+    "pro_ce_short_change": 93092.0,
+    "pro_ce_net_short_change": -90014.0,
+    "pro_pe_long_change": 185242.0,
+    "pro_pe_short_change": 285489.0,
+    "pro_pe_net_short_change": 100247.0,
+    "pro_raw_score": 75,
+    "dii_fut_net_change": -279.0,
+    "dii_ce_long_change": 1050.0,
+    "dii_ce_short_change": 0.0,
+    "dii_ce_net_short_change": -1050.0,
+    "dii_pe_long_change": 7837.0,
+    "dii_pe_short_change": 0.0,
+    "dii_pe_net_short_change": -7837.0,
     "dii_raw_score": 0,
-    "client_ce_net_buy": 122423.0,
-    "client_pe_net_buy": 31031.0,
-    "fii_fut_net_carried": -205601.0,
-    "pro_fut_net_carried": -2123.0,
-    "dii_fut_net_carried": 54471.0,
+    "client_ce_net_buy": -180398.0,
+    "client_pe_net_buy": 137134.0,
+    "fii_fut_net_carried": -194818.0,
+    "pro_fut_net_carried": 5236.0,
+    "dii_fut_net_carried": 54192.0,
     "weights": {
       "fii": 1.0,
       "pro": 0.6,
@@ -50,501 +50,493 @@
   },
   "index_rolls": {
     "NIFTY": {
-      "ltp": 23985.35,
-      "expiry": "28-Jul-2026",
-      "max_pain": 24000,
-      "magnet_strike": 24000.0,
-      "expiry_range": "23,900 \u2013 24,050",
-      "pcr_oi": 0.8999411824049734,
-      "pcr_doi": -1.0168860239822408,
+      "ltp": 24250.2,
+      "expiry": "04-Aug-2026",
+      "max_pain": 24200,
+      "magnet_strike": 24350.0,
+      "expiry_range": "23,950 \u2013 25,050",
+      "pcr_oi": 1.0154034234766727,
+      "pcr_doi": 1.7307024475318824,
       "divergence": "NEUTRAL",
-      "resistance_wall": 24000,
-      "fresh_resistance": 24000,
-      "support_wall": 23950,
-      "fresh_support": 23950,
-      "resistance_roll": "RESISTANCE ROLLED DOWN (-200 pts)",
-      "resistance_roll_type": "BEARISH",
-      "resistance_roll_desc": "Bears tightened ceiling from 24200 down to 24000 CE.",
-      "support_roll": "SUPPORT ROLLED UP (+950 pts)",
-      "support_roll_type": "BULLISH",
-      "support_roll_desc": "Bulls raised floor from 23000 up to 23950 PE.",
+      "resistance_wall": 25000,
+      "fresh_resistance": 24600,
+      "support_wall": 24000,
+      "fresh_support": 24200,
+      "resistance_roll": "RESISTANCE ROLLED UP (+600 pts)",
+      "resistance_roll_type": "BULLISH",
+      "resistance_roll_desc": "Bears exited 24000 CE (-51,032) and shifted up to 24600 CE.",
+      "support_roll": "SUPPORT STABLE",
+      "support_roll_type": "NEUTRAL",
+      "support_roll_desc": "Primary floor holding firm at 24000 PE.",
       "traps_and_squeezes": [
         {
           "type": "CALL_SQUEEZE",
-          "strike": 23700,
+          "strike": 23900,
           "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
-          "desc": "Bears forced to cover CE at 23700 as LTP (23,985.3) crossed above."
+          "desc": "Bears forced to cover CE at 23900 as LTP (24,250.2) crossed above."
         },
         {
           "type": "CALL_SQUEEZE",
-          "strike": 23800,
+          "strike": 23950,
           "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
-          "desc": "Bears forced to cover CE at 23800 as LTP (23,985.3) crossed above."
+          "desc": "Bears forced to cover CE at 23950 as LTP (24,250.2) crossed above."
         },
         {
           "type": "CALL_SQUEEZE",
-          "strike": 23850,
+          "strike": 24000,
           "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
-          "desc": "Bears forced to cover CE at 23850 as LTP (23,985.3) crossed above."
+          "desc": "Bears forced to cover CE at 24000 as LTP (24,250.2) crossed above."
         }
       ]
     },
     "BANKNIFTY": {
-      "ltp": 56755.6,
-      "expiry": "28-Jul-2026",
-      "max_pain": 57000,
-      "magnet_strike": 56900.0,
-      "expiry_range": "56,600 \u2013 57,100",
-      "pcr_oi": 0.6845764908877081,
-      "pcr_doi": 0.5646286149930436,
+      "ltp": 57205.9,
+      "expiry": "25-Aug-2026",
+      "max_pain": 58000,
+      "magnet_strike": 58000.0,
+      "expiry_range": "57,900 \u2013 58,100",
+      "pcr_oi": 0.8271371744059512,
+      "pcr_doi": 0.9381665598228335,
       "divergence": "NEUTRAL",
-      "resistance_wall": 56800,
-      "fresh_resistance": 56800,
-      "support_wall": 56700,
-      "fresh_support": 56700,
-      "resistance_roll": "RESISTANCE ROLLED DOWN (-1200 pts)",
+      "resistance_wall": 58000,
+      "fresh_resistance": 58000,
+      "support_wall": 58000,
+      "fresh_support": 57200,
+      "resistance_roll": "RESISTANCE ROLLED DOWN (-1000 pts)",
       "resistance_roll_type": "BEARISH",
-      "resistance_roll_desc": "Bears tightened ceiling from 58000 down to 56800 CE.",
-      "support_roll": "SUPPORT ROLLED DOWN (-1300 pts)",
-      "support_roll_type": "BEARISH",
-      "support_roll_desc": "Bulls abandoned 58000 PE and retreated down to 56700 PE.",
+      "resistance_roll_desc": "Bears tightened ceiling from 59000 down to 58000 CE.",
+      "support_roll": "SUPPORT STABLE",
+      "support_roll_type": "NEUTRAL",
+      "support_roll_desc": "Primary floor holding firm at 58000 PE.",
       "traps_and_squeezes": [
         {
-          "type": "PUT_TRAP",
+          "type": "SYN_BULL",
           "strike": 57200,
-          "badge": "\u26a0\ufe0f PUT WRITER TRAP",
-          "desc": "Bulls trapped at 57200 PE as LTP (56,755.6) broke below."
+          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "desc": "Synthetic futures (+102.7 pts). Operators are loading Calls / Shorting Puts."
+        },
+        {
+          "type": "CALL_SQUEEZE",
+          "strike": 57000,
+          "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
+          "desc": "Bears forced to cover CE at 57000 as LTP (57,205.9) crossed above."
         }
       ]
     },
     "FINNIFTY": {
-      "ltp": 26024.2,
-      "expiry": "28-Jul-2026",
-      "max_pain": 26100,
-      "magnet_strike": 26050.0,
-      "expiry_range": "25,950 \u2013 26,150",
-      "pcr_oi": 0.6678698371586808,
-      "pcr_doi": 0.3939680920812996,
+      "ltp": 26287.1,
+      "expiry": "25-Aug-2026",
+      "max_pain": 26200,
+      "magnet_strike": 26200.0,
+      "expiry_range": "26,150 \u2013 26,250",
+      "pcr_oi": 1.1220988900100908,
+      "pcr_doi": 1.1187096774193548,
       "divergence": "NEUTRAL",
-      "resistance_wall": 26000,
-      "fresh_resistance": 26050,
-      "support_wall": 26000,
-      "fresh_support": 26000,
+      "resistance_wall": 26200,
+      "fresh_resistance": 26200,
+      "support_wall": 26200,
+      "fresh_support": 26200,
       "resistance_roll": "RESISTANCE STABLE",
       "resistance_roll_type": "NEUTRAL",
-      "resistance_roll_desc": "Primary ceiling holding firm at 26000 CE.",
+      "resistance_roll_desc": "Primary ceiling holding firm at 26200 CE.",
       "support_roll": "SUPPORT STABLE",
       "support_roll_type": "NEUTRAL",
-      "support_roll_desc": "Primary floor holding firm at 26000 PE.",
-      "traps_and_squeezes": []
+      "support_roll_desc": "Primary floor holding firm at 26200 PE.",
+      "traps_and_squeezes": [
+        {
+          "type": "SYN_BULL",
+          "strike": 26300,
+          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "desc": "Synthetic futures (+69.3 pts). Operators are loading Calls / Shorting Puts."
+        }
+      ]
     },
     "MIDCPNIFTY": {
-      "ltp": 14541.05,
-      "expiry": "28-Jul-2026",
-      "max_pain": 14600,
-      "magnet_strike": 14550.0,
-      "expiry_range": "14,475 \u2013 14,625",
-      "pcr_oi": 0.7292983256238191,
-      "pcr_doi": -0.9173018292682927,
+      "ltp": 14683.05,
+      "expiry": "25-Aug-2026",
+      "max_pain": 14700,
+      "magnet_strike": 14725.0,
+      "expiry_range": "13,975 \u2013 15,525",
+      "pcr_oi": 0.7558919238733852,
+      "pcr_doi": 0.5878942158110593,
       "divergence": "NEUTRAL",
-      "resistance_wall": 14550,
-      "fresh_resistance": 14550,
-      "support_wall": 14500,
-      "fresh_support": 14525,
-      "resistance_roll": "RESISTANCE ROLLED DOWN (-250 pts)",
-      "resistance_roll_type": "BEARISH",
-      "resistance_roll_desc": "Bears tightened ceiling from 14800 down to 14550 CE.",
+      "resistance_wall": 15500,
+      "fresh_resistance": 15500,
+      "support_wall": 14000,
+      "fresh_support": 14700,
+      "resistance_roll": "RESISTANCE STABLE",
+      "resistance_roll_type": "NEUTRAL",
+      "resistance_roll_desc": "Primary ceiling holding firm at 15500 CE.",
       "support_roll": "SUPPORT STABLE",
       "support_roll_type": "NEUTRAL",
-      "support_roll_desc": "Primary floor holding firm at 14500 PE.",
-      "traps_and_squeezes": []
+      "support_roll_desc": "Primary floor holding firm at 14000 PE.",
+      "traps_and_squeezes": [
+        {
+          "type": "SYN_BULL",
+          "strike": 14675,
+          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "desc": "Synthetic futures (+47.4 pts). Operators are loading Calls / Shorting Puts."
+        }
+      ]
     }
   },
   "stock_breadth": {
     "call_writing_bearish": [
       {
-        "symbol": "BANKNIFTY",
-        "ltp": 56755.6,
-        "net_ce_doi": 353275,
-        "net_pe_doi": 176896,
-        "top_ce_write_strike": 56800,
-        "top_ce_write_doi": 124543,
-        "top_pe_write_strike": 56700,
-        "top_pe_write_doi": 113745,
-        "top_ce_unwind_strike": 58000,
-        "top_ce_unwind_doi": -12022,
-        "top_pe_unwind_strike": 58000,
-        "top_pe_unwind_doi": -7188
-      },
-      {
         "symbol": "NIFTY",
-        "ltp": 23985.35,
-        "net_ce_doi": 178302,
-        "net_pe_doi": -352800,
-        "top_ce_write_strike": 24000,
-        "top_ce_write_doi": 306639,
-        "top_pe_write_strike": 23950,
-        "top_pe_write_doi": 199158,
-        "top_ce_unwind_strike": 24200,
-        "top_ce_unwind_doi": -97265,
-        "top_pe_unwind_strike": 23000,
-        "top_pe_unwind_doi": -85855
+        "ltp": 24250.2,
+        "net_ce_doi": 406660,
+        "net_pe_doi": 747888,
+        "top_ce_write_strike": 24600,
+        "top_ce_write_doi": 56516,
+        "top_pe_write_strike": 24200,
+        "top_pe_write_doi": 121288,
+        "top_ce_unwind_strike": 24000,
+        "top_ce_unwind_doi": -51032,
+        "top_pe_unwind_strike": 23050,
+        "top_pe_unwind_doi": -1742
       },
       {
-        "symbol": "FINNIFTY",
-        "ltp": 26024.2,
-        "net_ce_doi": 13222,
-        "net_pe_doi": 5413,
-        "top_ce_write_strike": 26050,
-        "top_ce_write_doi": 5303,
-        "top_pe_write_strike": 26000,
-        "top_pe_write_doi": 3343,
-        "top_ce_unwind_strike": 26500,
-        "top_ce_unwind_doi": -1524,
-        "top_pe_unwind_strike": 25800,
-        "top_pe_unwind_doi": -1506
+        "symbol": "BANKNIFTY",
+        "ltp": 57205.9,
+        "net_ce_doi": 38552,
+        "net_pe_doi": 42429,
+        "top_ce_write_strike": 58000,
+        "top_ce_write_doi": 8491,
+        "top_pe_write_strike": 57200,
+        "top_pe_write_doi": 5723,
+        "top_ce_unwind_strike": 59000,
+        "top_ce_unwind_doi": -2384,
+        "top_pe_unwind_strike": 54000,
+        "top_pe_unwind_doi": -1549
+      },
+      {
+        "symbol": "RELIANCE",
+        "ltp": 1277.1,
+        "net_ce_doi": 17549,
+        "net_pe_doi": 6721,
+        "top_ce_write_strike": 1300,
+        "top_ce_write_doi": 6989,
+        "top_pe_write_strike": 1150,
+        "top_pe_write_doi": 1205,
+        "top_ce_unwind_strike": 1500,
+        "top_ce_unwind_doi": -113,
+        "top_pe_unwind_strike": 1230,
+        "top_pe_unwind_doi": -171
+      },
+      {
+        "symbol": "ASIANPAINT",
+        "ltp": 2761,
+        "net_ce_doi": 15074,
+        "net_pe_doi": 7554,
+        "top_ce_write_strike": 3000,
+        "top_ce_write_doi": 2943,
+        "top_pe_write_strike": 2800,
+        "top_pe_write_doi": 1040,
+        "top_ce_unwind_strike": 2700,
+        "top_ce_unwind_doi": -232,
+        "top_pe_unwind_strike": 2460,
+        "top_pe_unwind_doi": -7
+      },
+      {
+        "symbol": "ADANIPORTS",
+        "ltp": 1721,
+        "net_ce_doi": 12879,
+        "net_pe_doi": 6336,
+        "top_ce_write_strike": 1800,
+        "top_ce_write_doi": 2536,
+        "top_pe_write_strike": 1600,
+        "top_pe_write_doi": 937,
+        "top_ce_unwind_strike": 2060,
+        "top_ce_unwind_doi": -3,
+        "top_pe_unwind_strike": 1860,
+        "top_pe_unwind_doi": -12
+      },
+      {
+        "symbol": "INFY",
+        "ltp": 1153.5,
+        "net_ce_doi": 11782,
+        "net_pe_doi": 11558,
+        "top_ce_write_strike": 1200,
+        "top_ce_write_doi": 3016,
+        "top_pe_write_strike": 1100,
+        "top_pe_write_doi": 2502,
+        "top_ce_unwind_strike": 1100,
+        "top_ce_unwind_doi": -948,
+        "top_pe_unwind_strike": 900,
+        "top_pe_unwind_doi": -347
+      },
+      {
+        "symbol": "EICHERMOT",
+        "ltp": 7796,
+        "net_ce_doi": 8539,
+        "net_pe_doi": 3395,
+        "top_ce_write_strike": 7900,
+        "top_ce_write_doi": 1258,
+        "top_pe_write_strike": 7800,
+        "top_pe_write_doi": 746,
+        "top_ce_unwind_strike": 6000,
+        "top_ce_unwind_doi": 0,
+        "top_pe_unwind_strike": 6600,
+        "top_pe_unwind_doi": -19
+      },
+      {
+        "symbol": "LT",
+        "ltp": 3927,
+        "net_ce_doi": 8278,
+        "net_pe_doi": -1499,
+        "top_ce_write_strike": 4000,
+        "top_ce_write_doi": 2608,
+        "top_pe_write_strike": 3950,
+        "top_pe_write_doi": 806,
+        "top_ce_unwind_strike": 3800,
+        "top_ce_unwind_doi": -528,
+        "top_pe_unwind_strike": 3800,
+        "top_pe_unwind_doi": -869
       },
       {
         "symbol": "MIDCPNIFTY",
-        "ltp": 14541.05,
-        "net_ce_doi": 4226,
-        "net_pe_doi": -5081,
-        "top_ce_write_strike": 14550,
-        "top_ce_write_doi": 6782,
-        "top_pe_write_strike": 14525,
-        "top_pe_write_doi": 3313,
-        "top_ce_unwind_strike": 14800,
-        "top_ce_unwind_doi": -4346,
-        "top_pe_unwind_strike": 14000,
-        "top_pe_unwind_doi": -1695
+        "ltp": 14683.05,
+        "net_ce_doi": 7794,
+        "net_pe_doi": 7482,
+        "top_ce_write_strike": 15500,
+        "top_ce_write_doi": 2237,
+        "top_pe_write_strike": 13600,
+        "top_pe_write_doi": 1850,
+        "top_ce_unwind_strike": 14550,
+        "top_ce_unwind_doi": -78,
+        "top_pe_unwind_strike": 14550,
+        "top_pe_unwind_doi": -200
+      },
+      {
+        "symbol": "ITC",
+        "ltp": 286.1,
+        "net_ce_doi": 7557,
+        "net_pe_doi": 3695,
+        "top_ce_write_strike": 295,
+        "top_ce_write_doi": 2913,
+        "top_pe_write_strike": 275,
+        "top_pe_write_doi": 1510,
+        "top_ce_unwind_strike": 310,
+        "top_ce_unwind_doi": -253,
+        "top_pe_unwind_strike": 265,
+        "top_pe_unwind_doi": -314
       }
     ],
     "put_writing_bullish": [
       {
+        "symbol": "NIFTY",
+        "ltp": 24250.2,
+        "net_ce_doi": 406660,
+        "net_pe_doi": 747888,
+        "top_ce_write_strike": 24600,
+        "top_ce_write_doi": 56516,
+        "top_pe_write_strike": 24200,
+        "top_pe_write_doi": 121288,
+        "top_ce_unwind_strike": 24000,
+        "top_ce_unwind_doi": -51032,
+        "top_pe_unwind_strike": 23050,
+        "top_pe_unwind_doi": -1742
+      },
+      {
         "symbol": "BANKNIFTY",
-        "ltp": 56755.6,
-        "net_ce_doi": 353275,
-        "net_pe_doi": 176896,
-        "top_ce_write_strike": 56800,
-        "top_ce_write_doi": 124543,
-        "top_pe_write_strike": 56700,
-        "top_pe_write_doi": 113745,
-        "top_ce_unwind_strike": 58000,
-        "top_ce_unwind_doi": -12022,
-        "top_pe_unwind_strike": 58000,
-        "top_pe_unwind_doi": -7188
+        "ltp": 57205.9,
+        "net_ce_doi": 38552,
+        "net_pe_doi": 42429,
+        "top_ce_write_strike": 58000,
+        "top_ce_write_doi": 8491,
+        "top_pe_write_strike": 57200,
+        "top_pe_write_doi": 5723,
+        "top_ce_unwind_strike": 59000,
+        "top_ce_unwind_doi": -2384,
+        "top_pe_unwind_strike": 54000,
+        "top_pe_unwind_doi": -1549
       },
       {
         "symbol": "INFY",
-        "ltp": 1105,
-        "net_ce_doi": -11259,
-        "net_pe_doi": 7033,
-        "top_ce_write_strike": 1120,
-        "top_ce_write_doi": 1701,
+        "ltp": 1153.5,
+        "net_ce_doi": 11782,
+        "net_pe_doi": 11558,
+        "top_ce_write_strike": 1200,
+        "top_ce_write_doi": 3016,
         "top_pe_write_strike": 1100,
-        "top_pe_write_doi": 8288,
+        "top_pe_write_doi": 2502,
         "top_ce_unwind_strike": 1100,
-        "top_ce_unwind_doi": -3172,
-        "top_pe_unwind_strike": 1060,
-        "top_pe_unwind_doi": -1064
+        "top_ce_unwind_doi": -948,
+        "top_pe_unwind_strike": 900,
+        "top_pe_unwind_doi": -347
       },
       {
-        "symbol": "FINNIFTY",
-        "ltp": 26024.2,
-        "net_ce_doi": 13222,
-        "net_pe_doi": 5413,
-        "top_ce_write_strike": 26050,
-        "top_ce_write_doi": 5303,
-        "top_pe_write_strike": 26000,
-        "top_pe_write_doi": 3343,
-        "top_ce_unwind_strike": 26500,
-        "top_ce_unwind_doi": -1524,
-        "top_pe_unwind_strike": 25800,
-        "top_pe_unwind_doi": -1506
+        "symbol": "ASIANPAINT",
+        "ltp": 2761,
+        "net_ce_doi": 15074,
+        "net_pe_doi": 7554,
+        "top_ce_write_strike": 3000,
+        "top_ce_write_doi": 2943,
+        "top_pe_write_strike": 2800,
+        "top_pe_write_doi": 1040,
+        "top_ce_unwind_strike": 2700,
+        "top_ce_unwind_doi": -232,
+        "top_pe_unwind_strike": 2460,
+        "top_pe_unwind_doi": -7
+      },
+      {
+        "symbol": "MIDCPNIFTY",
+        "ltp": 14683.05,
+        "net_ce_doi": 7794,
+        "net_pe_doi": 7482,
+        "top_ce_write_strike": 15500,
+        "top_ce_write_doi": 2237,
+        "top_pe_write_strike": 13600,
+        "top_pe_write_doi": 1850,
+        "top_ce_unwind_strike": 14550,
+        "top_ce_unwind_doi": -78,
+        "top_pe_unwind_strike": 14550,
+        "top_pe_unwind_doi": -200
+      },
+      {
+        "symbol": "RELIANCE",
+        "ltp": 1277.1,
+        "net_ce_doi": 17549,
+        "net_pe_doi": 6721,
+        "top_ce_write_strike": 1300,
+        "top_ce_write_doi": 6989,
+        "top_pe_write_strike": 1150,
+        "top_pe_write_doi": 1205,
+        "top_ce_unwind_strike": 1500,
+        "top_ce_unwind_doi": -113,
+        "top_pe_unwind_strike": 1230,
+        "top_pe_unwind_doi": -171
+      },
+      {
+        "symbol": "ADANIPORTS",
+        "ltp": 1721,
+        "net_ce_doi": 12879,
+        "net_pe_doi": 6336,
+        "top_ce_write_strike": 1800,
+        "top_ce_write_doi": 2536,
+        "top_pe_write_strike": 1600,
+        "top_pe_write_doi": 937,
+        "top_ce_unwind_strike": 2060,
+        "top_ce_unwind_doi": -3,
+        "top_pe_unwind_strike": 1860,
+        "top_pe_unwind_doi": -12
+      },
+      {
+        "symbol": "KPITTECH",
+        "ltp": 638.5,
+        "net_ce_doi": 6923,
+        "net_pe_doi": 5574,
+        "top_ce_write_strike": 660,
+        "top_ce_write_doi": 1255,
+        "top_pe_write_strike": 600,
+        "top_pe_write_doi": 1479,
+        "top_ce_unwind_strike": 600,
+        "top_ce_unwind_doi": -90,
+        "top_pe_unwind_strike": 480,
+        "top_pe_unwind_doi": -29
+      },
+      {
+        "symbol": "ITC",
+        "ltp": 286.1,
+        "net_ce_doi": 7557,
+        "net_pe_doi": 3695,
+        "top_ce_write_strike": 295,
+        "top_ce_write_doi": 2913,
+        "top_pe_write_strike": 275,
+        "top_pe_write_doi": 1510,
+        "top_ce_unwind_strike": 310,
+        "top_ce_unwind_doi": -253,
+        "top_pe_unwind_strike": 265,
+        "top_pe_unwind_doi": -314
+      },
+      {
+        "symbol": "JIOFIN",
+        "ltp": 248.75,
+        "net_ce_doi": 6137,
+        "net_pe_doi": 3689,
+        "top_ce_write_strike": 260,
+        "top_ce_write_doi": 2177,
+        "top_pe_write_strike": 240,
+        "top_pe_write_doi": 859,
+        "top_ce_unwind_strike": 235,
+        "top_ce_unwind_doi": -110,
+        "top_pe_unwind_strike": 230,
+        "top_pe_unwind_doi": -68
       }
     ],
     "call_unwinding_bullish": [
       {
-        "symbol": "HDFCBANK",
-        "ltp": 736.75,
-        "net_ce_doi": -25662,
-        "net_pe_doi": -16268,
-        "top_ce_write_strike": 650,
-        "top_ce_write_doi": 55,
-        "top_pe_write_strike": 650,
-        "top_pe_write_doi": 40,
-        "top_ce_unwind_strike": 800,
-        "top_ce_unwind_doi": -3713,
-        "top_pe_unwind_strike": 740,
-        "top_pe_unwind_doi": -2140
+        "symbol": "HINDUNILVR",
+        "ltp": 2120,
+        "net_ce_doi": -5054,
+        "net_pe_doi": -2604,
+        "top_ce_write_strike": 2140,
+        "top_ce_write_doi": 1272,
+        "top_pe_write_strike": 2120,
+        "top_pe_write_doi": 510,
+        "top_ce_unwind_strike": 2200,
+        "top_ce_unwind_doi": -2722,
+        "top_pe_unwind_strike": 1900,
+        "top_pe_unwind_doi": -895
       },
       {
-        "symbol": "RELIANCE",
-        "ltp": 1271.7,
-        "net_ce_doi": -18610,
-        "net_pe_doi": -9025,
-        "top_ce_write_strike": 1680,
-        "top_ce_write_doi": 261,
-        "top_pe_write_strike": 1360,
-        "top_pe_write_doi": 17,
-        "top_ce_unwind_strike": 1400,
-        "top_ce_unwind_doi": -3172,
-        "top_pe_unwind_strike": 1280,
-        "top_pe_unwind_doi": -1185
+        "symbol": "VBL",
+        "ltp": 447.3,
+        "net_ce_doi": -2371,
+        "net_pe_doi": 426,
+        "top_ce_write_strike": 500,
+        "top_ce_write_doi": 202,
+        "top_pe_write_strike": 450,
+        "top_pe_write_doi": 329,
+        "top_ce_unwind_strike": 430,
+        "top_ce_unwind_doi": -683,
+        "top_pe_unwind_strike": 380,
+        "top_pe_unwind_doi": -259
       },
       {
-        "symbol": "MARUTI",
-        "ltp": 13805,
-        "net_ce_doi": -15804,
-        "net_pe_doi": -3835,
-        "top_ce_write_strike": 13600,
-        "top_ce_write_doi": 146,
-        "top_pe_write_strike": 13700,
-        "top_pe_write_doi": 1339,
-        "top_ce_unwind_strike": 14000,
-        "top_ce_unwind_doi": -2700,
-        "top_pe_unwind_strike": 12500,
-        "top_pe_unwind_doi": -846
-      },
-      {
-        "symbol": "TCS",
-        "ltp": 2398,
-        "net_ce_doi": -14709,
-        "net_pe_doi": -6995,
-        "top_ce_write_strike": 2800,
-        "top_ce_write_doi": 303,
-        "top_pe_write_strike": 2380,
-        "top_pe_write_doi": 245,
-        "top_ce_unwind_strike": 2400,
-        "top_ce_unwind_doi": -3080,
+        "symbol": "GODFRYPHLP",
+        "ltp": 2074,
+        "net_ce_doi": -924,
+        "net_pe_doi": -122,
+        "top_ce_write_strike": 1900,
+        "top_ce_write_doi": 46,
+        "top_pe_write_strike": 1950,
+        "top_pe_write_doi": 10,
+        "top_ce_unwind_strike": 2100,
+        "top_ce_unwind_doi": -320,
         "top_pe_unwind_strike": 2000,
-        "top_pe_unwind_doi": -1239
-      },
-      {
-        "symbol": "DIXON",
-        "ltp": 13922,
-        "net_ce_doi": -13468,
-        "net_pe_doi": -6032,
-        "top_ce_write_strike": 9000,
-        "top_ce_write_doi": 0,
-        "top_pe_write_strike": 11800,
-        "top_pe_write_doi": 230,
-        "top_ce_unwind_strike": 14000,
-        "top_ce_unwind_doi": -2206,
-        "top_pe_unwind_strike": 13500,
-        "top_pe_unwind_doi": -944
-      },
-      {
-        "symbol": "INFY",
-        "ltp": 1105,
-        "net_ce_doi": -11259,
-        "net_pe_doi": 7033,
-        "top_ce_write_strike": 1120,
-        "top_ce_write_doi": 1701,
-        "top_pe_write_strike": 1100,
-        "top_pe_write_doi": 8288,
-        "top_ce_unwind_strike": 1100,
-        "top_ce_unwind_doi": -3172,
-        "top_pe_unwind_strike": 1060,
-        "top_pe_unwind_doi": -1064
-      },
-      {
-        "symbol": "BAJAJ-AUTO",
-        "ltp": 11401,
-        "net_ce_doi": -10516,
-        "net_pe_doi": -9052,
-        "top_ce_write_strike": 8400,
-        "top_ce_write_doi": 0,
-        "top_pe_write_strike": 8600,
-        "top_pe_write_doi": 0,
-        "top_ce_unwind_strike": 11300,
-        "top_ce_unwind_doi": -2363,
-        "top_pe_unwind_strike": 10500,
-        "top_pe_unwind_doi": -1868
-      },
-      {
-        "symbol": "MCX",
-        "ltp": 2725,
-        "net_ce_doi": -9765,
-        "net_pe_doi": -3172,
-        "top_ce_write_strike": 2200,
-        "top_ce_write_doi": 0,
-        "top_pe_write_strike": 2550,
-        "top_pe_write_doi": 7,
-        "top_ce_unwind_strike": 3000,
-        "top_ce_unwind_doi": -3248,
-        "top_pe_unwind_strike": 2700,
-        "top_pe_unwind_doi": -750
-      },
-      {
-        "symbol": "BSE",
-        "ltp": 3462.6,
-        "net_ce_doi": -9072,
-        "net_pe_doi": -5095,
-        "top_ce_write_strike": 3500,
-        "top_ce_write_doi": 127,
-        "top_pe_write_strike": 3100,
-        "top_pe_write_doi": 0,
-        "top_ce_unwind_strike": 3600,
-        "top_ce_unwind_doi": -1745,
-        "top_pe_unwind_strike": 3500,
-        "top_pe_unwind_doi": -1746
-      },
-      {
-        "symbol": "PAYTM",
-        "ltp": 1310,
-        "net_ce_doi": -8309,
-        "net_pe_doi": -1436,
-        "top_ce_write_strike": 1000,
-        "top_ce_write_doi": 1,
-        "top_pe_write_strike": 1120,
-        "top_pe_write_doi": 21,
-        "top_ce_unwind_strike": 1400,
-        "top_ce_unwind_doi": -2007,
-        "top_pe_unwind_strike": 1300,
-        "top_pe_unwind_doi": -264
+        "top_pe_unwind_doi": -52
       }
     ],
     "put_unwinding_bearish": [
       {
-        "symbol": "NIFTY",
-        "ltp": 23985.35,
-        "net_ce_doi": 178302,
-        "net_pe_doi": -352800,
-        "top_ce_write_strike": 24000,
-        "top_ce_write_doi": 306639,
-        "top_pe_write_strike": 23950,
-        "top_pe_write_doi": 199158,
-        "top_ce_unwind_strike": 24200,
-        "top_ce_unwind_doi": -97265,
-        "top_pe_unwind_strike": 23000,
-        "top_pe_unwind_doi": -85855
+        "symbol": "HINDUNILVR",
+        "ltp": 2120,
+        "net_ce_doi": -5054,
+        "net_pe_doi": -2604,
+        "top_ce_write_strike": 2140,
+        "top_ce_write_doi": 1272,
+        "top_pe_write_strike": 2120,
+        "top_pe_write_doi": 510,
+        "top_ce_unwind_strike": 2200,
+        "top_ce_unwind_doi": -2722,
+        "top_pe_unwind_strike": 1900,
+        "top_pe_unwind_doi": -895
       },
       {
-        "symbol": "HDFCBANK",
-        "ltp": 736.75,
-        "net_ce_doi": -25662,
-        "net_pe_doi": -16268,
-        "top_ce_write_strike": 650,
-        "top_ce_write_doi": 55,
-        "top_pe_write_strike": 650,
-        "top_pe_write_doi": 40,
-        "top_ce_unwind_strike": 800,
-        "top_ce_unwind_doi": -3713,
-        "top_pe_unwind_strike": 740,
-        "top_pe_unwind_doi": -2140
-      },
-      {
-        "symbol": "BAJAJ-AUTO",
-        "ltp": 11401,
-        "net_ce_doi": -10516,
-        "net_pe_doi": -9052,
-        "top_ce_write_strike": 8400,
-        "top_ce_write_doi": 0,
-        "top_pe_write_strike": 8600,
-        "top_pe_write_doi": 0,
-        "top_ce_unwind_strike": 11300,
-        "top_ce_unwind_doi": -2363,
-        "top_pe_unwind_strike": 10500,
-        "top_pe_unwind_doi": -1868
-      },
-      {
-        "symbol": "RELIANCE",
-        "ltp": 1271.7,
-        "net_ce_doi": -18610,
-        "net_pe_doi": -9025,
-        "top_ce_write_strike": 1680,
-        "top_ce_write_doi": 261,
-        "top_pe_write_strike": 1360,
-        "top_pe_write_doi": 17,
-        "top_ce_unwind_strike": 1400,
-        "top_ce_unwind_doi": -3172,
-        "top_pe_unwind_strike": 1280,
-        "top_pe_unwind_doi": -1185
-      },
-      {
-        "symbol": "TCS",
-        "ltp": 2398,
-        "net_ce_doi": -14709,
-        "net_pe_doi": -6995,
-        "top_ce_write_strike": 2800,
-        "top_ce_write_doi": 303,
-        "top_pe_write_strike": 2380,
-        "top_pe_write_doi": 245,
-        "top_ce_unwind_strike": 2400,
-        "top_ce_unwind_doi": -3080,
-        "top_pe_unwind_strike": 2000,
-        "top_pe_unwind_doi": -1239
-      },
-      {
-        "symbol": "DIXON",
-        "ltp": 13922,
-        "net_ce_doi": -13468,
-        "net_pe_doi": -6032,
-        "top_ce_write_strike": 9000,
-        "top_ce_write_doi": 0,
-        "top_pe_write_strike": 11800,
-        "top_pe_write_doi": 230,
-        "top_ce_unwind_strike": 14000,
-        "top_ce_unwind_doi": -2206,
-        "top_pe_unwind_strike": 13500,
-        "top_pe_unwind_doi": -944
-      },
-      {
-        "symbol": "AMBER",
-        "ltp": 7220,
-        "net_ce_doi": -3475,
-        "net_pe_doi": -5396,
-        "top_ce_write_strike": 8100,
-        "top_ce_write_doi": 29,
-        "top_pe_write_strike": 8600,
-        "top_pe_write_doi": 1,
-        "top_ce_unwind_strike": 7400,
-        "top_ce_unwind_doi": -559,
-        "top_pe_unwind_strike": 7200,
-        "top_pe_unwind_doi": -3009
-      },
-      {
-        "symbol": "BEL",
-        "ltp": 389,
-        "net_ce_doi": -5318,
-        "net_pe_doi": -5366,
-        "top_ce_write_strike": 400,
-        "top_ce_write_doi": 168,
-        "top_pe_write_strike": 360,
-        "top_pe_write_doi": 5,
-        "top_ce_unwind_strike": 410,
-        "top_ce_unwind_doi": -1930,
-        "top_pe_unwind_strike": 400,
-        "top_pe_unwind_doi": -1074
-      },
-      {
-        "symbol": "INDIGO",
-        "ltp": 5278,
-        "net_ce_doi": -4466,
-        "net_pe_doi": -5191,
-        "top_ce_write_strike": 6200,
-        "top_ce_write_doi": 1,
-        "top_pe_write_strike": 5150,
-        "top_pe_write_doi": 72,
-        "top_ce_unwind_strike": 5250,
-        "top_ce_unwind_doi": -1377,
-        "top_pe_unwind_strike": 5000,
-        "top_pe_unwind_doi": -1020
-      },
-      {
-        "symbol": "BSE",
-        "ltp": 3462.6,
-        "net_ce_doi": -9072,
-        "net_pe_doi": -5095,
-        "top_ce_write_strike": 3500,
-        "top_ce_write_doi": 127,
-        "top_pe_write_strike": 3100,
-        "top_pe_write_doi": 0,
-        "top_ce_unwind_strike": 3600,
-        "top_ce_unwind_doi": -1745,
-        "top_pe_unwind_strike": 3500,
-        "top_pe_unwind_doi": -1746
+        "symbol": "LT",
+        "ltp": 3927,
+        "net_ce_doi": 8278,
+        "net_pe_doi": -1499,
+        "top_ce_write_strike": 4000,
+        "top_ce_write_doi": 2608,
+        "top_pe_write_strike": 3950,
+        "top_pe_write_doi": 806,
+        "top_ce_unwind_strike": 3800,
+        "top_ce_unwind_doi": -528,
+        "top_pe_unwind_strike": 3800,
+        "top_pe_unwind_doi": -869
       }
     ]
   },
@@ -552,262 +544,293 @@
     "NIFTY": {
       "dates": [
         "2026-07-27",
-        "2026-07-28"
+        "2026-07-28",
+        "2026-07-29"
       ],
       "strikes": [
-        {
-          "strike": 23650,
-          "ce_oi_history": [
-            9911,
-            5943
-          ],
-          "pe_oi_history": [
-            79608,
-            68054
-          ],
-          "today_ce_doi": -7999,
-          "today_pe_doi": 17429,
-          "ce_trend_delta": -3968,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -11554,
-          "pe_conviction": "PE UNWINDING"
-        },
-        {
-          "strike": 23700,
-          "ce_oi_history": [
-            29170,
-            18356
-          ],
-          "pe_oi_history": [
-            157575,
-            110994
-          ],
-          "today_ce_doi": -32378,
-          "today_pe_doi": 29725,
-          "ce_trend_delta": -10814,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -46581,
-          "pe_conviction": "PE UNWINDING"
-        },
-        {
-          "strike": 23750,
-          "ce_oi_history": [
-            6507,
-            4538
-          ],
-          "pe_oi_history": [
-            85420,
-            57744
-          ],
-          "today_ce_doi": -20681,
-          "today_pe_doi": 25526,
-          "ce_trend_delta": -1969,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -27676,
-          "pe_conviction": "PE UNWINDING"
-        },
-        {
-          "strike": 23800,
-          "ce_oi_history": [
-            30866,
-            17010
-          ],
-          "pe_oi_history": [
-            159661,
-            114486
-          ],
-          "today_ce_doi": -80557,
-          "today_pe_doi": 35101,
-          "ce_trend_delta": -13856,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -45175,
-          "pe_conviction": "PE UNWINDING"
-        },
-        {
-          "strike": 23850,
-          "ce_oi_history": [
-            17785,
-            13306
-          ],
-          "pe_oi_history": [
-            89043,
-            81198
-          ],
-          "today_ce_doi": -37828,
-          "today_pe_doi": 54521,
-          "ce_trend_delta": -4479,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -7845,
-          "pe_conviction": "PE UNWINDING"
-        },
         {
           "strike": 23900,
           "ce_oi_history": [
             55077,
-            47149
+            47149,
+            13326
           ],
           "pe_oi_history": [
             190077,
-            211837
+            211837,
+            59965
           ],
           "today_ce_doi": -35649,
           "today_pe_doi": 141236,
-          "ce_trend_delta": -7928,
+          "ce_trend_delta": -41751,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 21760,
-          "pe_conviction": "PE BUILDING"
+          "pe_trend_delta": -130112,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 23950,
           "ce_oi_history": [
             57336,
-            146793
+            146793,
+            5167
           ],
           "pe_oi_history": [
             153585,
-            352743
+            352743,
+            28489
           ],
           "today_ce_doi": 11666,
           "today_pe_doi": 133417,
-          "ce_trend_delta": 89457,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 199158,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": -52169,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -125096,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 24000,
           "ce_oi_history": [
             191831,
-            498470
+            498470,
+            55541
           ],
           "pe_oi_history": [
             208738,
-            255210
+            255210,
+            139785
           ],
           "today_ce_doi": -15541,
           "today_pe_doi": 136619,
-          "ce_trend_delta": 306639,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 46472,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": -136290,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -68953,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 24050,
           "ce_oi_history": [
             96024,
-            220392
+            220392,
+            8493
           ],
           "pe_oi_history": [
             44565,
-            64239
+            64239,
+            31917
           ],
           "today_ce_doi": 35102,
           "today_pe_doi": 33811,
-          "ce_trend_delta": 124368,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 19674,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": -87531,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -12648,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 24100,
           "ce_oi_history": [
             160348,
-            184528
+            184528,
+            30625
           ],
           "pe_oi_history": [
             54230,
-            45042
+            45042,
+            66673
           ],
           "today_ce_doi": 3174,
           "today_pe_doi": 15693,
-          "ce_trend_delta": 24180,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -9188,
-          "pe_conviction": "PE UNWINDING"
+          "ce_trend_delta": -129723,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": 12443,
+          "pe_conviction": "PE BUILDING"
         },
         {
           "strike": 24150,
           "ce_oi_history": [
             86201,
-            89146
+            89146,
+            19836
           ],
           "pe_oi_history": [
             8779,
-            6683
+            6683,
+            49180
           ],
           "today_ce_doi": 21812,
           "today_pe_doi": 3401,
-          "ce_trend_delta": 2945,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -2096,
-          "pe_conviction": "STABLE"
+          "ce_trend_delta": -66365,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": 40401,
+          "pe_conviction": "SOLID FLOOR"
         },
         {
           "strike": 24200,
           "ce_oi_history": [
             226746,
-            129481
+            129481,
+            107971
           ],
           "pe_oi_history": [
             34393,
-            23599
+            23599,
+            136116
           ],
           "today_ce_doi": 22889,
           "today_pe_doi": -8338,
-          "ce_trend_delta": -97265,
+          "ce_trend_delta": -118775,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -10794,
-          "pe_conviction": "PE UNWINDING"
+          "pe_trend_delta": 101723,
+          "pe_conviction": "SOLID FLOOR"
         },
         {
           "strike": 24250,
           "ce_oi_history": [
             90216,
-            73546
+            73546,
+            47881
           ],
           "pe_oi_history": [
             5796,
-            5268
+            5268,
+            46268
           ],
           "today_ce_doi": 29527,
           "today_pe_doi": -427,
-          "ce_trend_delta": -16670,
+          "ce_trend_delta": -42335,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -528,
-          "pe_conviction": "STABLE"
+          "pe_trend_delta": 40472,
+          "pe_conviction": "SOLID FLOOR"
         },
         {
           "strike": 24300,
           "ce_oi_history": [
             163501,
-            110266
+            110266,
+            86465
           ],
           "pe_oi_history": [
             14749,
-            9255
+            9255,
+            41676
           ],
           "today_ce_doi": 25786,
           "today_pe_doi": -3311,
-          "ce_trend_delta": -53235,
+          "ce_trend_delta": -77036,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -5494,
-          "pe_conviction": "PE UNWINDING"
+          "pe_trend_delta": 26927,
+          "pe_conviction": "SOLID FLOOR"
         },
         {
           "strike": 24350,
           "ce_oi_history": [
             55875,
-            49195
+            49195,
+            26324
           ],
           "pe_oi_history": [
             1819,
-            2137
+            2137,
+            8817
           ],
           "today_ce_doi": 16443,
           "today_pe_doi": 25,
-          "ce_trend_delta": -6680,
+          "ce_trend_delta": -29551,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 318,
+          "pe_trend_delta": 6998,
+          "pe_conviction": "PE BUILDING"
+        },
+        {
+          "strike": 24400,
+          "ce_oi_history": [
+            106277,
+            91787,
+            58376
+          ],
+          "pe_oi_history": [
+            10640,
+            8728,
+            14185
+          ],
+          "today_ce_doi": -2758,
+          "today_pe_doi": -680,
+          "ce_trend_delta": -47901,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": 3545,
+          "pe_conviction": "PE BUILDING"
+        },
+        {
+          "strike": 24450,
+          "ce_oi_history": [
+            42342,
+            25053,
+            49408
+          ],
+          "pe_oi_history": [
+            881,
+            846,
+            2823
+          ],
+          "today_ce_doi": 10523,
+          "today_pe_doi": -348,
+          "ce_trend_delta": 7066,
+          "ce_conviction": "CE BUILDING",
+          "pe_trend_delta": 1942,
+          "pe_conviction": "STABLE"
+        },
+        {
+          "strike": 24500,
+          "ce_oi_history": [
+            159855,
+            153343,
+            105618
+          ],
+          "pe_oi_history": [
+            22728,
+            14050,
+            14672
+          ],
+          "today_ce_doi": -19901,
+          "today_pe_doi": -11323,
+          "ce_trend_delta": -54237,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -8056,
+          "pe_conviction": "PE UNWINDING"
+        },
+        {
+          "strike": 24550,
+          "ce_oi_history": [
+            36591,
+            30283,
+            25102
+          ],
+          "pe_oi_history": [
+            668,
+            599,
+            823
+          ],
+          "today_ce_doi": 4941,
+          "today_pe_doi": -383,
+          "ce_trend_delta": -11489,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": 155,
+          "pe_conviction": "STABLE"
+        },
+        {
+          "strike": 24600,
+          "ce_oi_history": [
+            78247,
+            77365,
+            111160
+          ],
+          "pe_oi_history": [
+            3014,
+            2640,
+            3728
+          ],
+          "today_ce_doi": -2615,
+          "today_pe_doi": -1379,
+          "ce_trend_delta": 32913,
+          "ce_conviction": "HARD RESISTANCE",
+          "pe_trend_delta": 714,
           "pe_conviction": "STABLE"
         }
       ]
@@ -815,266 +838,297 @@
     "BANKNIFTY": {
       "dates": [
         "2026-07-27",
-        "2026-07-28"
+        "2026-07-28",
+        "2026-07-29"
       ],
       "strikes": [
-        {
-          "strike": 56100,
-          "ce_oi_history": [
-            2246,
-            1638
-          ],
-          "pe_oi_history": [
-            9512,
-            7863
-          ],
-          "today_ce_doi": -458,
-          "today_pe_doi": -35,
-          "ce_trend_delta": -608,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -1649,
-          "pe_conviction": "STABLE"
-        },
-        {
-          "strike": 56200,
-          "ce_oi_history": [
-            1991,
-            1240
-          ],
-          "pe_oi_history": [
-            13107,
-            16182
-          ],
-          "today_ce_doi": -863,
-          "today_pe_doi": -93,
-          "ce_trend_delta": -751,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 3075,
-          "pe_conviction": "PE BUILDING"
-        },
-        {
-          "strike": 56300,
-          "ce_oi_history": [
-            1884,
-            1325
-          ],
-          "pe_oi_history": [
-            9697,
-            9648
-          ],
-          "today_ce_doi": -975,
-          "today_pe_doi": -209,
-          "ce_trend_delta": -559,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -49,
-          "pe_conviction": "STABLE"
-        },
-        {
-          "strike": 56400,
-          "ce_oi_history": [
-            1443,
-            1389
-          ],
-          "pe_oi_history": [
-            8280,
-            14174
-          ],
-          "today_ce_doi": -1048,
-          "today_pe_doi": -1312,
-          "ce_trend_delta": -54,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 5894,
-          "pe_conviction": "PE BUILDING"
-        },
         {
           "strike": 56500,
           "ce_oi_history": [
             9556,
-            8267
+            8267,
+            4760
           ],
           "pe_oi_history": [
             22080,
-            29134
+            29134,
+            10989
           ],
           "today_ce_doi": -6668,
           "today_pe_doi": -2027,
-          "ce_trend_delta": -1289,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 7054,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": -4796,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -11091,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 56600,
           "ce_oi_history": [
             2169,
-            9278
+            9278,
+            379
           ],
           "pe_oi_history": [
             9330,
-            28568
+            28568,
+            1357
           ],
           "today_ce_doi": -2101,
           "today_pe_doi": 1338,
-          "ce_trend_delta": 7109,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 19238,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": -1790,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": -7973,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 56700,
           "ce_oi_history": [
             5147,
-            67131
+            67131,
+            879
           ],
           "pe_oi_history": [
             11683,
-            125428
+            125428,
+            1470
           ],
           "today_ce_doi": -10755,
           "today_pe_doi": -5935,
-          "ce_trend_delta": 61984,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 113745,
-          "pe_conviction": "SOLID FLOOR"
+          "ce_trend_delta": -4268,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -10213,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 56800,
           "ce_oi_history": [
             6378,
-            130921
+            130921,
+            2142
           ],
           "pe_oi_history": [
             17244,
-            37616
+            37616,
+            2579
           ],
           "today_ce_doi": -11188,
           "today_pe_doi": 3896,
-          "ce_trend_delta": 124543,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 20372,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": -4236,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -14665,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 56900,
           "ce_oi_history": [
             6115,
-            84372
+            84372,
+            2145
           ],
           "pe_oi_history": [
             13479,
-            30234
+            30234,
+            3322
           ],
           "today_ce_doi": -2192,
           "today_pe_doi": 8196,
-          "ce_trend_delta": 78257,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 16755,
-          "pe_conviction": "PE BUILDING"
+          "ce_trend_delta": -3970,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -10157,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57000,
           "ce_oi_history": [
             39960,
-            96712
+            96712,
+            22220
           ],
           "pe_oi_history": [
             39532,
-            37039
+            37039,
+            25252
           ],
           "today_ce_doi": 6128,
           "today_pe_doi": 17596,
-          "ce_trend_delta": 56752,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": -2493,
-          "pe_conviction": "STABLE"
+          "ce_trend_delta": -17740,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -14280,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57100,
           "ce_oi_history": [
             14087,
-            31722
+            31722,
+            3850
           ],
           "pe_oi_history": [
             13387,
-            15613
+            15613,
+            3323
           ],
           "today_ce_doi": 7855,
           "today_pe_doi": 11391,
-          "ce_trend_delta": 17635,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 2226,
-          "pe_conviction": "STABLE"
+          "ce_trend_delta": -10237,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -10064,
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57200,
           "ce_oi_history": [
             22379,
-            24598
+            24598,
+            5601
           ],
           "pe_oi_history": [
             10399,
-            5435
+            5435,
+            7171
           ],
           "today_ce_doi": 13178,
           "today_pe_doi": 8179,
-          "ce_trend_delta": 2219,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -4964,
+          "ce_trend_delta": -16778,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -3228,
           "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57300,
           "ce_oi_history": [
             21253,
-            20907
+            20907,
+            6029
           ],
           "pe_oi_history": [
             8772,
-            4804
+            4804,
+            3799
           ],
           "today_ce_doi": 11848,
           "today_pe_doi": 6163,
-          "ce_trend_delta": -346,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -3968,
+          "ce_trend_delta": -15224,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -4973,
           "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57400,
           "ce_oi_history": [
             17974,
-            18353
+            18353,
+            4482
           ],
           "pe_oi_history": [
             4971,
-            2432
+            2432,
+            1948
           ],
           "today_ce_doi": 8647,
           "today_pe_doi": 1785,
-          "ce_trend_delta": 379,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -2539,
+          "ce_trend_delta": -13492,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -3023,
           "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57500,
           "ce_oi_history": [
             38033,
-            34537
+            34537,
+            14946
           ],
           "pe_oi_history": [
             11313,
-            8839
+            8839,
+            11225
           ],
           "today_ce_doi": 4148,
           "today_pe_doi": 669,
-          "ce_trend_delta": -3496,
+          "ce_trend_delta": -23087,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -2474,
+          "pe_trend_delta": -88,
+          "pe_conviction": "STABLE"
+        },
+        {
+          "strike": 57600,
+          "ce_oi_history": [
+            15868,
+            12098,
+            1996
+          ],
+          "pe_oi_history": [
+            2434,
+            1597,
+            960
+          ],
+          "today_ce_doi": 7122,
+          "today_pe_doi": -265,
+          "ce_trend_delta": -13872,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -1474,
+          "pe_conviction": "STABLE"
+        },
+        {
+          "strike": 57700,
+          "ce_oi_history": [
+            19182,
+            11681,
+            2164
+          ],
+          "pe_oi_history": [
+            3600,
+            3261,
+            736
+          ],
+          "today_ce_doi": 8689,
+          "today_pe_doi": -116,
+          "ce_trend_delta": -17018,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -2864,
+          "pe_conviction": "PE UNWINDING"
+        },
+        {
+          "strike": 57800,
+          "ce_oi_history": [
+            15888,
+            22695,
+            2900
+          ],
+          "pe_oi_history": [
+            4811,
+            3954,
+            605
+          ],
+          "today_ce_doi": 3661,
+          "today_pe_doi": 261,
+          "ce_trend_delta": -12988,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -4206,
+          "pe_conviction": "PE UNWINDING"
+        },
+        {
+          "strike": 57900,
+          "ce_oi_history": [
+            12994,
+            12269,
+            2420
+          ],
+          "pe_oi_history": [
+            4136,
+            3503,
+            4075
+          ],
+          "today_ce_doi": 1542,
+          "today_pe_doi": -47,
+          "ce_trend_delta": -10574,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": -61,
           "pe_conviction": "STABLE"
         }
       ]
     }
   },
-  "stock_count": 215
+  "stock_count": 213
 }
