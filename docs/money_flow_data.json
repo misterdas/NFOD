@@ -2,25 +2,28 @@
   "timestamp": "2026-07-29T16:01:00.276694+00:00",
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BULLISH",
-    "smart_money_score": 100,
+    "smart_money_score": 45.0,
     "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
     "score_breakdown": {
-      "fii_raw_score": 75,
-      "pro_raw_score": 75,
-      "dii_raw_score": 0,
+      "fii_raw_score": 25,
+      "pro_raw_score": 25,
+      "dii_raw_score": -25,
       "fii_weight": 1.0,
       "pro_weight": 0.6,
       "dii_weight": 0.4,
-      "trap_adjustment": -20.0
+      "weighted_clipped_before_trap": 30.0,
+      "trap_adjustment": 15
     }
   },
   "participant_summary": {
     "date": "29-07-2026",
     "prev_date": "28-07-2026",
-    "smart_money_score": 100,
+    "smart_money_score": 45.0,
     "bias_label": "HIGH CONFIDENCE BULLISH",
     "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
     "retail_trap_alarm": "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts.",
+    "trap_adjustment": 15,
+    "weighted_clipped_before_trap": 30.0,
     "fii_fut_net_change": 10783.0,
     "fii_ce_long_change": 97478.0,
     "fii_ce_short_change": 8144.0,
@@ -28,7 +31,7 @@
     "fii_pe_long_change": 44502.0,
     "fii_pe_short_change": 89226.0,
     "fii_pe_net_short_change": 44724.0,
-    "fii_raw_score": 75,
+    "fii_raw_score": 25,
     "pro_fut_net_change": 7359.0,
     "pro_ce_long_change": 183106.0,
     "pro_ce_short_change": 93092.0,
@@ -36,7 +39,7 @@
     "pro_pe_long_change": 185242.0,
     "pro_pe_short_change": 285489.0,
     "pro_pe_net_short_change": 100247.0,
-    "pro_raw_score": 75,
+    "pro_raw_score": 25,
     "dii_fut_net_change": -279.0,
     "dii_ce_long_change": 1050.0,
     "dii_ce_short_change": 0.0,
@@ -44,7 +47,7 @@
     "dii_pe_long_change": 7837.0,
     "dii_pe_short_change": 0.0,
     "dii_pe_net_short_change": -7837.0,
-    "dii_raw_score": 0,
+    "dii_raw_score": -25,
     "client_ce_net_buy": -180398.0,
     "client_pe_net_buy": 137134.0,
     "fii_fut_net_carried": -194818.0,
@@ -891,7 +894,7 @@
           "today_ce_doi": -2101,
           "today_pe_doi": 1338,
           "ce_trend_delta": -1790,
-          "ce_conviction": "STABLE",
+          "ce_conviction": "CE UNWINDING",
           "pe_trend_delta": -7973,
           "pe_conviction": "PE UNWINDING"
         },
@@ -1083,7 +1086,7 @@
           "ce_trend_delta": -13872,
           "ce_conviction": "CE UNWINDING",
           "pe_trend_delta": -1474,
-          "pe_conviction": "STABLE"
+          "pe_conviction": "PE UNWINDING"
         },
         {
           "strike": 57700,

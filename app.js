@@ -752,6 +752,7 @@ function renderIndexRolls(rolls) {
                 <div class="magnet-info-bar">
                     <span class="magnet-strike"><i class="fa-solid fa-magnet"></i> Magnet Strike: <strong>${item.magnet_strike ? item.magnet_strike.toLocaleString('en-IN') : '--'}</strong></span>
                     <span class="expiry-range"><i class="fa-solid fa-crosshairs"></i> Expected Expiry: <strong>${item.expiry_range || '--'}</strong></span>
+                    ${item.divergence && item.divergence !== 'NEUTRAL' ? `<span style="color:#f59e0b;"><i class="fa-solid fa-bolt"></i> ${item.divergence}</span>` : ''}
                 </div>
 
                 <div class="roll-grid">
@@ -782,6 +783,12 @@ function renderMultiDayConviction(trends, symbol) {
     if (!trend || !trend.strikes || trend.strikes.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
         return;
+    }
+
+    // Show date range
+    const datesEl = document.querySelector('.table-card-subtitle');
+    if (datesEl && trend.dates && trend.dates.length >= 2) {
+        datesEl.textContent = 'Range: ' + trend.dates[0] + ' \u2192 ' + trend.dates[trend.dates.length - 1] + ' | Multi-Session Accumulation vs Noise';
     }
 
     tbody.innerHTML = trend.strikes.map(s => {

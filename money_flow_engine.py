@@ -39,9 +39,13 @@ FII_WEIGHT = 1.00
 PRO_WEIGHT = 0.60
 DII_WEIGHT = 0.40
 
-# Score thresholds (tune against real data distributions if these fire too often/rarely)
-FUT_THRESHOLD = 5000
-OPT_THRESHOLD = 10000
+# Score thresholds — FII baseline, Pro (0.6x), DII (0.4x)
+FII_FUT_THRESHOLD = 5000
+FII_OPT_THRESHOLD = 10000
+PRO_FUT_THRESHOLD = 3000
+PRO_OPT_THRESHOLD = 6000
+DII_FUT_THRESHOLD = 2000
+DII_OPT_THRESHOLD = 4000
 RETAIL_TRAP_THRESHOLD = 25000
 
 # Composite score is clipped to this range both before and after the retail-trap overlay
@@ -154,33 +158,44 @@ def load_participant_data():
         client_ce_net_buy = client["ce_long_chg"] - client["ce_short_chg"]
         client_pe_net_buy = client["pe_long_chg"] - client["pe_short_chg"]
 
-        def participant_score(p, fut_th=FUT_THRESHOLD, opt_th=OPT_THRESHOLD):
+        def participant_score(p, fut_th, opt_th):
             """
-            Shared scoring rubric applied identically to FII / Pro / DII so that
-            weighting is purely a multiplier, not divergent logic per participant.
+            Proportional scoring: base ±15 for crossing threshold, plus up to ±10
+            proportional to how far beyond the threshold. Max ±25 per leg.
             Positive = net bullish (buying futures, covering calls, writing puts).
             Negative = net bearish (selling futures, writing calls, unwinding puts).
             """
             s = 0
+
+            # Futures
             if p["fut_chg"] > fut_th:
-                s += 25
+                ratio = min(1.0, (p["fut_chg"] - fut_th) / fut_th)
+                s += 15 + round(ratio * 10)
             elif p["fut_chg"] < -fut_th:
-                s -= 25
+                ratio = min(1.0, (abs(p["fut_chg"]) - fut_th) / fut_th)
+                s -= 15 + round(ratio * 10)
 
-            if p["ce_net_short_chg"] < -opt_th:   # covering calls = bullish
-                s += 25
-            elif p["ce_net_short_chg"] > opt_th:  # writing calls = bearish
-                s -= 25
+            # Call options — negative = covering (bullish), positive = writing (bearish)
+            if p["ce_net_short_chg"] < -opt_th:
+                ratio = min(1.0, (abs(p["ce_net_short_chg"]) - opt_th) / opt_th)
+                s += 15 + round(ratio * 10)
+            elif p["ce_net_short_chg"] > opt_th:
+                ratio = min(1.0, (p["ce_net_short_chg"] - opt_th) / opt_th)
+                s -= 15 + round(ratio * 10)
 
-            if p["pe_net_short_chg"] > opt_th:    # writing puts = bullish floor
-                s += 25
-            elif p["pe_net_short_chg"] < -opt_th:  # unwinding puts = bearish floor drop
-                s -= 25
-            return s
+            # Put options — positive = writing floor (bullish), negative = unwinding (bearish)
+            if p["pe_net_short_chg"] > opt_th:
+                ratio = min(1.0, (p["pe_net_short_chg"] - opt_th) / opt_th)
+                s += 15 + round(ratio * 10)
+            elif p["pe_net_short_chg"] < -opt_th:
+                ratio = min(1.0, (abs(p["pe_net_short_chg"]) - opt_th) / opt_th)
+                s -= 15 + round(ratio * 10)
 
-        fii_raw_score = participant_score(fii)
-        pro_raw_score = participant_score(pro)
-        dii_raw_score = participant_score(dii)
+            return max(-25, min(25, s))
+
+        fii_raw_score = participant_score(fii, FII_FUT_THRESHOLD, FII_OPT_THRESHOLD)
+        pro_raw_score = participant_score(pro, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD)
+        dii_raw_score = participant_score(dii, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD)
 
         # Explicit weighted composite: FII > Pro > DII. Client excluded by design.
         weighted_score = (
@@ -194,10 +209,10 @@ def load_participant_data():
         # only ever nudges the already-weighted institutional score)
         retail_trap_alarm = None
         trap_adjustment = 0
-        if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > OPT_THRESHOLD:
+        if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > FII_OPT_THRESHOLD:
             trap_adjustment = -15
             retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
-        elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > OPT_THRESHOLD:
+        elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > FII_OPT_THRESHOLD:
             # Retail is net LONG puts (bearish/hedging) while FII is writing puts
             # (defending the floor, i.e. bullish) - retail is on the wrong side.
             trap_adjustment = 15
@@ -221,6 +236,11 @@ def load_participant_data():
             bias_label = "NEUTRAL / SIDEWAYS"
             action_desc = "Mixed operator signals — expecting rangebound consolidation."
 
+        # Track the clipped weighted score *before* trap adjustment so
+        # score_breakdown.trap_adjustment is accurate (not conflated with clipping).
+        # weighted_score is already clipped at this point.
+        weighted_clipped_before_trap = weighted_score
+
         return {
             "date": latest_date,
             "prev_date": prev_date,
@@ -228,6 +248,8 @@ def load_participant_data():
             "bias_label": bias_label,
             "action_desc": action_desc,
             "retail_trap_alarm": retail_trap_alarm,
+            "trap_adjustment": trap_adjustment,
+            "weighted_clipped_before_trap": weighted_clipped_before_trap,
 
             "fii_fut_net_change": fii["fut_chg"],
             "fii_ce_long_change": fii["ce_long_chg"],
@@ -509,14 +531,19 @@ def scan_stock_breadth(stock_data):
             "top_pe_unwind_doi": top_pe_unwind["pe_change_oi"],
         }
 
-        if net_ce_doi > 500:
+        # Dynamic threshold: at least 500 contracts OR 5% of total open interest,
+        # whichever is larger. This normalises across low-OI and high-OI stocks.
+        ce_threshold = max(500, net_ce_oi * 0.05) if net_ce_oi > 0 else 500
+        pe_threshold = max(500, net_pe_oi * 0.05) if net_pe_oi > 0 else 500
+
+        if net_ce_doi > ce_threshold:
             call_writing.append(stock_summary)
-        elif net_ce_doi < -500:
+        elif net_ce_doi < -ce_threshold:
             call_unwinding.append(stock_summary)
 
-        if net_pe_doi > 500:
+        if net_pe_doi > pe_threshold:
             put_writing.append(stock_summary)
-        elif net_pe_doi < -500:
+        elif net_pe_doi < -pe_threshold:
             put_unwinding.append(stock_summary)
 
     call_writing = sorted(call_writing, key=lambda x: x["net_ce_doi"], reverse=True)[:10]
@@ -569,6 +596,7 @@ def build_multiday_conviction(history_dir):
     dates = [os.path.basename(f).replace(".json", "") for f in recent_files]
 
     conviction = {}
+    ref_avg_oi = None  # NIFTY average OI per strike, used as baseline for scaling other indices
 
     for sym in ["NIFTY", "BANKNIFTY"]:
         multiday_map = {}
@@ -622,6 +650,24 @@ def build_multiday_conviction(history_dir):
         else:
             sorted_strikes = sorted(all_strikes, key=lambda x: x["strike"])[:15]
 
+        # Compute average OI per strike for conviction threshold scaling.
+        # NIFTY is the baseline (scale=1.0). Other indices (e.g. BANKNIFTY with ~2x OI)
+        # get proportionally scaled thresholds so conviction isn't over-signalled.
+        avg_ce_oi = 0
+        oi_vals = [item["ce_oi_history"][-1] for item in sorted_strikes if item["ce_oi_history"]]
+        if oi_vals:
+            avg_ce_oi = sum(oi_vals) / len(oi_vals)
+
+        if sym == "NIFTY" and avg_ce_oi > 0:
+            ref_avg_oi = avg_ce_oi
+        scale = 1.0
+        if ref_avg_oi and avg_ce_oi > 0 and sym != "NIFTY":
+            scale = avg_ce_oi / ref_avg_oi
+
+        hard_res_th = int(25000 * scale)
+        building_th = int(2500 * scale)
+        unwind_th = int(2500 * scale)
+
         for item in sorted_strikes:
             ce_hist = item["ce_oi_history"]
             pe_hist = item["pe_oi_history"]
@@ -632,7 +678,7 @@ def build_multiday_conviction(history_dir):
                 ce_diff = item.get("today_ce_doi", 0)
 
             item["ce_trend_delta"] = ce_diff
-            item["ce_conviction"] = "HARD RESISTANCE" if ce_diff > 25000 else "CE BUILDING" if ce_diff > 2500 else "CE UNWINDING" if ce_diff < -2500 else "STABLE"
+            item["ce_conviction"] = "HARD RESISTANCE" if ce_diff > hard_res_th else "CE BUILDING" if ce_diff > building_th else "CE UNWINDING" if ce_diff < -unwind_th else "STABLE"
 
             if len(pe_hist) >= 2:
                 pe_diff = pe_hist[-1] - pe_hist[0]
@@ -640,7 +686,7 @@ def build_multiday_conviction(history_dir):
                 pe_diff = item.get("today_pe_doi", 0)
 
             item["pe_trend_delta"] = pe_diff
-            item["pe_conviction"] = "SOLID FLOOR" if pe_diff > 25000 else "PE BUILDING" if pe_diff > 2500 else "PE UNWINDING" if pe_diff < -2500 else "STABLE"
+            item["pe_conviction"] = "SOLID FLOOR" if pe_diff > hard_res_th else "PE BUILDING" if pe_diff > building_th else "PE UNWINDING" if pe_diff < -unwind_th else "STABLE"
 
         conviction[sym] = {
             "dates": dates,
@@ -678,11 +724,8 @@ def run_engine():
             "fii_weight": FII_WEIGHT,
             "pro_weight": PRO_WEIGHT,
             "dii_weight": DII_WEIGHT,
-            "trap_adjustment": participant_summary.get("smart_money_score", 0) - (
-                participant_summary.get("fii_raw_score", 0) * FII_WEIGHT
-                + participant_summary.get("pro_raw_score", 0) * PRO_WEIGHT
-                + participant_summary.get("dii_raw_score", 0) * DII_WEIGHT
-            ) if participant_summary.get("smart_money_score") else 0,
+            "weighted_clipped_before_trap": participant_summary.get("weighted_clipped_before_trap", 0),
+            "trap_adjustment": participant_summary.get("trap_adjustment", 0),
         }
 
     verdict_payload = {
@@ -730,20 +773,23 @@ if __name__ == "__main__":
             print(f"Bias Label: {participant_data['bias_label']}")
             print(f"Retail Trap Alarm: {participant_data.get('retail_trap_alarm', 'None')}")
             print()
-            print("-- Raw Scores --")
-            print(f"  FII  raw_score = {participant_data.get('fii_raw_score', 'N/A')}  (weight={FII_WEIGHT})")
-            print(f"  Pro  raw_score = {participant_data.get('pro_raw_score', 'N/A')}  (weight={PRO_WEIGHT})")
-            print(f"  DII  raw_score = {participant_data.get('dii_raw_score', 'N/A')}  (weight={DII_WEIGHT})")
+            print("-- Raw Scores (proportional, per-participant thresholds) --")
+            print(f"  FII  raw_score = {participant_data.get('fii_raw_score', 'N/A')}  (weight={FII_WEIGHT}, fut_th={FII_FUT_THRESHOLD}, opt_th={FII_OPT_THRESHOLD})")
+            print(f"  Pro  raw_score = {participant_data.get('pro_raw_score', 'N/A')}  (weight={PRO_WEIGHT}, fut_th={PRO_FUT_THRESHOLD}, opt_th={PRO_OPT_THRESHOLD})")
+            print(f"  DII  raw_score = {participant_data.get('dii_raw_score', 'N/A')}  (weight={DII_WEIGHT}, fut_th={DII_FUT_THRESHOLD}, opt_th={DII_OPT_THRESHOLD})")
             weighted = (
                 participant_data.get("fii_raw_score", 0) * FII_WEIGHT
                 + participant_data.get("pro_raw_score", 0) * PRO_WEIGHT
                 + participant_data.get("dii_raw_score", 0) * DII_WEIGHT
             )
             weighted_clipped = max(-SCORE_CLIP, min(SCORE_CLIP, weighted))
-            print(f"\n  Weighted composite (before clip): {weighted}")
+            trap_adj = participant_data.get("trap_adjustment", 0)
+            clipped_before_trap = participant_data.get("weighted_clipped_before_trap", weighted_clipped)
+            print(f"\n  Weighted composite (before clip): {weighted:.1f}")
             print(f"  After clip [{SCORE_CLIP}]: {weighted_clipped}")
-            print(f"  Final score (after trap adj): {participant_data['smart_money_score']}")
-            print(f"  Trap adjustment: {participant_data['smart_money_score'] - weighted_clipped}")
+            print(f"  Clipped before trap adj: {clipped_before_trap}")
+            print(f"  Trap adjustment applied: {trap_adj}")
+            print(f"  Final score: {participant_data['smart_money_score']}")
             print()
             print("-- Participant Data --")
             for key in ["fii_fut_net_change", "fii_ce_net_short_change", "fii_pe_net_short_change",
