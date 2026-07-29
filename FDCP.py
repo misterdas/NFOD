@@ -3,7 +3,7 @@ import requests,io
 import pandas as pd
 
 end_date = date.today()
-start_date = end_date - timedelta(days=30)
+start_date = end_date - timedelta(days=60)
 delta = timedelta(days=1)
 df=pd.DataFrame()
 while start_date <= end_date:

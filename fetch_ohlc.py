@@ -1,10 +1,10 @@
-"""Fetch NIFTY OHLC data for last 45 days using yfinance."""
+"""Fetch NIFTY OHLC data for last 75 days using yfinance."""
 import json
 import yfinance as yf
 from datetime import date, timedelta
 
 end_date = date.today() + timedelta(days=1)
-start_date = end_date - timedelta(days=45)
+start_date = end_date - timedelta(days=75)
 
 def fetch_snapshot(symbol, name):
     ticker = yf.Ticker(symbol)
