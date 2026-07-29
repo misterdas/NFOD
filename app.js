@@ -766,12 +766,13 @@ function renderCommentary(ps) {
         const parts = ds.split('-');
         if (parts.length === 3) {
             const d = new Date(parseInt('20' + parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-            // Compute last Thursday of the month: go to 1st of next month, walk back to Thu
+            // NSE monthly expiry = last Tuesday of the month
+            // Go to 1st of next month, walk back to Tuesday (day=2)
             const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-            const subDays = (nextMonth.getDay() - 4 + 7) % 7 || 7;
-            const lastThu = new Date(nextMonth);
-            lastThu.setDate(lastThu.getDate() - subDays);
-            expiryDays = Math.round((lastThu - d) / 86400000);
+            const subDays = (nextMonth.getDay() - 2 + 7) % 7 || 7;
+            const lastTue = new Date(nextMonth);
+            lastTue.setDate(lastTue.getDate() - subDays);
+            expiryDays = Math.round((lastTue - d) / 86400000);
             // Build label from the day difference
             if (expiryDays === 0) expiryLabel = '🗓️ Monthly Expiry Today';
             else if (expiryDays === 1) expiryLabel = '🗓️ Monthly Expiry Tomorrow';
