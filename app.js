@@ -761,25 +761,24 @@ function renderCommentary(ps) {
     // ── Date / Expiry Detection ──
     const ds = ps.date || '';
     let expiryLabel = '';
+    let expiryDays = null; // positive = days before expiry, 0 = expiry day, negative = after
     if (ds) {
         const parts = ds.split('-');
         if (parts.length === 3) {
             const d = new Date(parseInt('20' + parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-            const lastThu = new Date(d);
-            lastThu.setMonth(lastThu.getMonth() + 1, 1);
-            lastThu.setDate(lastThu.getDate() + (4 - lastThu.getDay() + 7) % 7);
-            lastThu.setDate(lastThu.getDate() - 7);
-            while (lastThu.getMonth() === d.getMonth()) {
-                const next = new Date(lastThu);
-                next.setDate(lastThu.getDate() + 7);
-                if (next.getMonth() !== d.getMonth()) break;
-                lastThu.setDate(lastThu.getDate() + 7);
-            }
-            const diff = Math.round((lastThu - d) / 86400000);
-            if (diff === 0) expiryLabel = '🗓️ Monthly Expiry Day';
-            else if (diff === 1) expiryLabel = '🗓️ Monthly Expiry Tomorrow';
-            else if (diff === -1) expiryLabel = '🗓️ Post Monthly Expiry';
-            else if (diff > 0 && diff <= 4) expiryLabel = '🗓️ Monthly Expiry Week — ' + diff + ' day(s) to expiry';
+            // Compute last Thursday of the month: go to 1st of next month, walk back to Thu
+            const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+            const subDays = (nextMonth.getDay() - 4 + 7) % 7 || 7;
+            const lastThu = new Date(nextMonth);
+            lastThu.setDate(lastThu.getDate() - subDays);
+            expiryDays = Math.round((lastThu - d) / 86400000);
+            // Build label from the day difference
+            if (expiryDays === 0) expiryLabel = '🗓️ Monthly Expiry Today';
+            else if (expiryDays === 1) expiryLabel = '🗓️ Monthly Expiry Tomorrow';
+            else if (expiryDays === 2) expiryLabel = '🗓️ Monthly Expiry in 2 Days';
+            else if (expiryDays === -1) expiryLabel = '🗓️ Post Monthly Expiry (Yesterday)';
+            else if (expiryDays > 1 && expiryDays <= 7) expiryLabel = `🗓️ Monthly Expiry in ${expiryDays} Days`;
+            else if (expiryDays < -1 && expiryDays >= -7) expiryLabel = `🗓️ ${Math.abs(expiryDays)} Days Post Monthly Expiry`;
         }
     }
 
@@ -980,86 +979,149 @@ function renderCommentary(ps) {
         return parts.join(' ');
     }
 
-    // ── Generate key takeaways ──
+    // ── Generate key takeaways from actual data ──
     function generateTakeaways() {
         const items = [];
-        const fiiFut = ps.fii_fut_net_change || 0;
-        const fiiCeLong = ps.fii_ce_long_change || 0;
-        const fiiCeShort = ps.fii_ce_short_change || 0;
-        const fiiPeShort = ps.fii_pe_short_change || 0;
-        const fiiPeLong = ps.fii_pe_long_change || 0;
-        const proFut = ps.pro_fut_net_change || 0;
-        const proCeLong = ps.pro_ce_long_change || 0;
-        const proPeShort = ps.pro_pe_short_change || 0;
-        const fiiStkFut = ps.fii_stk_fut_net_change || 0;
-        const score = ps.smart_money_score || 0;
-        const fiiNetCarried = ps.fii_fut_net_carried || 0;
 
-        const fiiNetCallWrite = fiiCeShort - fiiCeLong;  // +ve = writing, -ve = covering
-        const fiiNetPutBuy = fiiPeLong - fiiPeShort;     // +ve = net long puts (bearish), -ve = net writing (bullish)
-        const fiiBullish = fiiFut > 0 || fiiCeLong > 20000 || fiiPeShort > 20000 || fiiStkFut > 20000;
-        const fiiBearish = fiiFut < -5000 || fiiNetCallWrite > 30000 || fiiNetPutBuy > 20000;
-        const proBullish = proFut > 0 || proCeLong > 20000 || proPeShort > 20000;
-        const proBearish = proFut < -5000;
+        // Helper: pick value from a prefix path
+        const g = (path) => ps[path] || 0;
+        const fmt = (v) => formatNum(abs(v));
 
-        // FII bullish signals
-        if (fiiBullish && !fiiBearish) {
-            items.push('🟢 FIIs have built broad-based bullish positions across Index Futures, Calls and Put writing — a strongly constructive signal. 🐂');
-        } else if (fiiBullish && fiiBearish) {
-            items.push('🟡 FII positioning is mixed — bullish on some fronts but bearish on others. Expect range-bound volatility. ⚡');
-            if (fiiNetCarried < -100000) {
-                items.push('🔴 Despite today\'s buying, FIIs still hold a massive net short in Index Futures (' + formatNum(abs(fiiNetCarried)) + ' lots) — structural bearishness persists.');
+        // FII signals (individual legs)
+        const fiiFut = g('fii_fut_net_change');
+        const fiiCeL = g('fii_ce_long_change');
+        const fiiCeS = g('fii_ce_short_change');
+        const fiiPeL = g('fii_pe_long_change');
+        const fiiPeS = g('fii_pe_short_change');
+        const fiiStkF = g('fii_stk_fut_net_change');
+        const fiiStkCe = g('fii_stk_ce_net_change');
+        const fiiStkPe = g('fii_stk_pe_net_change');
+        const fiiNetCarried = g('fii_fut_net_carried');
+        const score = g('smart_money_score');
+
+        const proFut = g('pro_fut_net_change');
+        const proCeL = g('pro_ce_long_change');
+        const proCeS = g('pro_ce_short_change');
+        const proPeL = g('pro_pe_long_change');
+        const proPeS = g('pro_pe_short_change');
+        const proStkF = g('pro_stk_fut_net_change');
+        const proStkCe = g('pro_stk_ce_net_change');
+
+        const clientCeNB = g('client_ce_net_buy');
+        const clientPeNB = g('client_pe_net_buy');
+        const clientFut = g('client_fut_net_change');
+
+        // ── Dynamic FII takeaway ──
+        const fiiActions = [];
+        if (fiiFut > 10000) fiiActions.push(`bought Index Futures (${fmt(fiiFut)} lots)`);
+        else if (fiiFut > 3000) fiiActions.push(`added Index Futures (${fmt(fiiFut)} lots)`);
+        else if (fiiFut < -10000) fiiActions.push(`sold Index Futures (${fmt(fiiFut)} lots)`);
+        else if (fiiFut < -3000) fiiActions.push(`reduced Index Futures (${fmt(fiiFut)} lots)`);
+
+        if (fiiCeL > 30000) fiiActions.push(`aggressively bought Index Calls (${fmt(fiiCeL)} lots)`);
+        else if (fiiCeL > 10000) fiiActions.push(`bought Index Calls (${fmt(fiiCeL)} lots)`);
+        if (fiiCeS > 30000) fiiActions.push(`wrote Index Calls (${fmt(fiiCeS)} lots)`);
+        else if (fiiCeS > 10000) fiiActions.push(`wrote Calls (${fmt(fiiCeS)} lots)`);
+
+        if (fiiPeS > 30000) fiiActions.push(`wrote Index Puts (${fmt(fiiPeS)} lots)`);
+        else if (fiiPeS > 10000) fiiActions.push(`wrote Puts (${fmt(fiiPeS)} lots)`);
+        if (fiiPeL > 20000) fiiActions.push(`bought Index Puts as hedges (${fmt(fiiPeL)} lots)`);
+        else if (fiiPeL > 8000) fiiActions.push(`added Put hedges (${fmt(fiiPeL)} lots)`);
+
+        if (fiiStkF > 20000) fiiActions.push(`bought Stock Futures (${fmt(fiiStkF)} lots)`);
+        else if (fiiStkF < -20000) fiiActions.push(`sold Stock Futures (${fmt(fiiStkF)} lots)`);
+        if (fiiStkCe < -20000) fiiActions.push(`bought Stock Calls (${fmt(fiiStkCe)} lots)`);
+        else if (fiiStkCe > 20000) fiiActions.push(`sold Stock Calls (${fmt(fiiStkCe)} lots)`);
+
+        if (fiiActions.length) {
+            // Determine overall directional label
+            const bullishCnt = [fiiFut > 0, fiiCeL > 10000, fiiPeS > 10000, fiiStkF > 10000, fiiStkCe < 0, fiiStkPe > 0].filter(Boolean).length;
+            const bearishCnt = [fiiFut < 0, fiiCeS > 10000, fiiPeL > 10000, fiiStkF < -10000, fiiStkCe > 0, fiiStkPe < 0].filter(Boolean).length;
+            const dir = bullishCnt > bearishCnt + 1 ? '🟢 Bullish' : bearishCnt > bullishCnt + 1 ? '🔴 Bearish' : '🟡 Mixed';
+            let tail = '';
+            if (abs(fiiNetCarried) > 100000) {
+                tail = ` (still net ${fiiNetCarried < 0 ? 'SHORT' : 'LONG'} ${fmt(fiiNetCarried)} Index Futures)`;
             }
-        } else if (fiiBearish) {
-            items.push('🔴 FIIs continue to build bearish Index exposure through Futures selling and Call writing. ⚠️');
+            items.push(`FIIs: ${dir}. ${fiiActions.join('; ')}.${tail}`);
         }
 
-        // Pro alignment
-        if (proBullish && fiiBullish) {
-            items.push('🟢 FIIs and Proprietary traders are aligned on the bullish side — smart money convergence. 💪');
-        } else if (proBullish && fiiBearish) {
-            items.push('🟡 Pros are bullish while FIIs are bearish — a tug of war that keeps volatility elevated. ⚡');
-        } else if (proBearish && fiiBullish) {
-            items.push('🟡 FIIs are bullish but Pros have turned defensive — divergence warrants caution.');
+        // ── Dynamic Pro takeaway ──
+        const proActions = [];
+        if (proFut > 5000) proActions.push(`bought Index Futures (${fmt(proFut)} lots)`);
+        else if (proFut < -5000) proActions.push(`sold Index Futures (${fmt(proFut)} lots)`);
+        if (proCeL > 30000) proActions.push(`massive Call buying (${fmt(proCeL)} lots)`);
+        else if (proCeL > 10000) proActions.push(`bought Index Calls (${fmt(proCeL)} lots)`);
+        if (proCeS > 20000) proActions.push(`wrote Calls (${fmt(proCeS)} lots)`);
+        if (proPeS > 30000) proActions.push(`wrote Puts (${fmt(proPeS)} lots)`);
+        else if (proPeS > 10000) proActions.push(`wrote Puts (${fmt(proPeS)} lots)`);
+        if (proPeL > 20000) proActions.push(`added Put hedges (${fmt(proPeL)} lots)`);
+        if (proStkF > 20000) proActions.push(`bought Stock Futures (${fmt(proStkF)} lots)`);
+        else if (proStkF < -20000) proActions.push(`sold Stock Futures (${fmt(proStkF)} lots)`);
+        if (proStkCe < -20000) proActions.push(`bought Stock Calls (${fmt(proStkCe)} lots)`);
+        else if (proStkCe > 20000) proActions.push(`sold Stock Calls (${fmt(proStkCe)} lots)`);
+
+        if (proActions.length) {
+            const pBullish = [proFut > 0, proCeL > 10000, proPeS > 10000, proStkF > 10000, proStkCe < 0].filter(Boolean).length;
+            const pBearish = [proFut < 0, proCeS > 10000, proPeL > 10000, proStkF < -10000, proStkCe > 0].filter(Boolean).length;
+            const pdir = pBullish > pBearish + 1 ? '🟢 Bullish' : pBearish > pBullish + 1 ? '🔴 Bearish' : '🟡 Mixed';
+            items.push(`Pros: ${pdir}. ${proActions.join('; ')}.`);
         }
 
-        // Retail trap/confirmation
+        // ── Dynamic DII takeaway ──
+        const diiActions = [];
+        const diiFut = g('dii_fut_net_change');
+        const diiCeL = g('dii_ce_long_change');
+        const diiPeL = g('dii_pe_long_change');
+        const diiStkF = g('dii_stk_fut_net_change');
+        if (diiFut > 0) diiActions.push(`bought Index Futures (${fmt(diiFut)} lots)`);
+        else if (diiFut < 0) diiActions.push(`sold Index Futures (${fmt(diiFut)} lots)`);
+        if (diiCeL > 5000) diiActions.push(`bought Calls (${fmt(diiCeL)} lots)`);
+        if (diiPeL > 5000) diiActions.push(`bought Puts (${fmt(diiPeL)} lots)`);
+        if (diiStkF > 10000) diiActions.push(`bought Stock Futures (${fmt(diiStkF)} lots)`);
+        else if (diiStkF < -10000) diiActions.push(`sold Stock Futures (${fmt(diiStkF)} lots)`);
+        if (diiActions.length) items.push(`DIIs: ${diiActions.join('; ')}.`);
+
+        // ── Client (Retail) takeaway ──
+        const clientActions = [];
+        if (clientFut > 5000) clientActions.push(`bought Index Futures (${fmt(clientFut)} lots)`);
+        else if (clientFut < -5000) clientActions.push(`sold Index Futures (${fmt(clientFut)} lots)`);
+        if (clientCeNB > 20000) clientActions.push(`bought Index Calls (${fmt(clientCeNB)} lots)`);
+        else if (clientCeNB < -20000) clientActions.push(`sold Index Calls (${fmt(clientCeNB)} lots)`);
+        if (clientPeNB > 20000) clientActions.push(`bought Index Puts for protection (${fmt(clientPeNB)} lots)`);
+        else if (clientPeNB < -20000) clientActions.push(`sold Index Puts (${fmt(clientPeNB)} lots)`);
+        if (clientActions.length) items.push(`Retail: ${clientActions.join('; ')}.`);
+
+        // ── FII + Pro alignment ──
+        const fiiDir = fiiFut + (fiiCeL - fiiCeS) * 0.3 + (fiiPeS - fiiPeL) * 0.3 + fiiStkF * 0.5;
+        const proDir = proFut + (proCeL - proCeS) * 0.3 + (proPeS - proPeL) * 0.3 + proStkF * 0.5;
+        if (fiiDir > 0 && proDir > 0) items.push('🟢 FIIs and Proprietary traders are aligned on the bullish side — smart money convergence. 💪');
+        else if (fiiDir < 0 && proDir < 0) items.push('🔴 Both FIIs and Pros are bearish — strong alignment on downside. ⚠️');
+        else if (fiiDir > 0 && proDir < -5000) items.push('🟡 FIIs are bullish but Pros have turned defensive — divergence warrants caution.');
+        else if (fiiDir < 0 && proDir > 5000) items.push('🟡 Pros are bullish while FIIs are bearish — a tug of war keeps volatility elevated. ⚡');
+
+        // ── Retail trap/confirmation ──
         const retailTrap = ps.retail_trap_alarm;
         const retailConf = ps.retail_confirmation_message;
-        if (retailTrap) {
-            items.push(`🔴 ${retailTrap} 😨`);
-        } else if (retailConf) {
-            items.push(`🟢 ${retailConf}`);
-        }
+        if (retailTrap) items.push(`🔴 ${retailTrap} 😨`);
+        else if (retailConf) items.push(`🟢 ${retailConf}`);
 
-        // FII stock futures
-        if (fiiStkFut > 30000) {
-            items.push(`🟢 Strong FII buying in Stock Futures (${formatNum(abs(fiiStkFut))} lots) reflects confidence in stock-specific strength.`);
-        } else if (fiiStkFut < -30000) {
-            items.push(`🔴 FIIs reduced Stock Futures exposure significantly (${formatNum(abs(fiiStkFut))} lots) — caution on equities.`);
-        }
+        // ── Score-based conclusion ──
+        const sLabel = score >= 40 ? 'strongly bullish' : score >= 15 ? 'moderately bullish' : score <= -40 ? 'strongly bearish' : score <= -15 ? 'moderately bearish' : 'neutral/mixed';
+        const sEmoji = score >= 15 ? '🟢' : score <= -15 ? '🔴' : '🟡';
+        const sAdvice = score >= 40 ? 'Align with smart money direction.' : score >= 15 ? 'Look for price confirmation before aggressive entries.' : score <= -40 ? 'Consider defensive positioning.' : score <= -15 ? 'Avoid aggressive longs without confirmation.' : 'Wait for clearer directional signal before committing.';
+        items.push(`${sEmoji} Smart Money Score: <strong>${score > 0 ? '+' : ''}${score}</strong> (${sLabel}). ${sAdvice}`);
 
-        // Pro call buying
-        if (proCeLong > 50000) {
-            items.push(`🟢 PROs massive Call buying (${formatNum(abs(proCeLong))} lots) reinforces positive outlook in selected stocks. 📈`);
-        }
-
-        // Score-based conclusion
-        if (score >= 40) {
-            items.push('🟢 Overall institutional positioning remains strongly bullish — align with smart money direction.');
-        } else if (score >= 15) {
-            items.push('🟢 Overall institutional bias is moderately bullish — look for price confirmation before aggressive entries.');
-        } else if (score <= -40) {
-            items.push('🔴 Overall institutional positioning is bearish — consider defensive positioning. ⚠️');
-        } else if (score <= -15) {
-            items.push('🔴 Overall institutional bias is bearish — remain cautious with new longs.');
-        } else {
-            items.push('🟡 Overall institutional positioning is neutral to mixed — wait for clearer directional signal.');
-        }
-
-        // Expiry context — only pre-expiry days, not post-expiry
-        if (expiryLabel && !expiryLabel.includes('Post') && expiryLabel.includes('Expiry')) {
-            items.push('⚠️ ' + expiryLabel + ' — a significant portion of today\'s activity reflects unwinding and rollover rather than fresh directional bets. The next 2-3 sessions will provide clearer signals.');
+        // ── Expiry context (fully dynamic) ──
+        if (expiryDays !== null) {
+            if (expiryDays === 0) {
+                items.push('⚠️ 🗓️ Today is Monthly Expiry. Most F&O activity reflects settlement and rollover — not fresh directional bets. The next 2-3 sessions of the new series will reveal true institutional intent.');
+            } else if (expiryDays === 1) {
+                items.push('⚠️ 🗓️ Monthly Expiry Tomorrow. Positions being rolled or squared up will distort today\'s directional signals. Focus on the net rollover and fresh positions in the new series.');
+            } else if (expiryDays >= 2 && expiryDays <= 5) {
+                items.push(`⚠️ 🗓️ Monthly Expiry in ${expiryDays} trading sessions. Unwinding and rollover activity may distort pure directional signals. Watch the net rollover for the real picture.`);
+            } else if (expiryDays >= -2 && expiryDays < 0) {
+                items.push(`📌 🗓️ Post Monthly Expiry (${abs(expiryDays)} day(s) ago). The new series is still building — fresh institutional positioning over the next few sessions will clarify the monthly trend.`);
+            }
         }
 
         return items;
