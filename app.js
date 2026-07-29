@@ -570,14 +570,19 @@ async function loadMoneyFlowView() {
         // Render Panel 1: Executive Market Verdict Banner
         renderExecutiveVerdict(moneyFlowData.executive_summary || {});
 
-        // Retail Trap Alarm (from participant_summary)
+        // Retail Trap Alarm / Confirmation (from participant_summary)
         const alarmContainer = document.getElementById('retail-trap-alarm');
         if (alarmContainer) {
             const alarm = (moneyFlowData.participant_summary || {}).retail_trap_alarm;
+            const confirmation = (moneyFlowData.participant_summary || {}).retail_confirmation_message;
             if (alarm) {
                 const isCallTrap = alarm.includes('CALL TRAP');
                 alarmContainer.className = 'retail-trap-alarm ' + (isCallTrap ? 'call-trap' : 'put-trap');
                 alarmContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + alarm;
+                alarmContainer.style.display = 'flex';
+            } else if (confirmation) {
+                alarmContainer.className = 'retail-trap-alarm retail-confirmation';
+                alarmContainer.innerHTML = '<i class="fa-solid fa-check-circle"></i> ' + confirmation;
                 alarmContainer.style.display = 'flex';
             } else {
                 alarmContainer.style.display = 'none';
@@ -727,6 +732,8 @@ function renderFIIStance(ps) {
             <i class="fa-solid fa-circle-info"></i> Date: <strong>${ps.date || '--'}</strong>
             | FII Futures Net Carried: <strong class="font-mono ${ps.fii_fut_net_carried >= 0 ? 'pos-green' : 'pos-red'}">${formatIndianNum(ps.fii_fut_net_carried)}</strong>
             | Scores — FII: <strong>${ps.fii_raw_score || 0}</strong> Pro: <strong>${ps.pro_raw_score || 0}</strong> DII: <strong>${ps.dii_raw_score || 0}</strong>
+            ${ps.fii_dii_modifier ? '| FII-DII: <strong>' + (ps.fii_dii_modifier > 0 ? '+' : '') + ps.fii_dii_modifier + '</strong>' : ''}
+            ${ps.iv_modifier_applied ? '| IV: <strong>' + (ps.iv_modifier_applied > 0 ? '+' : '') + ps.iv_modifier_applied + '</strong>' : ''}
         </div>
     `;
 }
@@ -793,7 +800,7 @@ function renderMultiDayConviction(trends, symbol) {
     const sym = symbol || 'NIFTY';
     const trend = trends[sym];
     if (!trend || !trend.strikes || trend.strikes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Insufficient history to render 5-Day Conviction Matrix. Snapshot archives building...</td></tr>';
         return;
     }
 

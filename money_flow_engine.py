@@ -49,7 +49,45 @@ DII_OPT_THRESHOLD = 4000
 RETAIL_TRAP_THRESHOLD = 25000
 
 # Composite score is clipped to this range both before and after the retail-trap overlay
-SCORE_CLIP = 100
+SCORE_CLIP = 150
+
+# IV confidence modifier bounds
+IV_MOD_MAX = 10     # max score reduction when IV is very high (noisy market)
+IV_MOD_BOOST = 5    # max score boost when IV is very low (clear signal)
+IV_HIGH_THRESH = 25  # avg IV above this → reduce confidence
+IV_LOW_THRESH = 12   # avg IV below this → increase confidence
+
+
+def compute_iv_modifier(stocks):
+    """
+    Compute an IV-based confidence modifier for the composite score.
+    Higher IV → noisier market → reduce conviction (negative modifier).
+    Lower IV → clearer signal → increase conviction (positive modifier).
+    Uses ATM strike IVs across all tracked indices.
+    """
+    ivs = []
+    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+        if sym not in stocks:
+            continue
+        data = stocks[sym]
+        ltp = data.get("ltp")
+        strikes = data.get("strikes", [])
+        if not ltp or not strikes:
+            continue
+        near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.02]
+        for s in near:
+            if s.get("ce_iv", 0) and s["ce_iv"] > 0:
+                ivs.append(s["ce_iv"])
+            if s.get("pe_iv", 0) and s["pe_iv"] > 0:
+                ivs.append(s["pe_iv"])
+    if not ivs:
+        return 0.0
+    avg_iv = float(np.mean(ivs))
+    if avg_iv > IV_HIGH_THRESH:
+        return -min(IV_MOD_MAX, (avg_iv - IV_HIGH_THRESH) * 0.5)
+    elif avg_iv < IV_LOW_THRESH:
+        return min(IV_MOD_BOOST, (IV_LOW_THRESH - avg_iv) * 1.0)
+    return 0.0
 
 
 def clean_val(val):
@@ -86,7 +124,7 @@ def _sort_dates_chronologically(raw_dates):
         return list(raw_dates)
 
 
-def load_participant_data():
+def load_participant_data(iv_modifier=0):
     """Load latest FDCP data and derive FII, Pro & DII daily positioning shifts."""
     if not os.path.exists(FDCP_FILE):
         return None
@@ -205,20 +243,42 @@ def load_participant_data():
         )
         weighted_score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score))
 
+        # FII-DII Alignment Modifier — when both have the same directional view,
+        # add a confidence bonus. When they diverge, reduce conviction.
+        fii_dii_modifier = 0
+        if fii_raw_score > 0 and dii_raw_score > 0:
+            fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+        elif fii_raw_score < 0 and dii_raw_score < 0:
+            fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+        elif fii_raw_score * dii_raw_score < 0:
+            fii_dii_modifier = -min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+
         # Retail Trap / Contrarian Sentiment Filter (lowest-priority participant,
-        # only ever nudges the already-weighted institutional score)
+        # only ever nudges the already-weighted institutional score).
+        # Also detects when retail confirms FII direction for a confidence bonus.
         retail_trap_alarm = None
         trap_adjustment = 0
+        retail_confirmation_message = None
+        retail_confirmation_score = 0
+
+        # Existing traps: retail on the wrong side of FII
         if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > FII_OPT_THRESHOLD:
             trap_adjustment = -15
             retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
         elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > FII_OPT_THRESHOLD:
-            # Retail is net LONG puts (bearish/hedging) while FII is writing puts
-            # (defending the floor, i.e. bullish) - retail is on the wrong side.
             trap_adjustment = 15
             retail_trap_alarm = "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts."
 
-        score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score + trap_adjustment))
+        # New confirmations: retail NOT fighting FII direction (prudent positioning)
+        if trap_adjustment == 0:
+            if client_ce_net_buy < -RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] < -FII_OPT_THRESHOLD:
+                retail_confirmation_score = 5
+                retail_confirmation_message = "RETAIL CALL CONFIRMATION: Retail not chasing rally as FIIs cover calls."
+            elif client_pe_net_buy < -RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] < -FII_OPT_THRESHOLD:
+                retail_confirmation_score = -5
+                retail_confirmation_message = "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor."
+
+        score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score + trap_adjustment + retail_confirmation_score + fii_dii_modifier + iv_modifier))
 
         if score >= 40:
             bias_label = "HIGH CONFIDENCE BULLISH"
@@ -236,10 +296,9 @@ def load_participant_data():
             bias_label = "NEUTRAL / SIDEWAYS"
             action_desc = "Mixed operator signals — expecting rangebound consolidation."
 
-        # Track the clipped weighted score *before* trap adjustment so
-        # score_breakdown.trap_adjustment is accurate (not conflated with clipping).
-        # weighted_score is already clipped at this point.
-        weighted_clipped_before_trap = weighted_score
+        # Track the clipped weighted score *before* alignment/retail/IV adjustments
+        # so score_breakdown values are accurate (not conflated with clipping).
+        weighted_clipped_before_adjustments = weighted_score
 
         return {
             "date": latest_date,
@@ -249,7 +308,11 @@ def load_participant_data():
             "action_desc": action_desc,
             "retail_trap_alarm": retail_trap_alarm,
             "trap_adjustment": trap_adjustment,
-            "weighted_clipped_before_trap": weighted_clipped_before_trap,
+            "retail_confirmation_message": retail_confirmation_message,
+            "retail_confirmation_score": retail_confirmation_score,
+            "fii_dii_modifier": fii_dii_modifier,
+            "iv_modifier_applied": iv_modifier,
+            "weighted_clipped_before_adjustments": weighted_clipped_before_adjustments,
 
             "fii_fut_net_change": fii["fut_chg"],
             "fii_ce_long_change": fii["ce_long_chg"],
@@ -598,6 +661,9 @@ def detect_flow_divergence(stock_data, participant_summary):
     """
     Identifies strikes where institutional flow and strike OI movement diverge,
     signalling potential traps, squeezes, or conflicting battles.
+    Thresholds are scaled per index relative to NIFTY OI baseline so that
+    lower-OI indices (e.g. FINNIFTY) aren't oversignalled and higher-OI
+    indices (e.g. BANKNIFTY) aren't undersignalled.
     """
     divergences = []
     if not participant_summary:
@@ -606,6 +672,26 @@ def detect_flow_divergence(stock_data, participant_summary):
     fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
     fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
 
+    # First pass: compute per-index average OI for threshold scaling.
+    # NIFTY is the reference (scale=1.0). Other indices get proportionally
+    # scaled thresholds based on their average OI per strike.
+    index_avg_oi = {}
+    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+        if sym not in stock_data:
+            continue
+        raw = stock_data[sym]
+        ltp = raw.get("ltp")
+        strikes = raw.get("strikes", [])
+        if not ltp or not strikes:
+            continue
+        strikes = sorted(strikes, key=lambda x: x["strike"])
+        near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.04]
+        oi_vals = [s.get("ce_oi", 0) for s in near if s.get("ce_oi", 0) > 0]
+        index_avg_oi[sym] = float(np.mean(oi_vals)) if oi_vals else 1.0
+
+    ref_avg_oi = index_avg_oi.get("NIFTY", 1.0)
+
+    # Second pass: detect divergences with scaled thresholds
     for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
         if sym not in stock_data:
             continue
@@ -617,13 +703,21 @@ def detect_flow_divergence(stock_data, participant_summary):
         strikes = sorted(strikes, key=lambda x: x["strike"])
         near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.04]
 
+        # Scale divergence thresholds by this index's average OI vs NIFTY
+        avg_oi = index_avg_oi.get(sym, 1.0)
+        scale = avg_oi / ref_avg_oi if ref_avg_oi > 0 else 1.0
+        conflict_th = int(5000 * scale)
+        unwind_th = int(5000 * scale)
+        resistance_th = int(8000 * scale)
+        floor_th = int(5000 * scale)
+
         for s in near:
             st = s["strike"]
             ce_doi = s.get("ce_change_oi", 0)
             pe_doi = s.get("pe_change_oi", 0)
 
             # Conflict: Both CE and PE building at same strike (conflicting bets)
-            if ce_doi > 5000 and pe_doi > 5000:
+            if ce_doi > conflict_th and pe_doi > conflict_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
@@ -634,7 +728,7 @@ def detect_flow_divergence(stock_data, participant_summary):
                 continue
 
             # FII writing calls (bearish macro) but CE is unwinding here (bullish at this strike)
-            if fii_ce_short > FII_OPT_THRESHOLD and ce_doi < -5000:
+            if fii_ce_short > FII_OPT_THRESHOLD and ce_doi < -unwind_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
@@ -645,7 +739,7 @@ def detect_flow_divergence(stock_data, participant_summary):
                 continue
 
             # FII writing puts (bullish macro) but PE is unwinding here (bearish at this strike)
-            if fii_pe_short > FII_OPT_THRESHOLD and pe_doi < -5000:
+            if fii_pe_short > FII_OPT_THRESHOLD and pe_doi < -unwind_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
@@ -656,7 +750,7 @@ def detect_flow_divergence(stock_data, participant_summary):
                 continue
 
             # Price above strike but CE building (resistance getting stronger against the trend)
-            if ltp > st and ce_doi > 8000:
+            if ltp > st and ce_doi > resistance_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
@@ -667,7 +761,7 @@ def detect_flow_divergence(stock_data, participant_summary):
                 continue
 
             # Price below strike but PE unwinding (support fading below the price)
-            if ltp < st and pe_doi < -5000:
+            if ltp < st and pe_doi < -floor_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
@@ -808,7 +902,7 @@ def build_multiday_conviction(history_dir, participant_summary=None):
 
         hard_res_th = int(25000 * scale)
         building_th = int(2500 * scale)
-        unwind_th = int(2500 * scale)
+        unwind_th = int(1500 * scale)
 
         for item in sorted_strikes:
             ce_hist = item["ce_oi_history"]
@@ -889,7 +983,7 @@ def run_engine():
     timestamp = oc_raw.get("timestamp", datetime.now(timezone.utc).isoformat())
     stocks = oc_raw.get("stocks", {})
 
-    participant_summary = load_participant_data()
+    participant_summary = load_participant_data(iv_modifier=compute_iv_modifier(stocks))
     index_rolls = detect_index_rolls(stocks)
     stock_breadth = scan_stock_breadth(stocks, participant_summary)
     conviction_trends = build_multiday_conviction(HISTORY_DIR, participant_summary)
@@ -904,8 +998,11 @@ def run_engine():
             "fii_weight": FII_WEIGHT,
             "pro_weight": PRO_WEIGHT,
             "dii_weight": DII_WEIGHT,
-            "weighted_clipped_before_trap": participant_summary.get("weighted_clipped_before_trap", 0),
+            "weighted_clipped_before_adjustments": participant_summary.get("weighted_clipped_before_adjustments", 0),
             "trap_adjustment": participant_summary.get("trap_adjustment", 0),
+            "retail_confirmation_score": participant_summary.get("retail_confirmation_score", 0),
+            "fii_dii_modifier": participant_summary.get("fii_dii_modifier", 0),
+            "iv_modifier": participant_summary.get("iv_modifier_applied", 0),
         }
 
     verdict_payload = {
@@ -953,7 +1050,8 @@ if __name__ == "__main__":
             print()
             print(f"Smart Money Score: {participant_data['smart_money_score']}")
             print(f"Bias Label: {participant_data['bias_label']}")
-            print(f"Retail Trap Alarm: {participant_data.get('retail_trap_alarm', 'None')}")
+            trap_msg = participant_data.get('retail_trap_alarm') or participant_data.get('retail_confirmation_message') or 'None'
+            print(f"Retail Verdict: {trap_msg}")
             print()
             print("-- Raw Scores (proportional, per-participant thresholds) --")
             print(f"  FII  raw_score = {participant_data.get('fii_raw_score', 'N/A')}  (weight={FII_WEIGHT}, fut_th={FII_FUT_THRESHOLD}, opt_th={FII_OPT_THRESHOLD})")
@@ -966,11 +1064,17 @@ if __name__ == "__main__":
             )
             weighted_clipped = max(-SCORE_CLIP, min(SCORE_CLIP, weighted))
             trap_adj = participant_data.get("trap_adjustment", 0)
-            clipped_before_trap = participant_data.get("weighted_clipped_before_trap", weighted_clipped)
+            conf_score = participant_data.get("retail_confirmation_score", 0)
+            fii_dii_mod = participant_data.get("fii_dii_modifier", 0)
+            iv_mod = participant_data.get("iv_modifier_applied", 0)
+            clipped_before = participant_data.get("weighted_clipped_before_adjustments", weighted_clipped)
             print(f"\n  Weighted composite (before clip): {weighted:.1f}")
             print(f"  After clip [{SCORE_CLIP}]: {weighted_clipped}")
-            print(f"  Clipped before trap adj: {clipped_before_trap}")
-            print(f"  Trap adjustment applied: {trap_adj}")
+            print(f"  Clipped before adjustments: {clipped_before}")
+            print(f"  FII-DII alignment modifier: {fii_dii_mod:+.0f}")
+            print(f"  Trap adjustment: {trap_adj:+.0f}")
+            print(f"  Retail confirmation: {conf_score:+.0f}")
+            print(f"  IV modifier: {iv_mod:+.0f}")
             print(f"  Final score: {participant_data['smart_money_score']}")
             print()
             print("-- Participant Data --")
