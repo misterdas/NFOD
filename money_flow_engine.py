@@ -196,12 +196,12 @@ def load_participant_data():
         trap_adjustment = 0
         if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > OPT_THRESHOLD:
             trap_adjustment = -15
-            retail_trap_alarm = "⚠️ RETAIL CALL TRAP: Retail buying calls while FIIs aggressively write calls."
+            retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
         elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > OPT_THRESHOLD:
             # Retail is net LONG puts (bearish/hedging) while FII is writing puts
             # (defending the floor, i.e. bullish) - retail is on the wrong side.
             trap_adjustment = 15
-            retail_trap_alarm = "🚀 RETAIL PUT TRAP: Retail buying puts while FIIs aggressively write puts."
+            retail_trap_alarm = "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts."
 
         score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score + trap_adjustment))
 
@@ -363,14 +363,14 @@ def detect_index_rolls(stock_data):
                 traps_and_squeezes.append({
                     "type": "SYN_BULL",
                     "strike": atm_strike["strike"],
-                    "badge": "🟢 SYNTHETIC PREMIUM",
+                    "badge": "SYNTHETIC PREMIUM",
                     "desc": f"Synthetic futures (+{premium:.1f} pts). Operators are loading Calls / Shorting Puts."
                 })
             elif premium < -20:
                 traps_and_squeezes.append({
                     "type": "SYN_BEAR",
                     "strike": atm_strike["strike"],
-                    "badge": "🔴 SYNTHETIC DISCOUNT",
+                    "badge": "SYNTHETIC DISCOUNT",
                     "desc": f"Synthetic futures ({premium:.1f} pts). Operators are shorting futures via spread Parity."
                 })
 
@@ -386,14 +386,14 @@ def detect_index_rolls(stock_data):
                 traps_and_squeezes.append({
                     "type": "CALL_SQUEEZE",
                     "strike": st,
-                    "badge": "🚀 CALL WRITER SQUEEZE",
+                    "badge": "CALL WRITER SQUEEZE",
                     "desc": f"Bears forced to cover CE at {st} as LTP ({ltp:,.1f}) crossed above."
                 })
             elif ltp < st and adj_pe_doi < trap_threshold and s["pe_oi"] > 5000:
                 traps_and_squeezes.append({
                     "type": "PUT_TRAP",
                     "strike": st,
-                    "badge": "⚠️ PUT WRITER TRAP",
+                    "badge": "PUT WRITER TRAP",
                     "desc": f"Bulls trapped at {st} PE as LTP ({ltp:,.1f}) broke below."
                 })
 
@@ -529,6 +529,12 @@ def scan_stock_breadth(stock_data):
         "put_writing_bullish": put_writing,
         "call_unwinding_bullish": call_unwinding,
         "put_unwinding_bearish": put_unwinding,
+        "counts": {
+            "call_writing": len(call_writing),
+            "put_writing": len(put_writing),
+            "call_unwinding": len(call_unwinding),
+            "put_unwinding": len(put_unwinding),
+        },
     }
 
 
@@ -663,12 +669,29 @@ def run_engine():
     stock_breadth = scan_stock_breadth(stocks)
     conviction_trends = build_multiday_conviction(HISTORY_DIR)
 
+    score_breakdown = {}
+    if participant_summary:
+        score_breakdown = {
+            "fii_raw_score": participant_summary.get("fii_raw_score", 0),
+            "pro_raw_score": participant_summary.get("pro_raw_score", 0),
+            "dii_raw_score": participant_summary.get("dii_raw_score", 0),
+            "fii_weight": FII_WEIGHT,
+            "pro_weight": PRO_WEIGHT,
+            "dii_weight": DII_WEIGHT,
+            "trap_adjustment": participant_summary.get("smart_money_score", 0) - (
+                participant_summary.get("fii_raw_score", 0) * FII_WEIGHT
+                + participant_summary.get("pro_raw_score", 0) * PRO_WEIGHT
+                + participant_summary.get("dii_raw_score", 0) * DII_WEIGHT
+            ) if participant_summary.get("smart_money_score") else 0,
+        }
+
     verdict_payload = {
         "timestamp": timestamp,
         "executive_summary": {
             "bias_label": participant_summary["bias_label"] if participant_summary else "NEUTRAL",
             "smart_money_score": participant_summary["smart_money_score"] if participant_summary else 0,
             "action_desc": participant_summary["action_desc"] if participant_summary else "No participant data available.",
+            "score_breakdown": score_breakdown,
         },
         "participant_summary": participant_summary,
         "index_rolls": index_rolls,
@@ -682,11 +705,54 @@ def run_engine():
     with open(OUTPUT_FILE, "w") as f:
         json.dump(cleaned, f, indent=2)
 
-    print(f"✅ Success! Institutional Verdict saved to {OUTPUT_FILE}")
+    print(f"[OK] Success! Institutional Verdict saved to {OUTPUT_FILE}")
     print(f"   Bias: {verdict_payload['executive_summary']['bias_label']}")
     print(f"   Index Rolls: {list(index_rolls.keys())}")
     print(f"   Stock Breadth: Call Write={len(stock_breadth['call_writing_bearish'])}, Put Write={len(stock_breadth['put_writing_bullish'])}")
 
 
 if __name__ == "__main__":
-    run_engine()
+    import sys
+
+    dry_run = "--dry-run" in sys.argv
+
+    if dry_run:
+        print("=" * 60)
+        print("  DRY RUN MODE — Scoring Diagnostics Only")
+        print("=" * 60)
+        print()
+        # Run only the participant data scoring
+        participant_data = load_participant_data()
+        if participant_data:
+            print(f"Date: {participant_data['date']}  ->  {participant_data['prev_date']}")
+            print()
+            print(f"Smart Money Score: {participant_data['smart_money_score']}")
+            print(f"Bias Label: {participant_data['bias_label']}")
+            print(f"Retail Trap Alarm: {participant_data.get('retail_trap_alarm', 'None')}")
+            print()
+            print("-- Raw Scores --")
+            print(f"  FII  raw_score = {participant_data.get('fii_raw_score', 'N/A')}  (weight={FII_WEIGHT})")
+            print(f"  Pro  raw_score = {participant_data.get('pro_raw_score', 'N/A')}  (weight={PRO_WEIGHT})")
+            print(f"  DII  raw_score = {participant_data.get('dii_raw_score', 'N/A')}  (weight={DII_WEIGHT})")
+            weighted = (
+                participant_data.get("fii_raw_score", 0) * FII_WEIGHT
+                + participant_data.get("pro_raw_score", 0) * PRO_WEIGHT
+                + participant_data.get("dii_raw_score", 0) * DII_WEIGHT
+            )
+            weighted_clipped = max(-SCORE_CLIP, min(SCORE_CLIP, weighted))
+            print(f"\n  Weighted composite (before clip): {weighted}")
+            print(f"  After clip [{SCORE_CLIP}]: {weighted_clipped}")
+            print(f"  Final score (after trap adj): {participant_data['smart_money_score']}")
+            print(f"  Trap adjustment: {participant_data['smart_money_score'] - weighted_clipped}")
+            print()
+            print("-- Participant Data --")
+            for key in ["fii_fut_net_change", "fii_ce_net_short_change", "fii_pe_net_short_change",
+                        "pro_fut_net_change", "pro_ce_net_short_change", "pro_pe_net_short_change",
+                        "client_ce_net_buy", "client_pe_net_buy"]:
+                print(f"  {key}: {participant_data.get(key, 'N/A')}")
+        else:
+            print("ERROR: No participant data available. Check FDCP_Data.csv.")
+        print()
+        print("Dry run complete. No output file written.")
+    else:
+        run_engine()

@@ -3,7 +3,16 @@
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BULLISH",
     "smart_money_score": 100,
-    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors."
+    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+    "score_breakdown": {
+      "fii_raw_score": 75,
+      "pro_raw_score": 75,
+      "dii_raw_score": 0,
+      "fii_weight": 1.0,
+      "pro_weight": 0.6,
+      "dii_weight": 0.4,
+      "trap_adjustment": -20.0
+    }
   },
   "participant_summary": {
     "date": "29-07-2026",
@@ -11,7 +20,7 @@
     "smart_money_score": 100,
     "bias_label": "HIGH CONFIDENCE BULLISH",
     "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
-    "retail_trap_alarm": "\ud83d\ude80 RETAIL PUT TRAP: Retail buying puts while FIIs aggressively write puts.",
+    "retail_trap_alarm": "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts.",
     "fii_fut_net_change": 10783.0,
     "fii_ce_long_change": 97478.0,
     "fii_ce_short_change": 8144.0,
@@ -72,19 +81,19 @@
         {
           "type": "CALL_SQUEEZE",
           "strike": 23900,
-          "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
+          "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 23900 as LTP (24,250.2) crossed above."
         },
         {
           "type": "CALL_SQUEEZE",
           "strike": 23950,
-          "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
+          "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 23950 as LTP (24,250.2) crossed above."
         },
         {
           "type": "CALL_SQUEEZE",
           "strike": 24000,
-          "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
+          "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 24000 as LTP (24,250.2) crossed above."
         }
       ]
@@ -112,13 +121,13 @@
         {
           "type": "SYN_BULL",
           "strike": 57200,
-          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "badge": "SYNTHETIC PREMIUM",
           "desc": "Synthetic futures (+102.7 pts). Operators are loading Calls / Shorting Puts."
         },
         {
           "type": "CALL_SQUEEZE",
           "strike": 57000,
-          "badge": "\ud83d\ude80 CALL WRITER SQUEEZE",
+          "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 57000 as LTP (57,205.9) crossed above."
         }
       ]
@@ -146,7 +155,7 @@
         {
           "type": "SYN_BULL",
           "strike": 26300,
-          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "badge": "SYNTHETIC PREMIUM",
           "desc": "Synthetic futures (+69.3 pts). Operators are loading Calls / Shorting Puts."
         }
       ]
@@ -174,7 +183,7 @@
         {
           "type": "SYN_BULL",
           "strike": 14675,
-          "badge": "\ud83d\udfe2 SYNTHETIC PREMIUM",
+          "badge": "SYNTHETIC PREMIUM",
           "desc": "Synthetic futures (+47.4 pts). Operators are loading Calls / Shorting Puts."
         }
       ]
@@ -538,7 +547,13 @@
         "top_pe_unwind_strike": 3800,
         "top_pe_unwind_doi": -869
       }
-    ]
+    ],
+    "counts": {
+      "call_writing": 10,
+      "put_writing": 10,
+      "call_unwinding": 3,
+      "put_unwinding": 2
+    }
   },
   "conviction_trends": {
     "NIFTY": {

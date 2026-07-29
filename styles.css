@@ -1581,10 +1581,6 @@ body.theme-dark .block-header {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .breadth-grid {
-    grid-template-columns: 1fr;
-  }
-
 }
 
 /* ─── Small Tablet (≤992px) ─── */
@@ -1775,12 +1771,8 @@ body.theme-dark .block-header {
 
   .breadth-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .breadth-heading {
-    font-size: 11px;
+    gap: 10px;
+    padding: 10px;
   }
 
   /* OC tables */
@@ -2145,31 +2137,391 @@ body.theme-dark .block-header {
   background: var(--bg-primary);
 }
 
-/* Breadth Grid (replacing inline grid) */
+/* Breadth Grid (summary-block children) */
 .breadth-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 14px;
   background: var(--bg-primary);
 }
 
-/* Breadth Headings */
-.breadth-heading {
-  font-size: 12px;
+@media (min-width: 1200px) {
+  .breadth-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Breadth Table (compact, matching summary-table style) */
+.breadth-table {
+  min-width: 0;
+  width: 100%;
+}
+.breadth-table th {
+  font-size: 9px;
+  padding: 5px 6px;
+}
+.breadth-table td {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+/* Breadth Header color variants (matching .block-header style) */
+.breadth-header {
+  font-size: 11px;
+  padding: 8px 10px;
+  gap: 6px;
+}
+.breadth-header-call-write {
+  background: linear-gradient(90deg, rgba(248, 113, 113, 0.15), rgba(239, 68, 68, 0.08)) !important;
+  color: var(--color-red) !important;
+}
+.breadth-header-put-write {
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.15), rgba(16, 185, 129, 0.08)) !important;
+  color: var(--color-green) !important;
+}
+.breadth-header-call-unwind {
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.15), rgba(251, 146, 60, 0.08)) !important;
+  color: #f97316 !important;
+}
+.breadth-header-put-unwind {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(129, 140, 248, 0.08)) !important;
+  color: var(--accent-blue) !important;
+}
+
+/* ─── Participant Section Label (FII/Pro/DII/Retail) ─── */
+.participant-section-label {
+  font-size: 11px;
   font-weight: 800;
-  margin-bottom: 8px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+}
+.participant-section-label.fii { color: #3b82f6; }
+.participant-section-label.pro { color: #a855f7; }
+.participant-section-label.dii { color: #10b981; }
+.participant-section-label.retail { color: #f59e0b; }
+
+/* ─── Participant Data Row ─── */
+.participant-data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  align-items: center;
+}
+.participant-data-row .label {
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.participant-data-row .value {
+  font-family: var(--font-mono);
+  text-align: right;
+  margin-left: 8px;
+}
+
+/* ─── Stance Badge (replaces emoji indicators) ─── */
+.stance-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+}
+.stance-badge.bullish {
+  color: var(--color-green);
+  background: var(--color-green-bg);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+.stance-badge.bearish {
+  color: var(--color-red);
+  background: var(--color-red-bg);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+.stance-badge.neutral {
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border-color: var(--border-color);
+}
+.stance-badge.caution {
+  color: var(--accent-amber);
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+/* ─── Conviction Tag (Multi-Day Matrix) ─── */
+.conviction-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+}
+.conviction-tag.hard-resistance {
+  color: #ef4444;
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.conviction-tag.ce-building {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+.conviction-tag.ce-unwinding {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+.conviction-tag.solid-floor {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+.conviction-tag.pe-building {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+.conviction-tag.pe-unwinding {
+  color: #ef4444;
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.conviction-tag.stable {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+/* ─── Info Footer ─── */
+.info-footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  background: var(--bg-card);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+}
+.info-footer strong {
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
-.breadth-heading-bearish {
-  color: var(--color-red);
+/* ─── Magnet Info Bar ─── */
+.magnet-info-bar {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  background: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 4px;
+  flex-wrap: wrap;
+}
+.magnet-info-bar strong {
+  font-weight: 800;
+}
+.magnet-info-bar .magnet-strike { color: #3b82f6; }
+.magnet-info-bar .expiry-range { color: #10b981; }
+
+/* ─── Roll Card ─── */
+.roll-card {
+  padding: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.roll-card.bullish::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #34d399, #10b981);
+  border-radius: 3px 3px 0 0;
+}
+.roll-card.bearish::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f87171, #ef4444);
+  border-radius: 3px 3px 0 0;
 }
 
-.breadth-heading-bullish {
-  color: var(--color-green);
+/* ─── Roll Card Header ─── */
+.roll-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.roll-card-header .symbol-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2563eb;
+}
+.roll-card-header .meta-info {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+/* ─── Roll Grid ─── */
+.roll-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 11px;
+}
+.roll-cell {
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: 4px;
+}
+.roll-cell .roll-label {
+  color: var(--text-muted);
+  font-weight: 700;
+  display: block;
+}
+.roll-cell .roll-value {
+  font-weight: 800;
+  display: block;
+  margin-top: 2px;
+}
+.roll-cell .roll-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Traps Container ─── */
+.traps-container {
+  max-height: 140px;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding-right: 4px;
+}
+.trap-badge {
+  background: #451a03;
+  border: 1px solid #f59e0b;
+  color: #fef3c7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* ─── Retail Trap Alarm ─── */
+.retail-trap-alarm {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: fade-in-up 0.4s var(--ease-out);
+}
+.retail-trap-alarm.call-trap {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+.retail-trap-alarm.put-trap {
+  background: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+/* ─── Conviction Index Tabs ─── */
+.conviction-index-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.conviction-tab {
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  font-family: inherit;
+}
+.conviction-tab:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+.conviction-tab.active {
+  background: linear-gradient(135deg, var(--accent-blue), #818cf8);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* ─── Skeleton Loader ─── */
+.skeleton-loader {
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card) 50%, var(--bg-elevated) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  min-height: 16px;
+}
+.skeleton-loader.text {
+  display: inline-block;
+  width: 60%;
+  height: 14px;
+}
+.skeleton-loader.block {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 8px;
+}
+
+/* ─── Retry Button ─── */
+.retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-elevated);
+  color: var(--accent-blue);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  margin-top: 8px;
+}
+.retry-btn:hover {
+  background: var(--accent-blue-glow);
+  border-color: var(--accent-blue);
 }
 
 /* ─── Print Styles ─── */

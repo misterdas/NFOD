@@ -294,6 +294,7 @@
                     </div>
                     <div class="banner-desc" id="verdict-desc">Analyzing operator positioning across indices and 215 F&O
                         stocks.</div>
+                    <div id="retail-trap-alarm" style="display:none;"></div>
                 </div>
                 <div class="banner-right">
                     <div class="banner-score-label">Smart Money Score</div>
@@ -325,11 +326,14 @@
             <section class="oc-table-section">
                 <div class="table-card">
                     <div class="table-card-header">
-                        <h2><i class="fa-solid fa-cubes-stacked"></i> Multi-Day Strike Conviction Matrix (NIFTY 5-Day OI
-                            Shift)</h2>
+                        <h2><i class="fa-solid fa-cubes-stacked"></i> Multi-Day Strike Conviction Matrix (5-Day OI Shift)</h2>
                         <div class="table-card-subtitle">Multi-Session Accumulation vs Noise</div>
                     </div>
                     <div class="table-card-body">
+                        <div class="conviction-index-tabs">
+                            <button class="conviction-tab active" data-symbol="NIFTY">NIFTY</button>
+                            <button class="conviction-tab" data-symbol="BANKNIFTY">BANKNIFTY</button>
+                        </div>
                         <div class="table-responsive">
                             <table class="oc-dashboard-table">
                                 <thead>
@@ -361,51 +365,79 @@
                         <div class="table-card-subtitle">Operators Writing vs Unwinding</div>
                     </div>
 
-                    <!-- Desktop: side-by-side grid -->
+                    <!-- Breadth grid: 4 columns on large screens, styled like summary tables -->
                     <div class="breadth-grid">
-                        <div class="breadth-col">
-                            <h4 class="breadth-heading breadth-heading-bearish">
-                                <i class="fa-solid fa-arrow-down-short-wide"></i> Fresh Call Writing (Operators Capping
-                                Upside)
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="oc-dashboard-table">
+                        <div class="instrument-block summary-block">
+                            <div class="block-header breadth-header breadth-header-call-write"><i class="fa-solid fa-arrow-down-short-wide"></i> Fresh Call Write (Capping Upside)</div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table summary-table breadth-table">
                                     <thead>
                                         <tr>
                                             <th>Symbol</th>
                                             <th>LTP</th>
-                                            <th>Top Write Strike</th>
+                                            <th>Top Strike</th>
                                             <th>CE ΔOI</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-call-writing-body">
-                                        <tr>
-                                            <td colspan="4" class="text-center">Loading...</td>
-                                        </tr>
+                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <div class="breadth-col">
-                            <h4 class="breadth-heading breadth-heading-bullish">
-                                <i class="fa-solid fa-arrow-up-short-wide"></i> Fresh Put Writing (Operators Defending
-                                Floor)
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="oc-dashboard-table">
+                        <div class="instrument-block summary-block">
+                            <div class="block-header breadth-header breadth-header-put-write"><i class="fa-solid fa-arrow-up-short-wide"></i> Fresh Put Write (Defending Floor)</div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table summary-table breadth-table">
                                     <thead>
                                         <tr>
                                             <th>Symbol</th>
                                             <th>LTP</th>
-                                            <th>Top Write Strike</th>
+                                            <th>Top Strike</th>
                                             <th>PE ΔOI</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breadth-put-writing-body">
+                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="instrument-block summary-block">
+                            <div class="block-header breadth-header breadth-header-call-unwind"><i class="fa-solid fa-arrow-trend-up"></i> Call Unwind (Short Squeeze)</div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table summary-table breadth-table">
+                                    <thead>
                                         <tr>
-                                            <td colspan="4" class="text-center">Loading...</td>
+                                            <th>Symbol</th>
+                                            <th>LTP</th>
+                                            <th>Top Strike</th>
+                                            <th>CE ΔOI</th>
                                         </tr>
+                                    </thead>
+                                    <tbody id="breadth-call-unwind-body">
+                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="instrument-block summary-block">
+                            <div class="block-header breadth-header breadth-header-put-unwind"><i class="fa-solid fa-arrow-trend-down"></i> Put Unwind (Floor Breakdown)</div>
+                            <div class="table-scroll-wrapper">
+                                <table class="dashboard-table summary-table breadth-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>LTP</th>
+                                            <th>Top Strike</th>
+                                            <th>PE ΔOI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="breadth-put-unwind-body">
+                                        <tr><td colspan="4" class="text-center">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
