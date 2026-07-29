@@ -811,6 +811,24 @@ async function renderChartsView() {
         labels.forEach(d => niftyClose.push(m[d] || null));
     }
 
+    // NIFTY OHLC for candlestick (sequential timestamps — no weekend gaps)
+    const niftyOHLC = [];
+    var niftyCandleDates = [];
+    if (ohlcData && ohlcData.nifty) {
+        var hasOHLC = ohlcData.nifty.some(function(r) { return r.open !== undefined; });
+        if (hasOHLC) {
+            var ohlcByDate = {};
+            ohlcData.nifty.forEach(function(r) {
+                var parts = r.date.split('-');
+                var csvDate = parts[2] + '-' + parts[1] + '-' + parts[0];
+                ohlcByDate[csvDate] = [r.open, r.high, r.low, r.close];
+            });
+            labels.forEach(function(d) {
+                if (ohlcByDate[d]) { niftyOHLC.push(ohlcByDate[d]); niftyCandleDates.push(d); }
+            });
+        }
+    }
+
     // Net option carried position per participant: (callLong-callShort) + (putLong-putShort)
     var partOptData = { FII: [], DII: [], Pro: [], Client: [] };
     for (var i = 0; i < labels.length; i++) {
@@ -1109,54 +1127,82 @@ async function renderChartsView() {
     });
 
     // ════════════════════════════════════════
-    //  7-10 — Participant Net Option Holding + NIFTY Close
+    //  7-10 — Participant Net Option Holding + NIFTY Candlestick
     // ════════════════════════════════════════
     function renderOptHoldingChart(id, label, data, color) {
-        var datasets = [];
-        var yaxis = [
-            {
-                labels: { style: { fontSize: '8px' }, formatter: function(v) { return (v/1000).toFixed(0) + 'K'; } },
-                title: { text: label, style: { fontSize: '9px' } }
+        var hasCandles = niftyOHLC && niftyOHLC.length > 0;
+
+        if (hasCandles) {
+            // Build both series with sequential timestamps (1 day apart, no gaps)
+            var candleSeries = [];
+            var lineSeries = [];
+            var dateLabels = [];
+            for (var fi = 0; fi < niftyOHLC.length; fi++) {
+                var ts = fi * 86400000;
+                candleSeries.push({ x: ts, y: niftyOHLC[fi] });
+                lineSeries.push({ x: ts, y: data[fi] });
+                dateLabels.push(niftyCandleDates[fi] || '');
             }
-        ];
-        var colors = [color];
-        var strokeWidths = [2];
-        var markers = [2];
 
-        // Participant line on left axis
-        datasets.push({ name: label, data: data, type: 'line' });
-
-        // NIFTY close overlay on right axis
-        var hasNifty = niftyClose && niftyClose.some(function(v) { return v !== null; });
-        if (hasNifty) {
-            datasets.push({ name: 'NIFTY Close', data: niftyClose, type: 'line', yaxisIndex: 1 });
-            yaxis.push({
-                opposite: true,
-                labels: {
-                    style: { fontSize: '8px' },
-                    formatter: function(v) { return v.toLocaleString('en-IN'); }
+            makeApexChart(id, {
+                chart: { type: 'candlestick', height: 240, toolbar: { show: false } },
+                series: [
+                    { name: 'NIFTY', data: candleSeries },
+                    { name: label, type: 'line', data: lineSeries }
+                ],
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        style: { fontSize: '9px' },
+                        formatter: function(val, idx) {
+                            return dateLabels[idx] ? dateLabels[idx].slice(0, 5) : '';
+                        }
+                    },
+                    tickAmount: Math.min(dateLabels.length, 10)
                 },
-                title: { text: 'NIFTY', style: { fontSize: '9px' } },
-                grid: { drawOnChartArea: false }
+                yaxis: [
+                    {
+                        labels: { style: { fontSize: '8px' }, formatter: function(v) { return v.toLocaleString('en-IN'); } },
+                        title: { text: 'NIFTY', style: { fontSize: '9px' } }
+                    },
+                    {
+                        opposite: true,
+                        labels: { style: { fontSize: '8px' }, formatter: function(v) { return (v/1000).toFixed(0) + 'K'; } },
+                        title: { text: label, style: { fontSize: '9px' } },
+                        grid: { drawOnChartArea: false }
+                    }
+                ],
+                stroke: { width: [1, 2], curve: 'smooth' },
+                colors: [C.price, color],
+                markers: { size: [0, 2] },
+                legend: { position: 'top', fontSize: '10px' },
+                dataLabels: { enabled: false },
+                grid: { borderColor: 'var(--border-color)' },
+                theme: { mode: getThemeMode() },
+                plotOptions: {
+                    candlestick: {
+                        colors: {
+                            upward: '#34d399',
+                            downward: '#f87171'
+                        }
+                    }
+                }
             });
-            colors.push(C.price);
-            strokeWidths.push(1.5);
-            markers.push(1);
+        } else {
+            makeApexChart(id, {
+                chart: { type: 'line', height: 240, toolbar: { show: false } },
+                series: [{ name: label, data: data }],
+                xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
+                yaxis: [{ labels: { style: { fontSize: '8px' } }, title: { text: label, style: { fontSize: '9px' } } }],
+                stroke: { width: 2, curve: 'smooth' },
+                colors: [color],
+                markers: { size: 2 },
+                legend: { position: 'top', fontSize: '10px' },
+                dataLabels: { enabled: false },
+                grid: { borderColor: 'var(--border-color)' },
+                theme: { mode: getThemeMode() }
+            });
         }
-
-        makeApexChart(id, {
-            chart: { type: 'line', height: 240, toolbar: { show: false } },
-            series: datasets,
-            xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-            yaxis: yaxis,
-            stroke: { width: strokeWidths, curve: 'smooth' },
-            colors: colors,
-            markers: { size: markers },
-            legend: { position: 'top', fontSize: '10px' },
-            dataLabels: { enabled: false },
-            grid: { borderColor: 'var(--border-color)' },
-            theme: { mode: getThemeMode() }
-        });
     }
 
     var optPartMeta = [
