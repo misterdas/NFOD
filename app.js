@@ -236,8 +236,7 @@ function renderDashboardForCurrentDate() {
         const trTotal = document.createElement('tr');
         trTotal.className = 'total-row';
         trTotal.innerHTML = `
-            <td class="participant-name">Total</td>
-            <td class="action-label" colspan="6">Market Analysis With Gopal Das</td>
+            <td class="action-label" colspan="7">Market Analysis With Gopal Das</td>
             <td class="action-val">-</td>
             <td class="action-val">-</td>
             <td class="action-val">-</td>

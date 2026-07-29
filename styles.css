@@ -762,9 +762,22 @@ html {
   white-space: nowrap;
 }
 
-/* Carried columns (last 3) - subtle visual separator */
-.unified-table th:nth-child(n+8),
-.unified-table td:nth-child(n+8) {
+/* Column group separators: LONGS | SHORTS | NET TODAY | TODAY | 1D AGO | 2D AGO */
+/* thead has colspan=2 → 7 elements; tbody has no colspan → 10 elements */
+.unified-table thead th:nth-child(2),
+.unified-table thead th:nth-child(3),
+.unified-table thead th:nth-child(4),
+.unified-table thead th:nth-child(5),
+.unified-table thead th:nth-child(6),
+.unified-table thead th:nth-child(7) {
+  border-left: 2px solid var(--border-color-strong);
+}
+.unified-table tbody tr:not(.total-row) td:nth-child(2),
+.unified-table tbody tr:not(.total-row) td:nth-child(4),
+.unified-table tbody tr:not(.total-row) td:nth-child(6),
+.unified-table tbody tr:not(.total-row) td:nth-child(8),
+.unified-table tbody tr:not(.total-row) td:nth-child(9),
+.unified-table tbody tr:not(.total-row) td:nth-child(10) {
   border-left: 2px solid var(--border-color-strong);
 }
 
@@ -888,6 +901,7 @@ body.theme-dark .block-header {
 .total-row td {
   font-family: var(--font-sans);
   padding: 7px 8px;
+  border-left: none;
 }
 
 /* ─── Right Column ─── */
