@@ -167,6 +167,9 @@ def load_participant_data(iv_modifier=0):
             fut_chg          : net index futures change (long - short delta)
             ce_net_short_chg : net CALL writing pressure  (short_chg - long_chg); +ve = capping upside
             pe_net_short_chg : net PUT writing pressure   (short_chg - long_chg); +ve = defending floor
+            stk_fut_chg      : net stock futures change
+            stk_ce_*         : stock call options
+            stk_pe_*         : stock put options
             Long and short legs are ALWAYS netted together before anything downstream
             uses them - a participant adding both long and short calls at once should
             not register as pure directional writing.
@@ -176,6 +179,11 @@ def load_participant_data(iv_modifier=0):
             ce_short_chg = calc_chg(row_t, row_p, 'Option Index Call Short')
             pe_long_chg = calc_chg(row_t, row_p, 'Option Index Put Long')
             pe_short_chg = calc_chg(row_t, row_p, 'Option Index Put Short')
+            stk_fut_chg = calc_chg(row_t, row_p, 'Future Stock Long') - calc_chg(row_t, row_p, 'Future Stock Short')
+            stk_ce_long_chg = calc_chg(row_t, row_p, 'Option Stock Call Long')
+            stk_ce_short_chg = calc_chg(row_t, row_p, 'Option Stock Call Short')
+            stk_pe_long_chg = calc_chg(row_t, row_p, 'Option Stock Put Long')
+            stk_pe_short_chg = calc_chg(row_t, row_p, 'Option Stock Put Short')
             return {
                 "fut_chg": fut_chg,
                 "ce_long_chg": ce_long_chg,
@@ -184,6 +192,11 @@ def load_participant_data(iv_modifier=0):
                 "pe_short_chg": pe_short_chg,
                 "ce_net_short_chg": ce_short_chg - ce_long_chg,
                 "pe_net_short_chg": pe_short_chg - pe_long_chg,
+                "stk_fut_chg": stk_fut_chg,
+                "stk_ce_long_chg": stk_ce_long_chg,
+                "stk_ce_short_chg": stk_ce_short_chg,
+                "stk_pe_long_chg": stk_pe_long_chg,
+                "stk_pe_short_chg": stk_pe_short_chg,
             }
 
         fii = load_participant_changes(fii_today, fii_prev)
@@ -322,6 +335,9 @@ def load_participant_data(iv_modifier=0):
             "fii_pe_short_change": fii["pe_short_chg"],
             "fii_pe_net_short_change": fii["pe_net_short_chg"],
             "fii_raw_score": fii_raw_score,
+            "fii_stk_fut_net_change": fii["stk_fut_chg"],
+            "fii_stk_ce_net_change": fii["stk_ce_short_chg"] - fii["stk_ce_long_chg"],
+            "fii_stk_pe_net_change": fii["stk_pe_short_chg"] - fii["stk_pe_long_chg"],
 
             "pro_fut_net_change": pro["fut_chg"],
             "pro_ce_long_change": pro["ce_long_chg"],
@@ -331,6 +347,9 @@ def load_participant_data(iv_modifier=0):
             "pro_pe_short_change": pro["pe_short_chg"],
             "pro_pe_net_short_change": pro["pe_net_short_chg"],
             "pro_raw_score": pro_raw_score,
+            "pro_stk_fut_net_change": pro["stk_fut_chg"],
+            "pro_stk_ce_net_change": pro["stk_ce_short_chg"] - pro["stk_ce_long_chg"],
+            "pro_stk_pe_net_change": pro["stk_pe_short_chg"] - pro["stk_pe_long_chg"],
 
             "dii_fut_net_change": dii["fut_chg"],
             "dii_ce_long_change": dii["ce_long_chg"],
@@ -340,9 +359,16 @@ def load_participant_data(iv_modifier=0):
             "dii_pe_short_change": dii["pe_short_chg"],
             "dii_pe_net_short_change": dii["pe_net_short_chg"],
             "dii_raw_score": dii_raw_score,
+            "dii_stk_fut_net_change": dii["stk_fut_chg"],
+            "dii_stk_ce_net_change": dii["stk_ce_short_chg"] - dii["stk_ce_long_chg"],
+            "dii_stk_pe_net_change": dii["stk_pe_short_chg"] - dii["stk_pe_long_chg"],
 
             "client_ce_net_buy": client_ce_net_buy,
             "client_pe_net_buy": client_pe_net_buy,
+            "client_fut_net_change": client["fut_chg"],
+            "client_stk_fut_net_change": client["stk_fut_chg"],
+            "client_stk_ce_net_change": client["stk_ce_short_chg"] - client["stk_ce_long_chg"],
+            "client_stk_pe_net_change": client["stk_pe_short_chg"] - client["stk_pe_long_chg"],
 
             "fii_fut_net_carried": float(fii_today.get('Future Index Long', 0)) - float(fii_today.get('Future Index Short', 0)),
             "pro_fut_net_carried": float(pro_today.get('Future Index Long', 0)) - float(pro_today.get('Future Index Short', 0)),

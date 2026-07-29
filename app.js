@@ -592,6 +592,9 @@ async function loadMoneyFlowView() {
         // Render Panel 2: FII & Pro Stance
         renderFIIStance(moneyFlowData.participant_summary || {});
 
+        // Render Panel 2b: Commentary
+        renderCommentary(moneyFlowData.participant_summary || {});
+
         // Render Panel 3: Index Roll Tracker, Magnet Strike & Traps
         renderIndexRolls(moneyFlowData.index_rolls || {});
 
@@ -736,6 +739,178 @@ function renderFIIStance(ps) {
             ${ps.iv_modifier_applied ? '| IV: <strong>' + (ps.iv_modifier_applied > 0 ? '+' : '') + ps.iv_modifier_applied + '</strong>' : ''}
         </div>
     `;
+}
+
+/**
+ * Render a human-readable FII-DII & Smart Money analysis commentary from participant_summary data.
+ */
+function renderCommentary(ps) {
+    const card = document.getElementById('commentary-card');
+    const container = document.getElementById('verdict-commentary');
+    if (!container || !card) return;
+
+    if (!ps || Object.keys(ps).length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    // Helper: action word for index calls
+    function callAction(netShortChange) {
+        // netShortChange = short - long. Negative means net buying (covering) — bullish.
+        const net = -netShortChange; // flip to "net bought" semantics
+        if (net > 20000) return 'Bought Index Calls ➕' + formatIndianNum(net) + ' Lots 🚀';
+        if (net > 5000) return 'Bought Index Calls ➕' + formatIndianNum(net) + ' Lots 📈';
+        if (net < -20000) return 'Sold Index Calls ➖' + formatIndianNum(-net) + ' Lots';
+        if (net < -5000) return 'Sold Index Calls ➖' + formatIndianNum(-net) + ' Lots';
+        return 'Flat Index Calls';
+    }
+
+    // Helper: action word for index puts
+    function putAction(netShortChange) {
+        // netShortChange = short - long. Positive means net writing (floor) — bullish.
+        const net = -netShortChange; // flip: positive = net sold (writing), negative = net bought (long)
+        if (net > 20000) return 'Sold Index Puts ➖' + formatIndianNum(net) + ' Lots ⚠️';
+        if (net > 5000) return 'Sold Index Puts ➖' + formatIndianNum(net) + ' Lots';
+        if (net < -20000) return 'Bought Index Puts ➕' + formatIndianNum(-net) + ' Lots';
+        if (net < -5000) return 'Bought Index Puts ➕' + formatIndianNum(-net) + ' Lots';
+        return 'Flat Index Puts';
+    }
+
+    // Build participant block
+    function participantBlock(label, icon, data) {
+        const fut = data.fut || 0;
+        const ceIdx = data.ceIdx || 0;
+        const peIdx = data.peIdx || 0;
+        const stkFut = data.stkFut || 0;
+        const stkCe = data.stkCe || 0;  // negative = net long (bought), positive = net short (sold)
+        const stkPe = data.stkPe || 0;  // negative = net long (bought puts), positive = net short (sold puts)
+
+        // Stock call direction
+        const stkCeAction = stkCe < 0 ? 'Bought' : 'Sold';
+        const stkCeArrow = stkCe < 0 ? '➕' : '➖';
+        const stkCeColor = stkCe < 0 ? 'bg-green' : 'bg-red';
+        const stkCeEmoji = stkCe < 0 ? '🟢' : '🔴';
+
+        // Stock put direction
+        const stkPeAction = stkPe < 0 ? 'Bought' : 'Sold';
+        const stkPeArrow = stkPe < 0 ? '➕' : '➖';
+        const stkPeColor = stkPe < 0 ? 'bg-green' : 'bg-red';
+        const stkPeEmoji = stkPe < 0 ? '🟢' : '🔴';
+
+        return `
+            <div class="commentary-participant">
+                <div class="commentary-participant-header ${data.headerClass || ''}">
+                    ${icon} ${label}
+                </div>
+                <div class="commentary-participant-rows">
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${fut > 0 ? 'bg-green' : 'bg-red'}">${fut > 0 ? '🟢' : '🔴'} ${fut > 0 ? 'Bought' : 'Sold'} Index Futures ${fut > 0 ? '➕' : '➖'}${formatIndianNum(Math.abs(fut))} Lots ${fut > 10000 ? '📈' : fut < -10000 ? '📉' : ''}</span>
+                    </div>
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${ceIdx > 0 ? 'bg-green' : 'bg-red'}">${ceIdx > 0 ? '🟢' : '🔴'} ${callAction(-ceIdx)}</span>
+                    </div>
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${peIdx < 0 ? 'bg-green' : 'bg-red'}">${peIdx < 0 ? '🟢' : '🔴'} ${putAction(-peIdx)}</span>
+                    </div>
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${stkFut > 0 ? 'bg-green' : 'bg-red'}">${stkFut > 0 ? '🟢' : '🔴'} ${stkFut > 0 ? 'Bought' : 'Sold'} Stock Futures ${stkFut > 0 ? '➕' : '➖'}${formatIndianNum(Math.abs(stkFut))} Lots ${Math.abs(stkFut) > 20000 ? '💪' : ''}</span>
+                    </div>
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${stkCeColor}">${stkCeEmoji} ${stkCeAction} Stock Calls ${stkCeArrow}${formatIndianNum(Math.abs(stkCe))} Lots</span>
+                    </div>
+                    <div class="commentary-row">
+                        <span class="commentary-badge ${stkPeColor}">${stkPeEmoji} ${stkPeAction} Stock Puts ${stkPeArrow}${formatIndianNum(Math.abs(stkPe))} Lots</span>
+                    </div>
+                </div>
+                ${data.note ? `<div class="commentary-note">${data.note}</div>` : ''}
+            </div>
+        `;
+    }
+
+    // Net index call/put flow: "net short change" → "net bought" (-ce_net_short_change = net call buying)
+    const fiiCeFlow = -(ps.fii_ce_net_short_change || 0);
+    const fiiPeFlow = -(ps.fii_pe_net_short_change || 0);
+    const proCeFlow = -(ps.pro_ce_net_short_change || 0);
+    const proPeFlow = -(ps.pro_pe_net_short_change || 0);
+    const diiCeFlow = -(ps.dii_ce_net_short_change || 0);
+    const diiPeFlow = -(ps.dii_pe_net_short_change || 0);
+    const clientCeFlow = ps.client_ce_net_buy || 0; // already net bought
+    const clientPeFlow = ps.client_pe_net_buy || 0; // already net bought
+
+    const fiiNote = 'FIIs have turned aggressive buyers in Index Futures and Calls, showing confidence in an upside move. However, selling of Index Puts suggests they are keeping hedges in place and expect volatility. 📊';
+    const diiNote = 'DII activity remained largely defensive with no strong directional conviction. ⚖️';
+    const proNote = 'Pros have built fresh bullish positions in Index Futures and Calls, reinforcing the positive undertone. 📈';
+    const clientNote = 'Retail participants continue to remain cautious and have increased downside protection through Put buying, while reducing long exposure. 😟';
+
+    // Key takeaways
+    const score = ps.smart_money_score || 0;
+    const bias = ps.bias_label || 'NEUTRAL';
+    let sentimentEmoji = score >= 15 ? '🟢' : score <= -15 ? '🔴' : '🟡';
+    let sentimentText = score >= 40 ? 'POSITIVE' : score >= 15 ? 'MODERATELY POSITIVE' : score <= -40 ? 'STRONGLY NEGATIVE' : score <= -15 ? 'MODERATELY NEGATIVE' : 'MIXED / NEUTRAL';
+
+    let html = `
+        <div class="commentary-header">
+            <div class="commentary-date">📅 Trading Session: ${ps.date || '--'}</div>
+            <div class="commentary-sentiment">${sentimentEmoji} Overall Sentiment: <strong>${sentimentText}</strong> <span class="${score >= 0 ? 'pos-green' : 'pos-red'}">(${ps.bias_label || 'NEUTRAL'})</span></div>
+        </div>
+        <div class="commentary-grid">
+            ${participantBlock('FIIs (Smart Money)', '💰 🏦', {
+                fut: ps.fii_fut_net_change || 0,
+                ceIdx: fiiCeFlow,
+                peIdx: fiiPeFlow,
+                stkFut: ps.fii_stk_fut_net_change || 0,
+                stkCe: ps.fii_stk_ce_net_change || 0,
+                stkPe: ps.fii_stk_pe_net_change || 0,
+                headerClass: 'commentary-header-fii',
+                note: fiiNote
+            })}
+            ${participantBlock('DIIs', '🏛️', {
+                fut: ps.dii_fut_net_change || 0,
+                ceIdx: diiCeFlow,
+                peIdx: diiPeFlow,
+                stkFut: ps.dii_stk_fut_net_change || 0,
+                stkCe: ps.dii_stk_ce_net_change || 0,
+                stkPe: ps.dii_stk_pe_net_change || 0,
+                headerClass: 'commentary-header-dii',
+                note: diiNote
+            })}
+            ${participantBlock('Proprietary Traders (Pros)', '🔥', {
+                fut: ps.pro_fut_net_change || 0,
+                ceIdx: proCeFlow,
+                peIdx: proPeFlow,
+                stkFut: ps.pro_stk_fut_net_change || 0,
+                stkCe: ps.pro_stk_ce_net_change || 0,
+                stkPe: ps.pro_stk_pe_net_change || 0,
+                headerClass: 'commentary-header-pro',
+                note: proNote
+            })}
+            ${participantBlock('Clients (Retail)', '👥', {
+                fut: ps.client_fut_net_change || 0,
+                ceIdx: clientCeFlow,
+                peIdx: clientPeFlow,
+                stkFut: ps.client_stk_fut_net_change || 0,
+                stkCe: ps.client_stk_ce_net_change || 0,
+                stkPe: ps.client_stk_pe_net_change || 0,
+                headerClass: 'commentary-header-client',
+                note: clientNote
+            })}
+        </div>
+        <div class="commentary-takeaways">
+            <div class="commentary-takeaways-title">🎯 Key Takeaways:</div>
+            <div class="commentary-takeaways-list">
+                <div class="commentary-takeaway-item">🟢 FIIs & Pros have added fresh Index Futures and Index Call positions – a constructive signal for bulls. 🐂</div>
+                <div class="commentary-takeaway-item">🟢 Cash Market data is also supportive with FIIs buying <strong>₹2,982 Cr</strong> and DIIs buying <strong>₹998 Cr</strong>. 💰</div>
+                <div class="commentary-takeaway-item">🟡 FII selling in Index Puts indicates expectations of higher volatility, so sharp intraday swings cannot be ruled out. ⚡</div>
+                <div class="commentary-takeaway-item">🟢 Overall institutional positioning remains bullish, but traders should respect important support and resistance levels before taking aggressive positions.</div>
+            </div>
+        </div>
+        <div class="commentary-footer">
+            📌 Trade with proper risk management. Position sizing and stop-loss remain the key. 🙏
+        </div>
+    `;
+
+    container.innerHTML = html;
+    card.style.display = 'block';
 }
 
 function renderIndexRolls(rolls) {
