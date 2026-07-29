@@ -736,80 +736,8 @@ async function renderChartsView() {
     const labels = availableDates.slice(1);
     const n = labels.length;
 
-    // ── Compute daily net for each participant × instrument ──
-    // trends[p].{fut,call,put} = per-day net changes
-    const trends = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] }, dii: { fut: [], call: [], put: [] } };
-    // stock[p].{fut,call,put} = stock versions
-    const stock = { fii: { fut: [], call: [], put: [] }, pro: { fut: [], call: [], put: [] }, client: { fut: [], call: [], put: [] }, dii: { fut: [], call: [], put: [] } };
-
-    for (let i = 1; i < availableDates.length; i++) {
-        const mT = getParticipantMap(availableDates[i]);
-        const mT1 = getParticipantMap(availableDates[i - 1]);
-        for (const [key, p] of [['FII','fii'],['Pro','pro'],['Client','client'],['DII','dii']]) {
-            const cur = mT[key] || {};
-            const prev = mT1[key] || {};
-            const net = (l, s) => ((cur[l]||0)-(prev[l]||0)) - ((cur[s]||0)-(prev[s]||0));
-            trends[p].fut.push(net('Future Index Long','Future Index Short'));
-            trends[p].call.push(net('Option Index Call Long','Option Index Call Short'));
-            trends[p].put.push(net('Option Index Put Long','Option Index Put Short'));
-            stock[p].fut.push(net('Future Stock Long','Future Stock Short'));
-            stock[p].call.push(net('Option Stock Call Long','Option Stock Call Short'));
-            stock[p].put.push(net('Option Stock Put Long','Option Stock Put Short'));
-        }
-    }
-
-    // ── Derived series ──
-    const smartFut = trends.fii.fut.map((v,i) => v + trends.pro.fut[i]);
-    const smartCall = trends.fii.call.map((v,i) => v + trends.pro.call[i]);
-    const smartPut = trends.fii.put.map((v,i) => v + trends.pro.put[i]);
-
-    // Cumulative smart money net (accumulation/distribution)
-    let cum = 0;
-    const cumSmart = trends.fii.fut.map((_,i) => {
-        cum += smartFut[i] + smartCall[i] + smartPut[i];
-        return cum;
-    });
-
-    // PCR per participant: net put change / net call change (clamped)
-    function calcPcr(pCall, pPut) {
-        return pCall.map((c, i) => {
-            const denom = Math.abs(c);
-            if (denom < 100) return null;
-            const val = (pPut[i] || 0) / denom;
-            return Math.max(-5, Math.min(5, val));
-        });
-    }
-    const fiiPcr = calcPcr(trends.fii.call, trends.fii.put);
-    const proPcr = calcPcr(trends.pro.call, trends.pro.put);
-    const cliPcr = calcPcr(trends.client.call, trends.client.put);
-
-    // Smart money total (fut+call+put per day)
-    const smartTotal = smartFut.map((v,i) => v + smartCall[i] + smartPut[i]);
-    const clientTotal = trends.client.fut.map((v,i) => v + trends.client.call[i] + trends.client.put[i]);
-
-    // Divergence: when smart and client move opposite directions
-    const divergence = smartTotal.map((v, i) => {
-        if (i === 0) return 0;
-        const sDir = v - smartTotal[i-1];
-        const cDir = clientTotal[i] - clientTotal[i-1];
-        // divergence magnitude = opposite movement product
-        const div = (sDir > 0 && cDir < -5000) ? Math.abs(sDir) :
-                    (sDir < 0 && cDir > 5000) ? Math.abs(sDir) : 0;
-        return sDir > 0 ? div : -div;
-    });
-
-    // NIFTY close overlay
-    const niftyClose = [];
-    if (ohlcData && ohlcData.nifty) {
-        const m = {};
-        // OHLC dates are YYYY-MM-DD — convert to DD-MM-YYYY to match CSV labels
-        ohlcData.nifty.forEach(function(r) {
-            var parts = r.date.split('-');
-            var csvDate = parts[2] + '-' + parts[1] + '-' + parts[0];
-            m[csvDate] = r.close;
-        });
-        labels.forEach(d => niftyClose.push(m[d] || null));
-    }
+    // ── Compute daily net for each participant × instrument (no longer used by charts) ──
+    // Kept for potential future use; data is cheap to compute.
 
     // NIFTY OHLC for candlestick (aligned to labels, nulls where missing)
     const niftyOHLC = new Array(labels.length).fill(null);
@@ -828,8 +756,9 @@ async function renderChartsView() {
         }
     }
 
-    // Net option carried position per participant: (callLong-callShort) + (putLong-putShort)
-    var partOptData = { FII: [], DII: [], Pro: [], Client: [] };
+    // Net option call & put holding per participant: (Long - Short) separately
+    var partCallData = { FII: [], DII: [], Pro: [], Client: [] };
+    var partPutData = { FII: [], DII: [], Pro: [], Client: [] };
     for (var i = 0; i < labels.length; i++) {
         var map = getParticipantMap(labels[i]);
         ['FII','DII','Pro','Client'].forEach(function(p) {
@@ -838,7 +767,8 @@ async function renderChartsView() {
             var cs = row['Option Index Call Short'] || 0;
             var pl = row['Option Index Put Long'] || 0;
             var ps = row['Option Index Put Short'] || 0;
-            partOptData[p][i] = (cl - cs) + (pl - ps);
+            partCallData[p][i] = cl - cs;
+            partPutData[p][i] = pl - ps;
         });
     }
 
@@ -866,292 +796,35 @@ async function renderChartsView() {
     }
 
     // ════════════════════════════════════════
-    //  1 — Smart Money Cumulative Net
+    //  4 — Participant Call/Put Holding + NIFTY Candlestick
     // ════════════════════════════════════════
-    const maxAbsCum = Math.max(...cumSmart.map(Math.abs));
-    const cumMarkerColors = cumSmart.map((v, i) =>
-        i > 0 && v > cumSmart[i - 1] ? '#34d399' : '#f87171'
-    );
-    const cumMarkerSizes = cumSmart.map(v => Math.abs(v) === maxAbsCum ? 5 : 2);
-
-    makeApexChart('ch-cumulative', {
-        chart: { type: 'area', height: 240, toolbar: { show: false } },
-        series: [{ name: 'FII+Pro Cumulative Net', data: cumSmart }],
-        xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-        yaxis: {
-            labels: {
-                style: { fontSize: '9px' },
-                formatter: function(v) { return (v / 1000).toFixed(0) + 'K'; }
-            }
-        },
-        stroke: { curve: 'smooth', width: 2 },
-        fill: { type: 'solid', opacity: 0.12 },
-        colors: [C.smart],
-        markers: {
-            size: cumMarkerSizes,
-            colors: cumMarkerColors,
-            strokeColors: cumMarkerColors
-        },
-        tooltip: { y: { formatter: function(v) { return v.toLocaleString('en-IN'); } } },
-        legend: { show: false },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  2 — Put-Call Ratio by Participant
-    // ════════════════════════════════════════
-    makeApexChart('ch-pcr', {
-        chart: { type: 'line', height: 240, toolbar: { show: false } },
-        series: [
-            { name: 'FII PCR', data: fiiPcr },
-            { name: 'Pro PCR', data: proPcr },
-            { name: 'Client PCR', data: cliPcr }
-        ],
-        xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-        yaxis: {
-            title: { text: 'Put/Call Ratio', style: { fontSize: '10px' } },
-            labels: { style: { fontSize: '9px' }, formatter: function(v) { return v.toFixed(2); } },
-            min: -5, max: 5
-        },
-        annotations: {
-            yaxis: [{
-                y: 1,
-                borderColor: '#64748b',
-                strokeDashArray: 3,
-                label: {
-                    text: 'Neutral',
-                    style: { fontSize: '9px', background: '#64748b' },
-                    position: 'right'
-                }
-            }]
-        },
-        stroke: { width: 2, curve: 'smooth' },
-        colors: [C.fii, C.pro, C.client],
-        markers: { size: 2 },
-        tooltip: { shared: true },
-        legend: { position: 'top', fontSize: '10px', itemMargin: { horizontal: 8 } },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  3 — Smart Money vs Retail: Index Futures + NIFTY
-    // ════════════════════════════════════════
-    function buildDualAxisChart(baseSeries, baseColors, baseStrokeWidths, smartColor) {
-        var series3 = [
-            { name: 'Client Net', data: trends.client.fut, type: 'area', yaxisIndex: 0 },
-            { name: 'Smart (FII+Pro)', data: smartFut, type: 'area', yaxisIndex: 0 }
-        ];
-        var yaxis3 = [
-            {
-                title: { text: 'Net Contracts', style: { fontSize: '10px' } },
-                labels: { style: { fontSize: '9px' } }
-            }
-        ];
-        var colors3 = [C.client, smartColor || C.smart];
-        var strokeWidths3 = [2, 2];
-        var fillOpacity3 = [0.12, 0.12];
-        var markerSizes3 = [2, 2];
-
-        var hasNifty = niftyClose.some(function(v) { return v !== null; });
-        if (hasNifty) {
-            series3.push({ name: 'NIFTY Close', data: niftyClose, type: 'line', yaxisIndex: 1 });
-            yaxis3.push({
-                opposite: true,
-                labels: {
-                    style: { fontSize: '8px' },
-                    formatter: function(v) { return v.toLocaleString('en-IN'); }
-                },
-                title: { text: 'NIFTY', style: { fontSize: '9px' } },
-                grid: { drawOnChartArea: false }
-            });
-            colors3.push(C.price);
-            strokeWidths3.push(1.5);
-            fillOpacity3.push(0);
-            markerSizes3.push(1);
-        }
-
-        return { series: series3, yaxis: yaxis3, colors: colors3, strokeWidths: strokeWidths3, fillOpacity: fillOpacity3, markerSizes: markerSizes3 };
-    }
-
-    var c3 = buildDualAxisChart();
-    makeApexChart('ch-smart-futures', {
-        chart: { type: 'area', height: 240, toolbar: { show: false } },
-        series: c3.series,
-        xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-        yaxis: c3.yaxis,
-        stroke: { width: c3.strokeWidths, curve: 'smooth' },
-        fill: { type: 'solid', opacity: c3.fillOpacity },
-        colors: c3.colors,
-        markers: { size: c3.markerSizes },
-        legend: { position: 'top', fontSize: '10px' },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  4 — Daily Net by Participant (Today)
-    // ════════════════════════════════════════
-    var cdIdx = currentDateIndex >= 1 ? currentDateIndex : n;
-    var instrLabels = ['Idx Fut','Idx Call','Idx Put','Stk Fut','Stk Call','Stk Put'];
-    var instrKeys = [
-        ['Future Index Long','Future Index Short'],
-        ['Option Index Call Long','Option Index Call Short'],
-        ['Option Index Put Long','Option Index Put Short'],
-        ['Future Stock Long','Future Stock Short'],
-        ['Option Stock Call Long','Option Stock Call Short'],
-        ['Option Stock Put Long','Option Stock Put Short']
-    ];
-    var parts = ['FII','Pro','Client','DII'];
-    var partColors = [C.fii, C.pro, C.client, C.dii];
-    var dailySeries = parts.map(function(p, i) {
-        var cur = getParticipantMap(availableDates[cdIdx])[p] || {};
-        var prev = getParticipantMap(availableDates[cdIdx - 1])[p] || {};
-        var data = instrKeys.map(function(k) {
-            return ((cur[k[0]]||0) - (prev[k[0]]||0)) - ((cur[k[1]]||0) - (prev[k[1]]||0));
-        });
-        return { name: p, data: data };
-    });
-
-    makeApexChart('ch-daily-net', {
-        chart: { type: 'bar', height: 240, toolbar: { show: false } },
-        series: dailySeries,
-        xaxis: { categories: instrLabels, labels: { style: { fontSize: '9px' } } },
-        yaxis: { labels: { style: { fontSize: '9px' } } },
-        colors: partColors,
-        plotOptions: { bar: { columnWidth: '70%', distributed: false } },
-        legend: { position: 'top', fontSize: '10px', itemMargin: { horizontal: 8 } },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  5 — Smart Money vs Retail: Options + NIFTY
-    // ════════════════════════════════════════
-    var clientOpt = trends.client.call.map(function(v, i) { return v + trends.client.put[i]; });
-    var smartOpt = trends.fii.call.map(function(v, i) { return v + trends.pro.call[i] + trends.fii.put[i] + trends.pro.put[i]; });
-
-    var c5series = [
-        { name: 'Client Options', data: clientOpt, type: 'area', yaxisIndex: 0 },
-        { name: 'Smart Options', data: smartOpt, type: 'area', yaxisIndex: 0 }
-    ];
-    var c5yaxis = [
-        { title: { text: 'Net Contracts', style: { fontSize: '10px' } }, labels: { style: { fontSize: '9px' } } }
-    ];
-    var c5colors = [C.client, '#a855f7'];
-    var c5strokeWidths = [2, 2];
-    var c5fillOpacity = [0.12, 0.12];
-    var c5markerSizes = [2, 2];
-
-    var hasNifty5 = niftyClose.some(function(v) { return v !== null; });
-    if (hasNifty5) {
-        c5series.push({ name: 'NIFTY Close', data: niftyClose, type: 'line', yaxisIndex: 1 });
-        c5yaxis.push({
-            opposite: true,
-            labels: { style: { fontSize: '8px' }, formatter: function(v) { return v.toLocaleString('en-IN'); } },
-            title: { text: 'NIFTY', style: { fontSize: '9px' } },
-            grid: { drawOnChartArea: false }
-        });
-        c5colors.push(C.price);
-        c5strokeWidths.push(1.5);
-        c5fillOpacity.push(0);
-        c5markerSizes.push(1);
-    }
-
-    makeApexChart('ch-smart-options', {
-        chart: { type: 'area', height: 240, toolbar: { show: false } },
-        series: c5series,
-        xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-        yaxis: c5yaxis,
-        stroke: { width: c5strokeWidths, curve: 'smooth' },
-        fill: { type: 'solid', opacity: c5fillOpacity },
-        colors: c5colors,
-        markers: { size: c5markerSizes },
-        legend: { position: 'top', fontSize: '10px' },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  6 — Divergence Monitor
-    // ════════════════════════════════════════
-    makeApexChart('ch-divergence', {
-        chart: { type: 'line', height: 240, toolbar: { show: false } },
-        series: [
-            { name: 'Smart Money (FII+Pro)', data: smartTotal },
-            { name: 'Client (Retail)', data: clientTotal }
-        ],
-        xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
-        yaxis: {
-            title: { text: 'Net Contracts', style: { fontSize: '10px' } },
-            labels: { style: { fontSize: '9px' } }
-        },
-        stroke: { width: 2, curve: 'smooth' },
-        fill: { type: 'solid', opacity: 0.1 },
-        colors: [C.smart, C.client],
-        markers: { size: 2 },
-        legend: { position: 'top', fontSize: '10px' },
-        dataLabels: { enabled: false },
-        grid: { borderColor: 'var(--border-color)' },
-        tooltip: {
-            shared: true,
-            custom: function(ttData) {
-                var idx = ttData.dataPointIndex;
-                var sv = ttData.series[0][idx];
-                var cv = ttData.series[1][idx];
-                var statusHtml = '';
-                if ((sv > 0 && cv < -5000) || (sv < 0 && cv > 5000)) {
-                    statusHtml = '<div style="margin-top:4px; font-weight:700; color:#f87171;">⚠️ DIVERGENCE: Smart &amp; Retail on opposite sides</div>';
-                } else if (sv > 0 && cv > 0) {
-                    statusHtml = '<div style="margin-top:4px; font-weight:700; color:#34d399;">✅ Aligned Bullish</div>';
-                } else if (sv < 0 && cv < 0) {
-                    statusHtml = '<div style="margin-top:4px; font-weight:700; color:#f87171;">🔴 Aligned Bearish</div>';
-                }
-                var label = ttData.w.globals.labels[idx];
-                return '<div style="padding:8px; font-size:11px; background:var(--bg-card); border-radius:6px;">' +
-                    '<div style="font-weight:700;">' + label + '</div>' +
-                    '<div><span style="color:' + C.smart + ';">Smart Money:</span> ' + sv.toLocaleString('en-IN') + '</div>' +
-                    '<div><span style="color:' + C.client + ';">Client:</span> ' + cv.toLocaleString('en-IN') + '</div>' +
-                    statusHtml +
-                    '</div>';
-            }
-        },
-        theme: { mode: getThemeMode() }
-    });
-
-    // ════════════════════════════════════════
-    //  7-10 — Participant Net Option Holding + NIFTY Candlestick
-    // ════════════════════════════════════════
-    function renderOptHoldingChart(id, label, data, color) {
+    function renderOptHoldingChart(id, label, callData, putData, callColor, putColor) {
         var hasCandles = niftyOHLC && niftyOHLC.length > 0;
 
         if (hasCandles) {
-            // Build both series with sequential timestamps (1 day apart, no gaps)
+            // Build series with sequential timestamps (1 day apart, no gaps)
             var candleSeries = [];
-            var lineSeries = [];
+            var callSeries = [];
+            var putSeries = [];
             var dateLabels = [];
             var seqIdx = 0;
             for (var fi = 0; fi < labels.length; fi++) {
                 if (niftyOHLC[fi]) {
                     var ts = seqIdx * 86400000;
                     candleSeries.push({ x: ts, y: niftyOHLC[fi] });
-                    lineSeries.push({ x: ts, y: data[fi] });
+                    callSeries.push({ x: ts, y: callData[fi] });
+                    putSeries.push({ x: ts, y: putData[fi] });
                     dateLabels.push(labels[fi]);
                     seqIdx++;
                 }
             }
 
             makeApexChart(id, {
-                chart: { type: 'candlestick', height: 240, toolbar: { show: false } },
+                chart: { type: 'candlestick', height: 360, toolbar: { show: false }, zoom: { enabled: false }, selection: { enabled: false }, background: 'transparent' },
                 series: [
                     { name: 'NIFTY', data: candleSeries },
-                    { name: label, type: 'line', data: lineSeries }
+                    { name: 'Calls', type: 'line', data: callSeries },
+                    { name: 'Puts', type: 'line', data: putSeries }
                 ],
                 xaxis: {
                     type: 'datetime',
@@ -1171,14 +844,14 @@ async function renderChartsView() {
                     {
                         opposite: true,
                         labels: { style: { fontSize: '8px' }, formatter: function(v) { return (v/1000).toFixed(0) + 'K'; } },
-                        title: { text: label, style: { fontSize: '9px' } },
+                        title: { text: '', style: { fontSize: '9px' } },
                         grid: { drawOnChartArea: false }
                     }
                 ],
-                stroke: { width: [1, 2], curve: 'smooth' },
-                colors: [C.price, color],
-                markers: { size: [0, 2] },
-                legend: { position: 'top', fontSize: '10px' },
+                stroke: { width: [1, 2, 2], curve: 'smooth' },
+                colors: [C.price, callColor, putColor],
+                markers: { size: [0, 2, 2] },
+                legend: { show: false },
                 dataLabels: { enabled: false },
                 grid: { borderColor: 'var(--border-color)' },
                 theme: { mode: getThemeMode() },
@@ -1193,14 +866,17 @@ async function renderChartsView() {
             });
         } else {
             makeApexChart(id, {
-                chart: { type: 'line', height: 240, toolbar: { show: false } },
-                series: [{ name: label, data: data }],
+                chart: { type: 'line', height: 360, toolbar: { show: false }, zoom: { enabled: false } },
+                series: [
+                    { name: label + ' Calls', data: callData },
+                    { name: label + ' Puts', data: putData }
+                ],
                 xaxis: { categories: labels, labels: { style: { fontSize: '9px' } }, tickAmount: 10 },
                 yaxis: [{ labels: { style: { fontSize: '8px' } }, title: { text: label, style: { fontSize: '9px' } } }],
-                stroke: { width: 2, curve: 'smooth' },
-                colors: [color],
-                markers: { size: 2 },
-                legend: { position: 'top', fontSize: '10px' },
+                stroke: { width: [2, 2], curve: 'smooth' },
+                colors: [callColor, putColor],
+                markers: { size: [2, 2] },
+                legend: { show: false },
                 dataLabels: { enabled: false },
                 grid: { borderColor: 'var(--border-color)' },
                 theme: { mode: getThemeMode() }
@@ -1209,13 +885,13 @@ async function renderChartsView() {
     }
 
     var optPartMeta = [
-        { id: 'ch-fii-options', label: 'FII Net Options', data: partOptData.FII, color: C.fii },
-        { id: 'ch-dii-options', label: 'DII Net Options', data: partOptData.DII, color: C.dii },
-        { id: 'ch-pro-options', label: 'Pro Net Options', data: partOptData.Pro, color: C.pro },
-        { id: 'ch-client-options', label: 'Client Net Options', data: partOptData.Client, color: C.client }
+        { id: 'ch-fii-options', label: 'FII', callColor: '#ef4444', putColor: '#34d399' },
+        { id: 'ch-dii-options', label: 'DII', callColor: '#ef4444', putColor: '#34d399' },
+        { id: 'ch-pro-options', label: 'Pro', callColor: '#ef4444', putColor: '#34d399' },
+        { id: 'ch-client-options', label: 'Client', callColor: '#ef4444', putColor: '#34d399' }
     ];
     optPartMeta.forEach(function(m) {
-        renderOptHoldingChart(m.id, m.label, m.data, m.color);
+        renderOptHoldingChart(m.id, m.label, partCallData[m.label], partPutData[m.label], m.callColor, m.putColor);
     });
 }
 
