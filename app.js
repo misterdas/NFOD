@@ -828,13 +828,9 @@ async function renderChartsView() {
                 ],
                 xaxis: {
                     type: 'datetime',
-                    labels: {
-                        style: { fontSize: '9px' },
-                        formatter: function(val, idx) {
-                            return dateLabels[idx] ? dateLabels[idx].slice(0, 5) : '';
-                        }
-                    },
-                    tickAmount: Math.min(dateLabels.length, 10)
+                    labels: { show: false },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
                 },
                 yaxis: [
                     {
@@ -852,6 +848,30 @@ async function renderChartsView() {
                 colors: [C.price, callColor, putColor],
                 markers: { size: [0, 2, 2] },
                 legend: { show: false },
+                tooltip: {
+                    shared: true,
+                    custom: function(t) {
+                        try {
+                            var idx = t.dataPointIndex;
+                            var srcData = t.w.config.series;
+                            // Grab OHLC from source data directly (always [o,h,l,c])
+                            var ohlc = srcData[0] && srcData[0].data[idx] ? srcData[0].data[idx].y : null;
+                            // Grab call/put values
+                            var callV = srcData[1] && srcData[1].data[idx] ? srcData[1].data[idx].y : null;
+                            var putV = srcData[2] && srcData[2].data[idx] ? srcData[2].data[idx].y : null;
+                            if (!ohlc) return false;
+                            var n = function(v) { return v !== null && v !== undefined ? v.toLocaleString('en-IN') : '-'; };
+                            return '<div style="padding:6px 10px;font-size:11px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border-color);">' +
+                                '<div style="font-weight:700;margin-bottom:3px;">' + (dateLabels[idx] || '') + '</div>' +
+                                '<div><span style="color:#94a3b8;">O:</span> ' + n(ohlc[0]) + ' <span style="color:#94a3b8;">H:</span> <span style="color:#34d399;">' + n(ohlc[1]) + '</span></div>' +
+                                '<div><span style="color:#94a3b8;">L:</span> <span style="color:#f87171;">' + n(ohlc[2]) + '</span> <span style="color:#94a3b8;">C:</span> ' + n(ohlc[3]) + '</div>' +
+                                '<div style="border-top:1px solid var(--border-color);margin:3px 0 0;padding-top:3px;">' +
+                                '<span style="color:#f87171;">Calls:</span> <span style="float:right;">' + n(callV) + '</span><br>' +
+                                '<span style="color:#34d399;">Puts:</span> <span style="float:right;">' + n(putV) + '</span>' +
+                                '</div></div>';
+                        } catch(e) { return false; }
+                    }
+                },
                 dataLabels: { enabled: false },
                 grid: { borderColor: 'var(--border-color)' },
                 theme: { mode: getThemeMode() },
