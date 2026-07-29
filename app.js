@@ -811,13 +811,18 @@ function renderMultiDayConviction(trends, symbol) {
         const ceAttr = s.ce_flow_attr && s.ce_flow_attr !== '--' ? `<span class="flow-attr">${s.ce_flow_attr}</span>` : '';
         const peAttr = s.pe_flow_attr && s.pe_flow_attr !== '--' ? `<span class="flow-attr">${s.pe_flow_attr}</span>` : '';
 
+        const ceToday = s.today_ce_doi || 0;
+        const peToday = s.today_pe_doi || 0;
+        const ceTodayStr = (ceToday > 0 ? '+' : '') + formatIndianNum(ceToday);
+        const peTodayStr = (peToday > 0 ? '+' : '') + formatIndianNum(peToday);
+
         return `
             <tr>
                 <td>${ceAlign}${ceAttr}</td>
                 <td>${ceTag}</td>
-                <td class="${s.ce_trend_delta > 0 ? 'pos-red' : s.ce_trend_delta < 0 ? 'pos-green' : ''} font-mono">${s.ce_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.ce_trend_delta)}</td>
+                <td class="${s.ce_trend_delta > 0 ? 'pos-red' : s.ce_trend_delta < 0 ? 'pos-green' : ''} font-mono">${s.ce_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.ce_trend_delta)}<span class="today-subtext ${ceToday > 0 ? 't-red' : ceToday < 0 ? 't-green' : ''}">${ceTodayStr}d</span></td>
                 <td style="font-weight:800; color:#38bdf8;">${s.strike.toLocaleString('en-IN')}</td>
-                <td class="${s.pe_trend_delta > 0 ? 'pos-green' : s.pe_trend_delta < 0 ? 'pos-red' : ''} font-mono">${s.pe_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.pe_trend_delta)}</td>
+                <td class="${s.pe_trend_delta > 0 ? 'pos-green' : s.pe_trend_delta < 0 ? 'pos-red' : ''} font-mono">${s.pe_trend_delta > 0 ? '+' : ''}${formatIndianNum(s.pe_trend_delta)}<span class="today-subtext ${peToday > 0 ? 't-green' : peToday < 0 ? 't-red' : ''}">${peTodayStr}d</span></td>
                 <td>${peTag}</td>
                 <td>${peAlign}${peAttr}</td>
             </tr>

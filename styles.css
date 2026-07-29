@@ -2633,6 +2633,18 @@ body.theme-dark .block-header {
   margin-top: 1px;
 }
 
+/* ─── Today's change subtext in conviction matrix ─── */
+.today-subtext {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.7;
+  line-height: 1;
+  margin-top: 1px;
+}
+.today-subtext.t-red { color: #ef4444; }
+.today-subtext.t-green { color: #34d399; }
+
 /* ─── Print Styles ─── */
 @media print {
   body::before { display: none; }
