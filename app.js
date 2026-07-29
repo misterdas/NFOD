@@ -811,9 +811,8 @@ async function renderChartsView() {
         labels.forEach(d => niftyClose.push(m[d] || null));
     }
 
-    // NIFTY OHLC for candlestick (sequential timestamps — no weekend gaps)
-    const niftyOHLC = [];
-    var niftyCandleDates = [];
+    // NIFTY OHLC for candlestick (aligned to labels, nulls where missing)
+    const niftyOHLC = new Array(labels.length).fill(null);
     if (ohlcData && ohlcData.nifty) {
         var hasOHLC = ohlcData.nifty.some(function(r) { return r.open !== undefined; });
         if (hasOHLC) {
@@ -823,8 +822,8 @@ async function renderChartsView() {
                 var csvDate = parts[2] + '-' + parts[1] + '-' + parts[0];
                 ohlcByDate[csvDate] = [r.open, r.high, r.low, r.close];
             });
-            labels.forEach(function(d) {
-                if (ohlcByDate[d]) { niftyOHLC.push(ohlcByDate[d]); niftyCandleDates.push(d); }
+            labels.forEach(function(d, idx) {
+                if (ohlcByDate[d]) niftyOHLC[idx] = ohlcByDate[d];
             });
         }
     }
@@ -1137,11 +1136,15 @@ async function renderChartsView() {
             var candleSeries = [];
             var lineSeries = [];
             var dateLabels = [];
-            for (var fi = 0; fi < niftyOHLC.length; fi++) {
-                var ts = fi * 86400000;
-                candleSeries.push({ x: ts, y: niftyOHLC[fi] });
-                lineSeries.push({ x: ts, y: data[fi] });
-                dateLabels.push(niftyCandleDates[fi] || '');
+            var seqIdx = 0;
+            for (var fi = 0; fi < labels.length; fi++) {
+                if (niftyOHLC[fi]) {
+                    var ts = seqIdx * 86400000;
+                    candleSeries.push({ x: ts, y: niftyOHLC[fi] });
+                    lineSeries.push({ x: ts, y: data[fi] });
+                    dateLabels.push(labels[fi]);
+                    seqIdx++;
+                }
             }
 
             makeApexChart(id, {
