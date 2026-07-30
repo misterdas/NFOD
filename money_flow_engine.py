@@ -1097,8 +1097,16 @@ if __name__ == "__main__":
         print("  DRY RUN MODE — Scoring Diagnostics Only")
         print("=" * 60)
         print()
-        # Run only the participant data scoring
-        participant_data = load_participant_data()
+        # Load NSE data to compute IV modifier (same as run_engine does)
+        iv_mod = 0
+        if os.path.exists(NSE_DATA_FILE):
+            with open(NSE_DATA_FILE, "r") as f:
+                oc_raw = json.load(f)
+            iv_mod = compute_iv_modifier(oc_raw.get("stocks", {}))
+            print(f"Loaded NSE data. IV modifier: {iv_mod:+.0f}")
+        else:
+            print(f"NSE data file not found — IV modifier set to 0.")
+        participant_data = load_participant_data(iv_modifier=iv_mod)
         if participant_data:
             print(f"Date: {participant_data['date']}  ->  {participant_data['prev_date']}")
             print()

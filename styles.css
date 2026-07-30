@@ -203,7 +203,7 @@ body::before {
   z-index: 0;
 }
 
-body.theme-light::before {
+body:not(.theme-dark)::before {
   background:
     radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.04) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 20%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
