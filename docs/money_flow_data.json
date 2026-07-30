@@ -1,9 +1,5 @@
 {
-<<<<<<< Updated upstream
-  "timestamp": "2026-07-30T16:05:50.880261+00:00",
-=======
   "timestamp": "2026-07-30T16:23:05.068825+00:00",
->>>>>>> Stashed changes
   "executive_summary": {
     "bias_label": "MODERATE BEARISH",
     "smart_money_score": -19.875,
@@ -538,13 +534,8 @@
     "call_unwinding_bullish": [],
     "put_unwinding_bearish": [],
     "counts": {
-<<<<<<< Updated upstream
-      "call_writing": 10,
-      "put_writing": 10,
-=======
       "call_writing": 124,
       "put_writing": 95,
->>>>>>> Stashed changes
       "call_unwinding": 0,
       "put_unwinding": 0
     }
