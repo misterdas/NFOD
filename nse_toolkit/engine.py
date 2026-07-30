@@ -393,7 +393,7 @@ def detect_index_rolls(stock_data: dict) -> dict:
                 elif target["strike"] < s["strike"]:
                     total_loss += (s["strike"] - target["strike"]) * s["ce_oi"]
             pain_map[tp] = total_loss
-        max_pain = min(pain_map, key=pain_map.get) if pain_map else ltp
+        max_pain = min(pain_map, key=lambda k: pain_map[k]) if pain_map else ltp
 
         magnet_strike = round((max_pain * 0.5 + res_wall * 0.25 + sup_wall * 0.25) / step_size) * step_size
         expiry_min = round((min(sup_wall, max_pain) - step_size) / step_size) * step_size
