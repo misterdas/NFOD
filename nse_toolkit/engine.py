@@ -1,72 +1,53 @@
 """
-Money Flow & Institutional Verdict Engine
-------------------------------------------
-Cross-correlates Gross Participant OI (FDCP_Data.csv) with Strike-Level Option Chains (nse_data.json)
-and multi-day snapshot archives (docs/oc_history/) to deliver institutional verdicts.
+Institutional Verdict Engine — Money Flow & Market Breadth Analysis.
 
-Verdict Categories:
-1. Executive Market Verdict (Bullish / Bearish / Sideways + Confidence Score)
-2. Participant Options Stance (FII / Pro / DII Call/Put Long & Short additions/reductions from FDCP)
-3. Index Roll Intelligence (Resistance & Support Roll direction & magnitude)
-4. Stock F&O Breadth (Top Call/Put writing & unwinding stocks across all 215 symbols)
-5. Multi-Day Strike Conviction Heatmap (Indices & major stocks)
+Cross-correlates Gross Participant OI (FDCP_Data.csv) with Strike-Level Option Chains
+(nse_data.json) and multi-day snapshot archives (docs/oc_history/) to deliver
+institutional verdicts.
 
 Participant weighting philosophy (explicit, by design):
     FII  weight = 1.00  (largest, most informationally significant flows)
-    Pro  weight = 0.60  (prop desks / arbitrageurs - meaningful but often hedge-driven)
-    DII  weight = 0.40  (mutual funds/insurers - slower-moving, still directional signal)
+    Pro  weight = 0.60  (prop desks / arbitrageurs — meaningful but often hedge-driven)
+    DII  weight = 0.40  (mutual funds/insurers — slower-moving, still directional signal)
     Client (retail) is NEVER scored directly. It is only used as a contrarian
     overlay ("trapped retail") that nudges the score when retail is heavily
-    positioned against what FII is doing - i.e. the lowest-priority participant
+    positioned against what FII is doing — i.e. the lowest-priority participant
     only matters in how it confirms/contradicts the higher-priority ones.
 """
 
+import glob
 import json
 import os
-import glob
-import pandas as pd
+from datetime import datetime, timezone
+
 import numpy as np
-from datetime import datetime, timezone, timedelta
+import pandas as pd
 
-FDCP_FILE = "FDCP_Data.csv"
-NSE_DATA_FILE = os.path.join("docs", "nse_data.json")
-HISTORY_DIR = os.path.join("docs", "oc_history")
-OUTPUT_FILE = os.path.join("docs", "money_flow_data.json")
-
-# Explicit participant weights (FII > Pro > DII > Client). Client is excluded
-# on purpose - see module docstring.
-FII_WEIGHT = 1.00
-PRO_WEIGHT = 0.60
-DII_WEIGHT = 0.40
-
-# Score thresholds — FII baseline, Pro (0.6x), DII (0.4x)
-FII_FUT_THRESHOLD = 5000
-FII_OPT_THRESHOLD = 10000
-PRO_FUT_THRESHOLD = 3000
-PRO_OPT_THRESHOLD = 6000
-DII_FUT_THRESHOLD = 2000
-DII_OPT_THRESHOLD = 4000
-RETAIL_TRAP_THRESHOLD = 25000
-
-# Composite score is clipped to this range both before and after the retail-trap overlay
-SCORE_CLIP = 150
-
-# IV confidence modifier bounds
-IV_MOD_MAX = 10     # max score reduction when IV is very high (noisy market)
-IV_MOD_BOOST = 5    # max score boost when IV is very low (clear signal)
-IV_HIGH_THRESH = 25  # avg IV above this → reduce confidence
-IV_LOW_THRESH = 12   # avg IV below this → increase confidence
+from nse_toolkit.config import (
+    FDCP_FILE, NSE_DATA_FILE, HISTORY_DIR, OUTPUT_FILE,
+    FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT,
+    FII_FUT_THRESHOLD, FII_OPT_THRESHOLD,
+    PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD,
+    DII_FUT_THRESHOLD, DII_OPT_THRESHOLD,
+    RETAIL_TRAP_THRESHOLD, SCORE_CLIP,
+    IV_MOD_MAX, IV_MOD_BOOST, IV_HIGH_THRESH, IV_LOW_THRESH,
+    INDICES,
+    clean_val, sort_dates_chronologically,
+)
+from nse_toolkit.fetcher import cleanup_old_history
 
 
-def compute_iv_modifier(stocks):
+# ── IV Modifier ─────────────────────────────────────────────────────────────
+
+def compute_iv_modifier(stocks: dict) -> float:
     """
     Compute an IV-based confidence modifier for the composite score.
     Higher IV → noisier market → reduce conviction (negative modifier).
     Lower IV → clearer signal → increase conviction (positive modifier).
     Uses ATM strike IVs across all tracked indices.
     """
-    ivs = []
-    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+    ivs: list[float] = []
+    for sym in INDICES:
         if sym not in stocks:
             continue
         data = stocks[sym]
@@ -76,10 +57,12 @@ def compute_iv_modifier(stocks):
             continue
         near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.02]
         for s in near:
-            if s.get("ce_iv", 0) and s["ce_iv"] > 0:
-                ivs.append(s["ce_iv"])
-            if s.get("pe_iv", 0) and s["pe_iv"] > 0:
-                ivs.append(s["pe_iv"])
+            ce_iv = s.get("ce_iv", 0)
+            if ce_iv and ce_iv > 0:
+                ivs.append(ce_iv)
+            pe_iv = s.get("pe_iv", 0)
+            if pe_iv and pe_iv > 0:
+                ivs.append(pe_iv)
     if not ivs:
         return 0.0
     avg_iv = float(np.mean(ivs))
@@ -90,41 +73,91 @@ def compute_iv_modifier(stocks):
     return 0.0
 
 
-def clean_val(val):
-    """Convert numpy/pandas data types to standard Python primitives for JSON encoding."""
-    if isinstance(val, (np.integer, int)):
-        return int(val)
-    elif isinstance(val, (np.floating, float)):
-        if np.isnan(val) or np.isinf(val):
-            return None
-        return float(val)
-    elif isinstance(val, (np.ndarray, list)):
-        return [clean_val(v) for v in val]
-    elif isinstance(val, dict):
-        return {k: clean_val(v) for k, v in val.items()}
-    return val
+# ── FDCP Participant Data Loader ───────────────────────────────────────────
+
+def _calc_chg(row_t: dict, row_p: dict | None, col: str) -> float:
+    if row_t and row_p:
+        return float(row_t.get(col, 0)) - float(row_p.get(col, 0))
+    return 0.0
 
 
-def _sort_dates_chronologically(raw_dates):
+def _load_participant_changes(row_t: dict, row_p: dict | None) -> dict:
     """
-    df['Date'].unique() preserves first-appearance order in the CSV, NOT
-    chronological order. If the file is ever appended out of sequence (or
-    re-sorted / reloaded), 'latest' and 'previous' silently swap.
-    This parses each date string and sorts properly, falling back to the
-    original string order only if parsing fails entirely.
+    Returns net directional changes for one participant across all instruments.
+    Long and short legs are ALWAYS netted together before anything downstream
+    uses them — a participant adding both long and short calls at once should
+    not register as pure directional writing.
     """
-    try:
-        parsed = pd.to_datetime(pd.Series(raw_dates), dayfirst=True, errors="coerce")
-        if parsed.isna().any():
-            # Mixed/unparseable formats - fall back to raw order rather than guessing
-            return list(raw_dates)
-        order = parsed.sort_values().index
-        return [raw_dates[i] for i in order]
-    except Exception:
-        return list(raw_dates)
+    fut_long = _calc_chg(row_t, row_p, "Future Index Long")
+    fut_short = _calc_chg(row_t, row_p, "Future Index Short")
+    ce_long = _calc_chg(row_t, row_p, "Option Index Call Long")
+    ce_short = _calc_chg(row_t, row_p, "Option Index Call Short")
+    pe_long = _calc_chg(row_t, row_p, "Option Index Put Long")
+    pe_short = _calc_chg(row_t, row_p, "Option Index Put Short")
+    stk_fut_long = _calc_chg(row_t, row_p, "Future Stock Long")
+    stk_fut_short = _calc_chg(row_t, row_p, "Future Stock Short")
+    stk_ce_long = _calc_chg(row_t, row_p, "Option Stock Call Long")
+    stk_ce_short = _calc_chg(row_t, row_p, "Option Stock Call Short")
+    stk_pe_long = _calc_chg(row_t, row_p, "Option Stock Put Long")
+    stk_pe_short = _calc_chg(row_t, row_p, "Option Stock Put Short")
+
+    return {
+        "fut_chg": fut_long - fut_short,
+        "fut_long_chg": fut_long,
+        "fut_short_chg": fut_short,
+        "ce_long_chg": ce_long,
+        "ce_short_chg": ce_short,
+        "pe_long_chg": pe_long,
+        "pe_short_chg": pe_short,
+        "ce_net_short_chg": ce_short - ce_long,
+        "pe_net_short_chg": pe_short - pe_long,
+        "stk_fut_chg": stk_fut_long - stk_fut_short,
+        "stk_fut_long_chg": stk_fut_long,
+        "stk_fut_short_chg": stk_fut_short,
+        "stk_ce_long_chg": stk_ce_long,
+        "stk_ce_short_chg": stk_ce_short,
+        "stk_pe_long_chg": stk_pe_long,
+        "stk_pe_short_chg": stk_pe_short,
+    }
 
 
-def load_participant_data(iv_modifier=0):
+def _participant_score(p: dict, fut_th: float, opt_th: float) -> int:
+    """
+    Proportional scoring: base ±15 for crossing threshold, plus up to ±10
+    proportional to how far beyond the threshold. Max ±25 per leg.
+    Positive = net bullish (buying futures, covering calls, writing puts).
+    Negative = net bearish (selling futures, writing calls, unwinding puts).
+    """
+    s = 0.0
+
+    # Futures
+    if p["fut_chg"] > fut_th:
+        ratio = min(1.0, (p["fut_chg"] - fut_th) / fut_th)
+        s += 15 + round(ratio * 10)
+    elif p["fut_chg"] < -fut_th:
+        ratio = min(1.0, (abs(p["fut_chg"]) - fut_th) / fut_th)
+        s -= 15 + round(ratio * 10)
+
+    # Call options — negative net short change = covering (bullish), positive = writing (bearish)
+    if p["ce_net_short_chg"] < -opt_th:
+        ratio = min(1.0, (abs(p["ce_net_short_chg"]) - opt_th) / opt_th)
+        s += 15 + round(ratio * 10)
+    elif p["ce_net_short_chg"] > opt_th:
+        ratio = min(1.0, (p["ce_net_short_chg"] - opt_th) / opt_th)
+        s -= 15 + round(ratio * 10)
+
+    # Put options — positive net short change = writing floor (bullish), negative = unwinding (bearish)
+    if p["pe_net_short_chg"] > opt_th:
+        ratio = min(1.0, (p["pe_net_short_chg"] - opt_th) / opt_th)
+        s += 15 + round(ratio * 10)
+    elif p["pe_net_short_chg"] < -opt_th:
+        ratio = min(1.0, (abs(p["pe_net_short_chg"]) - opt_th) / opt_th)
+        s -= 15 + round(ratio * 10)
+
+    return max(-25, min(25, int(s)))
+
+
+def load_participant_data(iv_modifier: float = 0) -> dict | None:
     """Load latest FDCP data and derive FII, Pro & DII daily positioning shifts."""
     if not os.path.exists(FDCP_FILE):
         return None
@@ -133,8 +166,8 @@ def load_participant_data(iv_modifier=0):
         df = pd.read_csv(FDCP_FILE)
         df.columns = df.columns.str.strip()
 
-        raw_dates = list(df['Date'].unique())
-        dates = _sort_dates_chronologically(raw_dates)
+        raw_dates = list(df["Date"].unique())
+        dates = sort_dates_chronologically(raw_dates)
 
         if len(dates) < 2:
             latest_date = dates[-1] if len(dates) == 1 else None
@@ -143,118 +176,33 @@ def load_participant_data(iv_modifier=0):
             latest_date = dates[-1]
             prev_date = dates[-2]
 
-        def get_row(p_type, d_str):
+        def get_row(p_type: str, d_str: str | None) -> dict:
             if not d_str:
                 return {}
-            sub = df[(df['Client Type'] == p_type) & (df['Date'] == d_str)]
+            sub = df[(df["Client Type"] == p_type) & (df["Date"] == d_str)]
             return sub.iloc[0].to_dict() if not sub.empty else {}
 
-        fii_today = get_row('FII', latest_date)
-        fii_prev = get_row('FII', prev_date)
-        pro_today = get_row('Pro', latest_date)
-        pro_prev = get_row('Pro', prev_date)
-        dii_today = get_row('DII', latest_date)
-        dii_prev = get_row('DII', prev_date)
-        client_today = get_row('Client', latest_date)
-        client_prev = get_row('Client', prev_date)
+        fii_today = get_row("FII", latest_date)
+        fii_prev = get_row("FII", prev_date)
+        pro_today = get_row("Pro", latest_date)
+        pro_prev = get_row("Pro", prev_date)
+        dii_today = get_row("DII", latest_date)
+        dii_prev = get_row("DII", prev_date)
+        client_today = get_row("Client", latest_date)
+        client_prev = get_row("Client", prev_date)
 
-        def calc_chg(row_t, row_p, col):
-            return float(row_t.get(col, 0)) - float(row_p.get(col, 0)) if row_t and row_p else 0.0
+        fii = _load_participant_changes(fii_today, fii_prev)
+        pro = _load_participant_changes(pro_today, pro_prev)
+        dii = _load_participant_changes(dii_today, dii_prev)
+        client = _load_participant_changes(client_today, client_prev)
 
-        def load_participant_changes(row_t, row_p):
-            """
-            Returns net directional changes for one participant:
-            fut_chg          : net index futures change (long - short delta)
-            ce_net_short_chg : net CALL writing pressure  (short_chg - long_chg); +ve = capping upside
-            pe_net_short_chg : net PUT writing pressure   (short_chg - long_chg); +ve = defending floor
-            stk_fut_chg      : net stock futures change
-            stk_ce_*         : stock call options
-            stk_pe_*         : stock put options
-            Long and short legs are ALWAYS netted together before anything downstream
-            uses them - a participant adding both long and short calls at once should
-            not register as pure directional writing.
-            """
-            fut_long_chg = calc_chg(row_t, row_p, 'Future Index Long')
-            fut_short_chg = calc_chg(row_t, row_p, 'Future Index Short')
-            fut_chg = fut_long_chg - fut_short_chg
-            ce_long_chg = calc_chg(row_t, row_p, 'Option Index Call Long')
-            ce_short_chg = calc_chg(row_t, row_p, 'Option Index Call Short')
-            pe_long_chg = calc_chg(row_t, row_p, 'Option Index Put Long')
-            pe_short_chg = calc_chg(row_t, row_p, 'Option Index Put Short')
-            stk_fut_long_chg = calc_chg(row_t, row_p, 'Future Stock Long')
-            stk_fut_short_chg = calc_chg(row_t, row_p, 'Future Stock Short')
-            stk_fut_chg = stk_fut_long_chg - stk_fut_short_chg
-            stk_ce_long_chg = calc_chg(row_t, row_p, 'Option Stock Call Long')
-            stk_ce_short_chg = calc_chg(row_t, row_p, 'Option Stock Call Short')
-            stk_pe_long_chg = calc_chg(row_t, row_p, 'Option Stock Put Long')
-            stk_pe_short_chg = calc_chg(row_t, row_p, 'Option Stock Put Short')
-            return {
-                "fut_chg": fut_chg,
-                "fut_long_chg": fut_long_chg,
-                "fut_short_chg": fut_short_chg,
-                "ce_long_chg": ce_long_chg,
-                "ce_short_chg": ce_short_chg,
-                "pe_long_chg": pe_long_chg,
-                "pe_short_chg": pe_short_chg,
-                "ce_net_short_chg": ce_short_chg - ce_long_chg,
-                "pe_net_short_chg": pe_short_chg - pe_long_chg,
-                "stk_fut_chg": stk_fut_chg,
-                "stk_fut_long_chg": stk_fut_long_chg,
-                "stk_fut_short_chg": stk_fut_short_chg,
-                "stk_ce_long_chg": stk_ce_long_chg,
-                "stk_ce_short_chg": stk_ce_short_chg,
-                "stk_pe_long_chg": stk_pe_long_chg,
-                "stk_pe_short_chg": stk_pe_short_chg,
-            }
-
-        fii = load_participant_changes(fii_today, fii_prev)
-        pro = load_participant_changes(pro_today, pro_prev)
-        dii = load_participant_changes(dii_today, dii_prev)
-        client = load_participant_changes(client_today, client_prev)
-
-        # Client (Retail) net buy figures - used ONLY for the contrarian trap overlay,
-        # never scored directly.
+        # Client (Retail) net buy — used ONLY for the contrarian trap overlay
         client_ce_net_buy = client["ce_long_chg"] - client["ce_short_chg"]
         client_pe_net_buy = client["pe_long_chg"] - client["pe_short_chg"]
 
-        def participant_score(p, fut_th, opt_th):
-            """
-            Proportional scoring: base ±15 for crossing threshold, plus up to ±10
-            proportional to how far beyond the threshold. Max ±25 per leg.
-            Positive = net bullish (buying futures, covering calls, writing puts).
-            Negative = net bearish (selling futures, writing calls, unwinding puts).
-            """
-            s = 0
-
-            # Futures
-            if p["fut_chg"] > fut_th:
-                ratio = min(1.0, (p["fut_chg"] - fut_th) / fut_th)
-                s += 15 + round(ratio * 10)
-            elif p["fut_chg"] < -fut_th:
-                ratio = min(1.0, (abs(p["fut_chg"]) - fut_th) / fut_th)
-                s -= 15 + round(ratio * 10)
-
-            # Call options — negative = covering (bullish), positive = writing (bearish)
-            if p["ce_net_short_chg"] < -opt_th:
-                ratio = min(1.0, (abs(p["ce_net_short_chg"]) - opt_th) / opt_th)
-                s += 15 + round(ratio * 10)
-            elif p["ce_net_short_chg"] > opt_th:
-                ratio = min(1.0, (p["ce_net_short_chg"] - opt_th) / opt_th)
-                s -= 15 + round(ratio * 10)
-
-            # Put options — positive = writing floor (bullish), negative = unwinding (bearish)
-            if p["pe_net_short_chg"] > opt_th:
-                ratio = min(1.0, (p["pe_net_short_chg"] - opt_th) / opt_th)
-                s += 15 + round(ratio * 10)
-            elif p["pe_net_short_chg"] < -opt_th:
-                ratio = min(1.0, (abs(p["pe_net_short_chg"]) - opt_th) / opt_th)
-                s -= 15 + round(ratio * 10)
-
-            return max(-25, min(25, s))
-
-        fii_raw_score = participant_score(fii, FII_FUT_THRESHOLD, FII_OPT_THRESHOLD)
-        pro_raw_score = participant_score(pro, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD)
-        dii_raw_score = participant_score(dii, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD)
+        fii_raw_score = _participant_score(fii, FII_FUT_THRESHOLD, FII_OPT_THRESHOLD)
+        pro_raw_score = _participant_score(pro, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD)
+        dii_raw_score = _participant_score(dii, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD)
 
         # Explicit weighted composite: FII > Pro > DII. Client excluded by design.
         weighted_score = (
@@ -264,8 +212,7 @@ def load_participant_data(iv_modifier=0):
         )
         weighted_score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score))
 
-        # FII-DII Alignment Modifier — when both have the same directional view,
-        # add a confidence bonus. When they diverge, reduce conviction.
+        # FII-DII Alignment Modifier
         fii_dii_modifier = 0
         if fii_raw_score > 0 and dii_raw_score > 0:
             fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
@@ -274,15 +221,12 @@ def load_participant_data(iv_modifier=0):
         elif fii_raw_score * dii_raw_score < 0:
             fii_dii_modifier = -min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
 
-        # Retail Trap / Contrarian Sentiment Filter (lowest-priority participant,
-        # only ever nudges the already-weighted institutional score).
-        # Also detects when retail confirms FII direction for a confidence bonus.
-        retail_trap_alarm = None
+        # Retail Trap / Contrarian Sentiment Filter
+        retail_trap_alarm: str | None = None
         trap_adjustment = 0
-        retail_confirmation_message = None
+        retail_confirmation_message: str | None = None
         retail_confirmation_score = 0
 
-        # Existing traps: retail on the wrong side of FII
         if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > FII_OPT_THRESHOLD:
             trap_adjustment = -15
             retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
@@ -290,7 +234,6 @@ def load_participant_data(iv_modifier=0):
             trap_adjustment = 15
             retail_trap_alarm = "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts."
 
-        # New confirmations: retail NOT fighting FII direction (prudent positioning)
         if trap_adjustment == 0:
             if client_ce_net_buy < -RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] < -FII_OPT_THRESHOLD:
                 retail_confirmation_score = 5
@@ -299,7 +242,13 @@ def load_participant_data(iv_modifier=0):
                 retail_confirmation_score = -5
                 retail_confirmation_message = "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor."
 
-        score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score + trap_adjustment + retail_confirmation_score + fii_dii_modifier + iv_modifier))
+        score = max(
+            -SCORE_CLIP,
+            min(
+                SCORE_CLIP,
+                weighted_score + trap_adjustment + retail_confirmation_score + fii_dii_modifier + iv_modifier,
+            ),
+        )
 
         if score >= 40:
             bias_label = "HIGH CONFIDENCE BULLISH"
@@ -317,11 +266,30 @@ def load_participant_data(iv_modifier=0):
             bias_label = "NEUTRAL / SIDEWAYS"
             action_desc = "Mixed operator signals — expecting rangebound consolidation."
 
-        # Track the clipped weighted score *before* alignment/retail/IV adjustments
-        # so score_breakdown values are accurate (not conflated with clipping).
-        weighted_clipped_before_adjustments = weighted_score
+        weighted_clipped_before_adjustments = float(weighted_score)
 
-        return {
+        # ── Build flat output dict ───────────────────────────────────────
+        # Use a helper to save ~100 lines of repetitive key-value wiring.
+        def _p_out(name: str, p: dict, raw_score: int) -> dict:
+            return {
+                f"{name}_fut_net_change": p["fut_chg"],
+                f"{name}_fut_long_change": p["fut_long_chg"],
+                f"{name}_fut_short_change": p["fut_short_chg"],
+                f"{name}_ce_long_change": p["ce_long_chg"],
+                f"{name}_ce_short_change": p["ce_short_chg"],
+                f"{name}_ce_net_short_change": p["ce_net_short_chg"],
+                f"{name}_pe_long_change": p["pe_long_chg"],
+                f"{name}_pe_short_change": p["pe_short_chg"],
+                f"{name}_pe_net_short_change": p["pe_net_short_chg"],
+                f"{name}_raw_score": raw_score,
+                f"{name}_stk_fut_net_change": p["stk_fut_chg"],
+                f"{name}_stk_fut_long_change": p["stk_fut_long_chg"],
+                f"{name}_stk_fut_short_change": p["stk_fut_short_chg"],
+                f"{name}_stk_ce_net_change": p["stk_ce_short_chg"] - p["stk_ce_long_chg"],
+                f"{name}_stk_pe_net_change": p["stk_pe_short_chg"] - p["stk_pe_long_chg"],
+            }
+
+        result: dict = {
             "date": latest_date,
             "prev_date": prev_date,
             "smart_money_score": score,
@@ -334,55 +302,13 @@ def load_participant_data(iv_modifier=0):
             "fii_dii_modifier": fii_dii_modifier,
             "iv_modifier_applied": iv_modifier,
             "weighted_clipped_before_adjustments": weighted_clipped_before_adjustments,
+        }
+        result.update(_p_out("fii", fii, fii_raw_score))
+        result.update(_p_out("pro", pro, pro_raw_score))
+        result.update(_p_out("dii", dii, dii_raw_score))
 
-            "fii_fut_net_change": fii["fut_chg"],
-            "fii_fut_long_change": fii["fut_long_chg"],
-            "fii_fut_short_change": fii["fut_short_chg"],
-            "fii_ce_long_change": fii["ce_long_chg"],
-            "fii_ce_short_change": fii["ce_short_chg"],
-            "fii_ce_net_short_change": fii["ce_net_short_chg"],
-            "fii_pe_long_change": fii["pe_long_chg"],
-            "fii_pe_short_change": fii["pe_short_chg"],
-            "fii_pe_net_short_change": fii["pe_net_short_chg"],
-            "fii_raw_score": fii_raw_score,
-            "fii_stk_fut_net_change": fii["stk_fut_chg"],
-            "fii_stk_fut_long_change": fii["stk_fut_long_chg"],
-            "fii_stk_fut_short_change": fii["stk_fut_short_chg"],
-            "fii_stk_ce_net_change": fii["stk_ce_short_chg"] - fii["stk_ce_long_chg"],
-            "fii_stk_pe_net_change": fii["stk_pe_short_chg"] - fii["stk_pe_long_chg"],
-
-            "pro_fut_net_change": pro["fut_chg"],
-            "pro_fut_long_change": pro["fut_long_chg"],
-            "pro_fut_short_change": pro["fut_short_chg"],
-            "pro_ce_long_change": pro["ce_long_chg"],
-            "pro_ce_short_change": pro["ce_short_chg"],
-            "pro_ce_net_short_change": pro["ce_net_short_chg"],
-            "pro_pe_long_change": pro["pe_long_chg"],
-            "pro_pe_short_change": pro["pe_short_chg"],
-            "pro_pe_net_short_change": pro["pe_net_short_chg"],
-            "pro_raw_score": pro_raw_score,
-            "pro_stk_fut_net_change": pro["stk_fut_chg"],
-            "pro_stk_fut_long_change": pro["stk_fut_long_chg"],
-            "pro_stk_fut_short_change": pro["stk_fut_short_chg"],
-            "pro_stk_ce_net_change": pro["stk_ce_short_chg"] - pro["stk_ce_long_chg"],
-            "pro_stk_pe_net_change": pro["stk_pe_short_chg"] - pro["stk_pe_long_chg"],
-
-            "dii_fut_net_change": dii["fut_chg"],
-            "dii_fut_long_change": dii["fut_long_chg"],
-            "dii_fut_short_change": dii["fut_short_chg"],
-            "dii_ce_long_change": dii["ce_long_chg"],
-            "dii_ce_short_change": dii["ce_short_chg"],
-            "dii_ce_net_short_change": dii["ce_net_short_chg"],
-            "dii_pe_long_change": dii["pe_long_chg"],
-            "dii_pe_short_change": dii["pe_short_chg"],
-            "dii_pe_net_short_change": dii["pe_net_short_chg"],
-            "dii_raw_score": dii_raw_score,
-            "dii_stk_fut_net_change": dii["stk_fut_chg"],
-            "dii_stk_fut_long_change": dii["stk_fut_long_chg"],
-            "dii_stk_fut_short_change": dii["stk_fut_short_chg"],
-            "dii_stk_ce_net_change": dii["stk_ce_short_chg"] - dii["stk_ce_long_chg"],
-            "dii_stk_pe_net_change": dii["stk_pe_short_chg"] - dii["stk_pe_long_chg"],
-
+        # Client-specific
+        result.update({
             "client_ce_net_buy": client_ce_net_buy,
             "client_pe_net_buy": client_pe_net_buy,
             "client_ce_long_change": client["ce_long_chg"],
@@ -397,36 +323,33 @@ def load_participant_data(iv_modifier=0):
             "client_stk_fut_short_change": client["stk_fut_short_chg"],
             "client_stk_ce_net_change": client["stk_ce_short_chg"] - client["stk_ce_long_chg"],
             "client_stk_pe_net_change": client["stk_pe_short_chg"] - client["stk_pe_long_chg"],
+        })
 
-            "fii_fut_net_carried": float(fii_today.get('Future Index Long', 0)) - float(fii_today.get('Future Index Short', 0)),
-            "pro_fut_net_carried": float(pro_today.get('Future Index Long', 0)) - float(pro_today.get('Future Index Short', 0)),
-            "dii_fut_net_carried": float(dii_today.get('Future Index Long', 0)) - float(dii_today.get('Future Index Short', 0)),
-
+        # Carried positions
+        result.update({
+            "fii_fut_net_carried": float(fii_today.get("Future Index Long", 0)) - float(fii_today.get("Future Index Short", 0)),
+            "pro_fut_net_carried": float(pro_today.get("Future Index Long", 0)) - float(pro_today.get("Future Index Short", 0)),
+            "dii_fut_net_carried": float(dii_today.get("Future Index Long", 0)) - float(dii_today.get("Future Index Short", 0)),
             "weights": {"fii": FII_WEIGHT, "pro": PRO_WEIGHT, "dii": DII_WEIGHT, "client": 0.0},
-        }
+        })
+
+        return result
 
     except Exception as e:
         print(f"Error parsing FDCP data: {e}")
         return None
 
 
-# ---------------------------------------------------------------------------
-# Everything below (index roll detection, stock breadth scan, multi-day
-# conviction, and the run_engine orchestrator) is UNCHANGED from the original
-# script - the review did not find weighting/comparison issues in these
-# sections, only in participant scoring above.
-# ---------------------------------------------------------------------------
+# ── Index Roll Detection ───────────────────────────────────────────────────
 
-
-def detect_index_rolls(stock_data):
+def detect_index_rolls(stock_data: dict) -> dict:
     """
     Detects Resistance & Support Rolls, Magnet Strikes, Expected Expiry Ranges,
-    and Operator Squeeze / Trap Alarms for indices (NIFTY, BANKNIFTY, FINNIFTY, MIDCPNIFTY).
+    and Operator Squeeze / Trap Alarms for all tracked indices.
     """
-    results = {}
-    indices = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]
+    results: dict = {}
 
-    for symbol in indices:
+    for symbol in INDICES:
         if symbol not in stock_data:
             continue
 
@@ -444,7 +367,7 @@ def detect_index_rolls(stock_data):
         if not near:
             near = strikes
 
-        strike_diffs = [near[i+1]["strike"] - near[i]["strike"] for i in range(len(near)-1)]
+        strike_diffs = [near[i + 1]["strike"] - near[i]["strike"] for i in range(len(near) - 1)]
         step_size = float(np.median(strike_diffs)) if strike_diffs else 50.0
         if step_size <= 0:
             step_size = 50.0
@@ -459,16 +382,16 @@ def detect_index_rolls(stock_data):
         unwind_sup_obj = min(near, key=lambda x: x["pe_change_oi"])
         unwind_sup = unwind_sup_obj["strike"] if unwind_sup_obj["pe_change_oi"] < -500 else None
 
-        pain_map = {}
+        # Max Pain
+        pain_map: dict = {}
         for target in near:
             tp = target["strike"]
-            total_loss = 0
+            total_loss = 0.0
             for s in near:
-                st = s["strike"]
-                if target["strike"] > st:
-                    total_loss += (target["strike"] - st) * s["pe_oi"]
-                elif target["strike"] < st:
-                    total_loss += (st - target["strike"]) * s["ce_oi"]
+                if target["strike"] > s["strike"]:
+                    total_loss += (target["strike"] - s["strike"]) * s["pe_oi"]
+                elif target["strike"] < s["strike"]:
+                    total_loss += (s["strike"] - target["strike"]) * s["ce_oi"]
             pain_map[tp] = total_loss
         max_pain = min(pain_map, key=pain_map.get) if pain_map else ltp
 
@@ -485,7 +408,7 @@ def detect_index_rolls(stock_data):
 
         dte_weight = 1.0 + (dte * 0.15)
 
-        traps_and_squeezes = []
+        traps_and_squeezes: list[dict] = []
 
         avg_iv = float(np.mean([max(s.get("ce_iv", 15), 1) + max(s.get("pe_iv", 15), 1) for s in near])) / 2.0 if near else 15.0
         iv_multiplier = max(0.5, min(2.0, avg_iv / 15.0))
@@ -503,14 +426,14 @@ def detect_index_rolls(stock_data):
                     "type": "SYN_BULL",
                     "strike": atm_strike["strike"],
                     "badge": "SYNTHETIC PREMIUM",
-                    "desc": f"Synthetic futures (+{premium:.1f} pts). Operators are loading Calls / Shorting Puts."
+                    "desc": f"Synthetic futures (+{premium:.1f} pts). Operators are loading Calls / Shorting Puts.",
                 })
             elif premium < -20:
                 traps_and_squeezes.append({
                     "type": "SYN_BEAR",
                     "strike": atm_strike["strike"],
                     "badge": "SYNTHETIC DISCOUNT",
-                    "desc": f"Synthetic futures ({premium:.1f} pts). Operators are shorting futures via spread Parity."
+                    "desc": f"Synthetic futures ({premium:.1f} pts). Operators are shorting futures via spread Parity.",
                 })
 
         for s in near:
@@ -526,19 +449,20 @@ def detect_index_rolls(stock_data):
                     "type": "CALL_SQUEEZE",
                     "strike": st,
                     "badge": "CALL WRITER SQUEEZE",
-                    "desc": f"Bears forced to cover CE at {st} as LTP ({ltp:,.1f}) crossed above."
+                    "desc": f"Bears forced to cover CE at {st} as LTP ({ltp:,.1f}) crossed above.",
                 })
             elif ltp < st and adj_pe_doi < trap_threshold and s["pe_oi"] > 5000:
                 traps_and_squeezes.append({
                     "type": "PUT_TRAP",
                     "strike": st,
                     "badge": "PUT WRITER TRAP",
-                    "desc": f"Bulls trapped at {st} PE as LTP ({ltp:,.1f}) broke below."
+                    "desc": f"Bulls trapped at {st} PE as LTP ({ltp:,.1f}) broke below.",
                 })
 
         if len(traps_and_squeezes) > 3:
             traps_and_squeezes = traps_and_squeezes[:3]
 
+        # Resistance roll
         if unwind_res and fresh_res > unwind_res and unwind_res_obj["ce_change_oi"] < -2000:
             res_roll = f"RESISTANCE ROLLED UP (+{int(fresh_res - unwind_res)} pts)"
             res_roll_type = "BULLISH"
@@ -552,6 +476,7 @@ def detect_index_rolls(stock_data):
             res_roll_type = "NEUTRAL"
             res_roll_desc = f"Primary ceiling holding firm at {res_wall} CE."
 
+        # Support roll
         if unwind_sup and fresh_sup > unwind_sup and unwind_sup_obj["pe_change_oi"] < -2000:
             sup_roll = f"SUPPORT ROLLED UP (+{int(fresh_sup - unwind_sup)} pts)"
             sup_roll_type = "BULLISH"
@@ -604,18 +529,20 @@ def detect_index_rolls(stock_data):
     return results
 
 
-def scan_stock_breadth(stock_data, participant_summary=None):
+# ── Stock Breadth Scan ─────────────────────────────────────────────────────
+
+def scan_stock_breadth(stock_data: dict, participant_summary: dict | None = None) -> dict:
     """
-    Scans all 215 stocks in option chain data to find top 10 market leaders in:
+    Scans all stocks in option chain data to find top 10 market leaders in:
     1. Fresh Call Writing (Operators Capping Upside → Bearish Stocks)
     2. Fresh Put Writing (Operators Defending Floor → Bullish Stocks)
     3. Call Unwinding (Short Squeeze Risk → Bullish Breakout Stocks)
     4. Put Unwinding (Floor Breakdown Risk → Bearish Stocks)
     """
-    call_writing = []
-    put_writing = []
-    call_unwinding = []
-    put_unwinding = []
+    call_writing: list[dict] = []
+    put_writing: list[dict] = []
+    call_unwinding: list[dict] = []
+    put_unwinding: list[dict] = []
 
     for sym, data in stock_data.items():
         ltp = data.get("ltp")
@@ -633,7 +560,7 @@ def scan_stock_breadth(stock_data, participant_summary=None):
         top_ce_unwind = min(strikes, key=lambda s: s["ce_change_oi"])
         top_pe_unwind = min(strikes, key=lambda s: s["pe_change_oi"])
 
-        stock_summary = {
+        stock_summary: dict = {
             "symbol": sym,
             "ltp": ltp,
             "net_ce_doi": net_ce_doi,
@@ -648,12 +575,10 @@ def scan_stock_breadth(stock_data, participant_summary=None):
             "top_pe_unwind_doi": top_pe_unwind["pe_change_oi"],
         }
 
-        # Dynamic threshold: at least 500 contracts OR 5% of total open interest,
-        # whichever is larger. This normalises across low-OI and high-OI stocks.
         ce_threshold = max(500, net_ce_oi * 0.05) if net_ce_oi > 0 else 500
         pe_threshold = max(500, net_pe_oi * 0.05) if net_pe_oi > 0 else 500
 
-        # Smart Money Breadth Alignment: does this stock's OI move align with FII macro stance?
+        # Smart Money Breadth Alignment
         alignment = "NEUTRAL"
         if participant_summary:
             fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
@@ -663,21 +588,15 @@ def scan_stock_breadth(stock_data, participant_summary=None):
             fii_put_bullish = fii_pe_short > FII_OPT_THRESHOLD
             fii_put_bearish = fii_pe_short < -FII_OPT_THRESHOLD
 
-            if net_ce_doi > ce_threshold and fii_call_bearish:
+            if (net_ce_doi > ce_threshold and fii_call_bearish) \
+                    or (net_ce_doi < -ce_threshold and fii_call_bullish) \
+                    or (net_pe_doi > pe_threshold and fii_put_bullish) \
+                    or (net_pe_doi < -pe_threshold and fii_put_bearish):
                 alignment = "ALIGNED"
-            elif net_ce_doi < -ce_threshold and fii_call_bullish:
-                alignment = "ALIGNED"
-            elif net_pe_doi > pe_threshold and fii_put_bullish:
-                alignment = "ALIGNED"
-            elif net_pe_doi < -pe_threshold and fii_put_bearish:
-                alignment = "ALIGNED"
-            elif net_ce_doi > ce_threshold and fii_call_bullish:
-                alignment = "OPPOSED"
-            elif net_pe_doi > pe_threshold and fii_put_bearish:
-                alignment = "OPPOSED"
-            elif net_ce_doi < -ce_threshold and fii_call_bearish:
-                alignment = "OPPOSED"
-            elif net_pe_doi < -pe_threshold and fii_put_bullish:
+            elif (net_ce_doi > ce_threshold and fii_call_bullish) \
+                    or (net_pe_doi > pe_threshold and fii_put_bearish) \
+                    or (net_ce_doi < -ce_threshold and fii_call_bearish) \
+                    or (net_pe_doi < -pe_threshold and fii_put_bullish):
                 alignment = "OPPOSED"
 
         stock_summary["alignment"] = alignment
@@ -692,16 +611,11 @@ def scan_stock_breadth(stock_data, participant_summary=None):
         elif net_pe_doi < -pe_threshold:
             put_unwinding.append(stock_summary)
 
-    call_writing = sorted(call_writing, key=lambda x: x["net_ce_doi"], reverse=True)[:10]
-    put_writing = sorted(put_writing, key=lambda x: x["net_pe_doi"], reverse=True)[:10]
-    call_unwinding = sorted(call_unwinding, key=lambda x: x["net_ce_doi"])[:10]
-    put_unwinding = sorted(put_unwinding, key=lambda x: x["net_pe_doi"])[:10]
-
     return {
-        "call_writing_bearish": call_writing,
-        "put_writing_bullish": put_writing,
-        "call_unwinding_bullish": call_unwinding,
-        "put_unwinding_bearish": put_unwinding,
+        "call_writing_bearish": sorted(call_writing, key=lambda x: x["net_ce_doi"], reverse=True)[:10],
+        "put_writing_bullish": sorted(put_writing, key=lambda x: x["net_pe_doi"], reverse=True)[:10],
+        "call_unwinding_bullish": sorted(call_unwinding, key=lambda x: x["net_ce_doi"])[:10],
+        "put_unwinding_bearish": sorted(put_unwinding, key=lambda x: x["net_pe_doi"])[:10],
         "counts": {
             "call_writing": len(call_writing),
             "put_writing": len(put_writing),
@@ -711,26 +625,24 @@ def scan_stock_breadth(stock_data, participant_summary=None):
     }
 
 
-def detect_flow_divergence(stock_data, participant_summary):
+# ── Flow Divergence ─────────────────────────────────────────────────────────
+
+def detect_flow_divergence(stock_data: dict, participant_summary: dict | None) -> list[dict]:
     """
     Identifies strikes where institutional flow and strike OI movement diverge,
     signalling potential traps, squeezes, or conflicting battles.
-    Thresholds are scaled per index relative to NIFTY OI baseline so that
-    lower-OI indices (e.g. FINNIFTY) aren't oversignalled and higher-OI
-    indices (e.g. BANKNIFTY) aren't undersignalled.
+    Thresholds are scaled per index relative to NIFTY OI baseline.
     """
-    divergences = []
+    divergences: list[dict] = []
     if not participant_summary:
         return divergences
 
     fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
     fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
 
-    # First pass: compute per-index average OI for threshold scaling.
-    # NIFTY is the reference (scale=1.0). Other indices get proportionally
-    # scaled thresholds based on their average OI per strike.
-    index_avg_oi = {}
-    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+    # First pass: compute per-index average OI for threshold scaling
+    index_avg_oi: dict[str, float] = {}
+    for sym in INDICES:
         if sym not in stock_data:
             continue
         raw = stock_data[sym]
@@ -746,7 +658,7 @@ def detect_flow_divergence(stock_data, participant_summary):
     ref_avg_oi = index_avg_oi.get("NIFTY", 1.0)
 
     # Second pass: detect divergences with scaled thresholds
-    for sym in ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]:
+    for sym in INDICES:
         if sym not in stock_data:
             continue
         raw = stock_data[sym]
@@ -757,7 +669,6 @@ def detect_flow_divergence(stock_data, participant_summary):
         strikes = sorted(strikes, key=lambda x: x["strike"])
         near = [s for s in strikes if abs(s["strike"] - ltp) / ltp <= 0.04]
 
-        # Scale divergence thresholds by this index's average OI vs NIFTY
         avg_oi = index_avg_oi.get(sym, 1.0)
         scale = avg_oi / ref_avg_oi if ref_avg_oi > 0 else 1.0
         conflict_th = int(5000 * scale)
@@ -770,67 +681,67 @@ def detect_flow_divergence(stock_data, participant_summary):
             ce_doi = s.get("ce_change_oi", 0)
             pe_doi = s.get("pe_change_oi", 0)
 
-            # Conflict: Both CE and PE building at same strike (conflicting bets)
+            # Conflict: Both CE and PE building at same strike
             if ce_doi > conflict_th and pe_doi > conflict_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
                     "type": "CONFLICT_ZONE",
                     "signal": "CE + PE both building",
-                    "desc": f"Both Calls (+{ce_doi:,}) and Puts (+{pe_doi:,}) building at {st}. Major battle zone — expect high volatility."
+                    "desc": f"Both Calls (+{ce_doi:,}) and Puts (+{pe_doi:,}) building at {st}. Major battle zone — expect high volatility.",
                 })
                 continue
 
-            # FII writing calls (bearish macro) but CE is unwinding here (bullish at this strike)
+            # FII writing calls (bearish macro) but CE unwinding here (bullish at this strike)
             if fii_ce_short > FII_OPT_THRESHOLD and ce_doi < -unwind_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
                     "type": "BULLISH_DIVERGENCE",
                     "signal": "FII bearish but CE unwinding",
-                    "desc": f"FII writing calls ({fii_ce_short:,.0f}) yet CE unwinding at {st} ({ce_doi:,}). Local short squeeze — opposes macro view."
+                    "desc": f"FII writing calls ({fii_ce_short:,.0f}) yet CE unwinding at {st} ({ce_doi:,}). Local short squeeze — opposes macro view.",
                 })
                 continue
 
-            # FII writing puts (bullish macro) but PE is unwinding here (bearish at this strike)
+            # FII writing puts (bullish macro) but PE unwinding here (bearish at this strike)
             if fii_pe_short > FII_OPT_THRESHOLD and pe_doi < -unwind_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
                     "type": "BEARISH_DIVERGENCE",
                     "signal": "FII bullish but PE unwinding",
-                    "desc": f"FII writing puts ({fii_pe_short:,.0f}) yet PE unwinding at {st} ({pe_doi:,}). Local floor breakdown — opposes macro view."
+                    "desc": f"FII writing puts ({fii_pe_short:,.0f}) yet PE unwinding at {st} ({pe_doi:,}). Local floor breakdown — opposes macro view.",
                 })
                 continue
 
-            # Price above strike but CE building (resistance getting stronger against the trend)
+            # Price above strike but CE building
             if ltp > st and ce_doi > resistance_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
                     "type": "RESISTANCE_BUILDING",
                     "signal": "Price above yet CE building",
-                    "desc": f"LTP {ltp:,.1f} > {st} but CE OI building (+{ce_doi:,}). Smart money adding resistance above — rally cap imminent?"
+                    "desc": f"LTP {ltp:,.1f} > {st} but CE OI building (+{ce_doi:,}). Smart money adding resistance above — rally cap imminent?",
                 })
                 continue
 
-            # Price below strike but PE unwinding (support fading below the price)
+            # Price below strike but PE unwinding
             if ltp < st and pe_doi < -floor_th:
                 divergences.append({
                     "symbol": sym,
                     "strike": st,
                     "type": "FLOOR_WEAKENING",
                     "signal": "Price below yet PE unwinding",
-                    "desc": f"LTP {ltp:,.1f} < {st} but PE unwinding ({pe_doi:,}). Support below price fading — further downside risk."
+                    "desc": f"LTP {ltp:,.1f} < {st} but PE unwinding ({pe_doi:,}). Support below price fading — further downside risk.",
                 })
                 continue
 
-    divergences = divergences[:8]
-    return divergences
+    return divergences[:8]
 
 
-def _attribute_ce_flow(ce_doi, fii_ce_short, client_ce_buy):
-    """Heuristic attribution for who is behind CE OI change at a strike."""
+# ── Flow attribution helpers ────────────────────────────────────────────────
+
+def _attribute_ce_flow(ce_doi: float, fii_ce_short: float, client_ce_buy: float) -> str:
     if ce_doi > 5000 and fii_ce_short > FII_OPT_THRESHOLD:
         return "FII WRITING"
     elif ce_doi > 5000 and client_ce_buy > RETAIL_TRAP_THRESHOLD:
@@ -842,8 +753,7 @@ def _attribute_ce_flow(ce_doi, fii_ce_short, client_ce_buy):
     return "--"
 
 
-def _attribute_pe_flow(pe_doi, fii_pe_short, client_pe_buy):
-    """Heuristic attribution for who is behind PE OI change at a strike."""
+def _attribute_pe_flow(pe_doi: float, fii_pe_short: float, client_pe_buy: float) -> str:
     if pe_doi > 5000 and fii_pe_short > FII_OPT_THRESHOLD:
         return "FII FLOOR"
     elif pe_doi > 5000 and client_pe_buy > RETAIL_TRAP_THRESHOLD:
@@ -855,23 +765,9 @@ def _attribute_pe_flow(pe_doi, fii_pe_short, client_pe_buy):
     return "--"
 
 
-def cleanup_old_history(history_dir, max_days=30):
-    """Removes archived JSON files older than max_days in docs/oc_history/."""
-    if not os.path.exists(history_dir):
-        return
-    cutoff = datetime.now(timezone.utc) - timedelta(days=max_days)
-    for f_path in glob.glob(os.path.join(history_dir, "*.json")):
-        try:
-            fname = os.path.basename(f_path).replace(".json", "")
-            file_date = datetime.strptime(fname, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-            if file_date < cutoff:
-                os.remove(f_path)
-                print(f"Removed old history snapshot: {f_path}")
-        except Exception:
-            pass
+# ── Multi-Day Conviction ────────────────────────────────────────────────────
 
-
-def build_multiday_conviction(history_dir, participant_summary=None):
+def build_multiday_conviction(history_dir: str, participant_summary: dict | None = None) -> dict:
     """
     Reads archived daily OC JSON files from docs/oc_history/
     to compute multi-day strike conviction trends for NIFTY and BANKNIFTY.
@@ -885,16 +781,16 @@ def build_multiday_conviction(history_dir, participant_summary=None):
     recent_files = files[-5:]
     dates = [os.path.basename(f).replace(".json", "") for f in recent_files]
 
-    conviction = {}
-    ref_avg_oi = None  # NIFTY average OI per strike, used as baseline for scaling other indices
+    conviction: dict = {}
+    ref_avg_oi: float | None = None
 
     for sym in ["NIFTY", "BANKNIFTY"]:
-        multiday_map = {}
+        multiday_map: dict[float, dict] = {}
 
-        latest_ltp = None
+        latest_ltp: float | None = None
         for f_path in reversed(recent_files):
             try:
-                with open(f_path, "r") as f:
+                with open(f_path) as f:
                     snap = json.load(f)
                 latest_ltp = snap.get("stocks", {}).get(sym, {}).get("ltp")
                 if latest_ltp:
@@ -904,7 +800,7 @@ def build_multiday_conviction(history_dir, participant_summary=None):
 
         for f_path in recent_files:
             try:
-                with open(f_path, "r") as f:
+                with open(f_path) as f:
                     snap = json.load(f)
                 s_data = snap.get("stocks", {}).get(sym, {})
                 ltp = s_data.get("ltp")
@@ -924,12 +820,11 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                             "ce_oi_history": [],
                             "pe_oi_history": [],
                             "today_ce_doi": s.get("ce_change_oi", 0),
-                            "today_pe_doi": s.get("pe_change_oi", 0)
+                            "today_pe_doi": s.get("pe_change_oi", 0),
                         }
 
                     multiday_map[st]["ce_oi_history"].append(s["ce_oi"])
                     multiday_map[st]["pe_oi_history"].append(s["pe_oi"])
-
             except Exception:
                 continue
 
@@ -940,10 +835,8 @@ def build_multiday_conviction(history_dir, participant_summary=None):
         else:
             sorted_strikes = sorted(all_strikes, key=lambda x: x["strike"])[:15]
 
-        # Compute average OI per strike for conviction threshold scaling.
-        # NIFTY is the baseline (scale=1.0). Other indices (e.g. BANKNIFTY with ~2x OI)
-        # get proportionally scaled thresholds so conviction isn't over-signalled.
-        avg_ce_oi = 0
+        # Compute average OI for threshold scaling
+        avg_ce_oi = 0.0
         oi_vals = [item["ce_oi_history"][-1] for item in sorted_strikes if item["ce_oi_history"]]
         if oi_vals:
             avg_ce_oi = sum(oi_vals) / len(oi_vals)
@@ -968,7 +861,14 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 ce_diff = item.get("today_ce_doi", 0)
 
             item["ce_trend_delta"] = ce_diff
-            item["ce_conviction"] = "HARD RESISTANCE" if ce_diff > hard_res_th else "CE BUILDING" if ce_diff > building_th else "CE UNWINDING" if ce_diff < -unwind_th else "STABLE"
+            if ce_diff > hard_res_th:
+                item["ce_conviction"] = "HARD RESISTANCE"
+            elif ce_diff > building_th:
+                item["ce_conviction"] = "CE BUILDING"
+            elif ce_diff < -unwind_th:
+                item["ce_conviction"] = "CE UNWINDING"
+            else:
+                item["ce_conviction"] = "STABLE"
 
             if len(pe_hist) >= 2:
                 pe_diff = pe_hist[-1] - pe_hist[0]
@@ -976,9 +876,16 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 pe_diff = item.get("today_pe_doi", 0)
 
             item["pe_trend_delta"] = pe_diff
-            item["pe_conviction"] = "SOLID FLOOR" if pe_diff > hard_res_th else "PE BUILDING" if pe_diff > building_th else "PE UNWINDING" if pe_diff < -unwind_th else "STABLE"
+            if pe_diff > hard_res_th:
+                item["pe_conviction"] = "SOLID FLOOR"
+            elif pe_diff > building_th:
+                item["pe_conviction"] = "PE BUILDING"
+            elif pe_diff < -unwind_th:
+                item["pe_conviction"] = "PE UNWINDING"
+            else:
+                item["pe_conviction"] = "STABLE"
 
-            # Stance-to-Strike Alignment + Flow Attribution
+            # Flow alignment and attribution
             if participant_summary:
                 fii_ce_short = participant_summary.get("fii_ce_net_short_change", 0)
                 fii_pe_short = participant_summary.get("fii_pe_net_short_change", 0)
@@ -990,7 +897,7 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 fii_put_bullish = fii_pe_short > FII_OPT_THRESHOLD
                 fii_put_bearish = fii_pe_short < -FII_OPT_THRESHOLD
 
-                # CE alignment: does strike-level CE change move with or against FII macro?
+                # CE alignment
                 if (fii_call_bearish and ce_diff > building_th) or (fii_call_bullish and ce_diff < -unwind_th):
                     item["ce_alignment"] = "ALIGNED"
                 elif (fii_call_bullish and ce_diff > building_th) or (fii_call_bearish and ce_diff < -unwind_th):
@@ -998,7 +905,7 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 else:
                     item["ce_alignment"] = "NEUTRAL"
 
-                # PE alignment: does strike-level PE change move with or against FII macro?
+                # PE alignment
                 if (fii_put_bullish and pe_diff > building_th) or (fii_put_bearish and pe_diff < -unwind_th):
                     item["pe_alignment"] = "ALIGNED"
                 elif (fii_put_bearish and pe_diff > building_th) or (fii_put_bullish and pe_diff < -unwind_th):
@@ -1006,7 +913,6 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 else:
                     item["pe_alignment"] = "NEUTRAL"
 
-                # Flow attribution — heuristic who is behind this OI move
                 item["ce_flow_attr"] = _attribute_ce_flow(ce_diff, fii_ce_short, client_ce_buy)
                 item["pe_flow_attr"] = _attribute_pe_flow(pe_diff, fii_pe_short, client_pe_buy)
             else:
@@ -1015,23 +921,22 @@ def build_multiday_conviction(history_dir, participant_summary=None):
                 item["ce_flow_attr"] = "--"
                 item["pe_flow_attr"] = "--"
 
-        conviction[sym] = {
-            "dates": dates,
-            "strikes": sorted_strikes
-        }
+        conviction[sym] = {"dates": dates, "strikes": sorted_strikes}
 
     return conviction
 
 
+# ── Master runner ───────────────────────────────────────────────────────────
+
 def run_engine():
-    """Master runner that processes FDCP + Option Chain + Archives to write money_flow_data.json."""
-    print("Running Institutional Verdict Engine...")
+    """Master runner: FDCP + Option Chain + Archives → money_flow_data.json."""
+    print("[ENGINE] Running Institutional Verdict Engine...")
 
     if not os.path.exists(NSE_DATA_FILE):
-        print(f"Error: {NSE_DATA_FILE} not found. Run OC.py first.")
+        print(f"[ENGINE] Error: {NSE_DATA_FILE} not found. Run OC fetch first.")
         return
 
-    with open(NSE_DATA_FILE, "r") as f:
+    with open(NSE_DATA_FILE) as f:
         oc_raw = json.load(f)
 
     timestamp = oc_raw.get("timestamp", datetime.now(timezone.utc).isoformat())
@@ -1043,7 +948,7 @@ def run_engine():
     conviction_trends = build_multiday_conviction(HISTORY_DIR, participant_summary)
     flow_divergence = detect_flow_divergence(stocks, participant_summary)
 
-    score_breakdown = {}
+    score_breakdown: dict = {}
     if participant_summary:
         score_breakdown = {
             "fii_raw_score": participant_summary.get("fii_raw_score", 0),
@@ -1075,78 +980,14 @@ def run_engine():
         "stock_count": len(stocks),
     }
 
+    # Clean numpy/pandas types for JSON
     cleaned = clean_val(verdict_payload)
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(cleaned, f, indent=2)
 
-    print(f"[OK] Success! Institutional Verdict saved to {OUTPUT_FILE}")
+    print(f"[ENGINE] OK! Saved to {OUTPUT_FILE}")
     print(f"   Bias: {verdict_payload['executive_summary']['bias_label']}")
     print(f"   Index Rolls: {list(index_rolls.keys())}")
     print(f"   Stock Breadth: Call Write={len(stock_breadth['call_writing_bearish'])}, Put Write={len(stock_breadth['put_writing_bullish'])}")
     print(f"   Flow Divergences: {len(flow_divergence)}")
-
-
-if __name__ == "__main__":
-    import sys
-
-    dry_run = "--dry-run" in sys.argv
-
-    if dry_run:
-        print("=" * 60)
-        print("  DRY RUN MODE — Scoring Diagnostics Only")
-        print("=" * 60)
-        print()
-        # Load NSE data to compute IV modifier (same as run_engine does)
-        iv_mod = 0
-        if os.path.exists(NSE_DATA_FILE):
-            with open(NSE_DATA_FILE, "r") as f:
-                oc_raw = json.load(f)
-            iv_mod = compute_iv_modifier(oc_raw.get("stocks", {}))
-            print(f"Loaded NSE data. IV modifier: {iv_mod:+.0f}")
-        else:
-            print(f"NSE data file not found — IV modifier set to 0.")
-        participant_data = load_participant_data(iv_modifier=iv_mod)
-        if participant_data:
-            print(f"Date: {participant_data['date']}  ->  {participant_data['prev_date']}")
-            print()
-            print(f"Smart Money Score: {participant_data['smart_money_score']}")
-            print(f"Bias Label: {participant_data['bias_label']}")
-            trap_msg = participant_data.get('retail_trap_alarm') or participant_data.get('retail_confirmation_message') or 'None'
-            print(f"Retail Verdict: {trap_msg}")
-            print()
-            print("-- Raw Scores (proportional, per-participant thresholds) --")
-            print(f"  FII  raw_score = {participant_data.get('fii_raw_score', 'N/A')}  (weight={FII_WEIGHT}, fut_th={FII_FUT_THRESHOLD}, opt_th={FII_OPT_THRESHOLD})")
-            print(f"  Pro  raw_score = {participant_data.get('pro_raw_score', 'N/A')}  (weight={PRO_WEIGHT}, fut_th={PRO_FUT_THRESHOLD}, opt_th={PRO_OPT_THRESHOLD})")
-            print(f"  DII  raw_score = {participant_data.get('dii_raw_score', 'N/A')}  (weight={DII_WEIGHT}, fut_th={DII_FUT_THRESHOLD}, opt_th={DII_OPT_THRESHOLD})")
-            weighted = (
-                participant_data.get("fii_raw_score", 0) * FII_WEIGHT
-                + participant_data.get("pro_raw_score", 0) * PRO_WEIGHT
-                + participant_data.get("dii_raw_score", 0) * DII_WEIGHT
-            )
-            weighted_clipped = max(-SCORE_CLIP, min(SCORE_CLIP, weighted))
-            trap_adj = participant_data.get("trap_adjustment", 0)
-            conf_score = participant_data.get("retail_confirmation_score", 0)
-            fii_dii_mod = participant_data.get("fii_dii_modifier", 0)
-            iv_mod = participant_data.get("iv_modifier_applied", 0)
-            clipped_before = participant_data.get("weighted_clipped_before_adjustments", weighted_clipped)
-            print(f"\n  Weighted composite (before clip): {weighted:.1f}")
-            print(f"  After clip [{SCORE_CLIP}]: {weighted_clipped}")
-            print(f"  Clipped before adjustments: {clipped_before}")
-            print(f"  FII-DII alignment modifier: {fii_dii_mod:+.0f}")
-            print(f"  Trap adjustment: {trap_adj:+.0f}")
-            print(f"  Retail confirmation: {conf_score:+.0f}")
-            print(f"  IV modifier: {iv_mod:+.0f}")
-            print(f"  Final score: {participant_data['smart_money_score']}")
-            print()
-            print("-- Participant Data --")
-            for key in ["fii_fut_net_change", "fii_ce_net_short_change", "fii_pe_net_short_change",
-                        "pro_fut_net_change", "pro_ce_net_short_change", "pro_pe_net_short_change",
-                        "client_ce_net_buy", "client_pe_net_buy"]:
-                print(f"  {key}: {participant_data.get(key, 'N/A')}")
-        else:
-            print("ERROR: No participant data available. Check FDCP_Data.csv.")
-        print()
-        print("Dry run complete. No output file written.")
-    else:
-        run_engine()

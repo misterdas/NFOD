@@ -36,11 +36,7 @@ jobs:
           pip install pandas requests nsefetch yfinance
 
       - name: Run data fetch scripts
-        run: |
-          python FDCP.py
-          python OC.py
-          python money_flow_engine.py
-          python fetch_ohlc.py
+        run: python main.py all
 
       - name: Commit and Push changes
         run: |
