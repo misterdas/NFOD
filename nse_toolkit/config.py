@@ -18,7 +18,7 @@ FDCP_DAYS = 60         # look-back window for FDCP CSV fetch
 FDCP_WORKERS = 5       # parallel workers for FDCP date fetching
 
 # ── OC fetch defaults ──────────────────────────────────────────────────────
-OC_WORKERS = 10        # parallel workers for option chain symbol fetching
+OC_WORKERS = 3        # parallel workers for option chain symbol fetching
 OC_DELAY = 0.05        # inter-request backoff (seconds)
 OC_RETRIES = 3         # max retries per symbol
 

@@ -91,10 +91,21 @@ def _matches_expiry(record: dict, nearest_expiry: str) -> bool:
     return str(ed) == nearest_expiry if ed else False
 
 
-def _fetch_one_symbol(client: NSEHttpClient, symbol: str) -> tuple[str, Optional[dict]]:
-    """Fetch option chain for a single symbol with retry logic."""
+def _fetch_one_symbol(
+    client: NSEHttpClient,
+    symbol: str,
+    session_blocked: threading.Event,
+    session_reset: threading.Event,
+) -> tuple[str, Optional[dict]]:
+    """Fetch option chain for a single symbol with retry and coordinated session reset."""
     for attempt in range(1, OC_RETRIES + 1):
         try:
+            # If another worker hit a 403, wait for global re-bootstrap
+            if session_blocked.is_set():
+                _log(f"  OC: {symbol} waiting for session reset...")
+                session_reset.wait(timeout=15)
+                session_blocked.clear()
+
             contract_info = client.request_json(
                 "GET", "/api/option-chain-contract-info", params={"symbol": symbol}
             )
@@ -156,11 +167,24 @@ def _fetch_one_symbol(client: NSEHttpClient, symbol: str) -> tuple[str, Optional
 
         except Exception as e:
             if "blocked" in str(e).lower() or "403" in str(e):
-                try:
-                    client.bootstrap_session()
-                except Exception:
-                    pass
-            if attempt < OC_RETRIES:
+                # First worker to hit the block orchestrates the reset
+                if not session_blocked.is_set():
+                    session_blocked.set()
+                    session_reset.clear()
+                    _log(f"  OC: Session blocked — re-bootstrapping...")
+                    try:
+                        client.bootstrap_session()
+                        session_reset.set()
+                        _log(f"  OC: Session reset OK, retrying {symbol}...")
+                    except Exception as be:
+                        _log(f"  OC: Session reset failed: {be}")
+                        session_reset.set()
+                else:
+                    # Another worker is already handling the reset
+                    session_reset.wait(timeout=15)
+                if attempt < OC_RETRIES:
+                    continue
+            elif attempt < OC_RETRIES:
                 time.sleep(0.5 * attempt)
             else:
                 _log(f"  OC: FAIL {symbol} — {e}")
@@ -205,8 +229,14 @@ def fetch_option_chain(workers: int = OC_WORKERS) -> dict:
     success = 0
     fail = 0
 
+    session_blocked = threading.Event()
+    session_reset = threading.Event()
+
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        fut_map = {pool.submit(_fetch_one_symbol, client, sym): sym for sym in symbols}
+        fut_map = {
+            pool.submit(_fetch_one_symbol, client, sym, session_blocked, session_reset): sym
+            for sym in symbols
+        }
         for i, fut in enumerate(as_completed(fut_map), 1):
             sym, data = fut.result()
             if data:
