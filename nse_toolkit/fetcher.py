@@ -262,7 +262,10 @@ def fetch_ohlc(days: int = OHLC_DAYS) -> list[dict]:
     else:
         records = []
         for idx, row in df.iterrows():
-            d = idx.date().isoformat() if hasattr(idx, "date") else str(idx).split()[0]
+            if isinstance(idx, pd.Timestamp):
+                d = idx.date().isoformat()
+            else:
+                d = str(idx).split()[0]
             records.append({
                 "date": d,
                 "open": round(float(row["Open"]), 2),
