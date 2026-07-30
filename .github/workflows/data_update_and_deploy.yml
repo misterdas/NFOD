@@ -47,7 +47,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add FDCP_Data.csv docs/ fetch_ohlc.py
+          git add FDCP_Data.csv docs/
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -85,6 +85,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

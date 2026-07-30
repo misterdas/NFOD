@@ -60,6 +60,12 @@ function formatIndianNum(num) {
     return num < 0 ? `-${formatted}` : formatted;
 }
 
+// Cache buster for static data fetches (avoids GitHub Pages CDN staleness)
+function _fetchWithCacheBust(url) {
+    const sep = url.includes('?') ? '&' : '?';
+    return fetch(url + sep + 't=' + Date.now());
+}
+
 // Fallback CSV Parser if API endpoint is not running
 function parseCSV(text) {
     const lines = text.trim().split('\n');
@@ -88,7 +94,7 @@ function parseCSV(text) {
 async function initDashboard() {
     try {
         // Fetch static CSV directly
-        const csvRes = await fetch('FDCP_Data.csv');
+        const csvRes = await _fetchWithCacheBust('FDCP_Data.csv');
         if (!csvRes.ok) throw new Error('Could not fetch FDCP_Data.csv');
         const csvText = await csvRes.text();
         rawCSVData = parseCSV(csvText);
@@ -559,7 +565,7 @@ async function loadMoneyFlowView() {
     });
 
     try {
-        const fallbackRes = await fetch('docs/money_flow_data.json');
+        const fallbackRes = await _fetchWithCacheBust('docs/money_flow_data.json');
         if (!fallbackRes.ok) {
             showVerdictError('Money Flow verdict data not found. Automatic fetch might be running right now, or failed.', true);
             moneyFlowLoadInProgress = false;
@@ -626,7 +632,7 @@ async function loadMoneyFlowView() {
  */
 async function loadParticipantSummaryForTakeaways() {
     try {
-        const res = await fetch('docs/money_flow_data.json');
+        const res = await _fetchWithCacheBust('docs/money_flow_data.json');
         if (!res.ok) return;
         const data = await res.json();
         participantSummaryData = data.participant_summary || null;
@@ -1247,7 +1253,7 @@ async function renderChartsView() {
 
     if (!ohlcData) {
         try {
-            const res = await fetch('docs/ohlc_data.json');
+            const res = await _fetchWithCacheBust('docs/ohlc_data.json');
             if (res.ok) ohlcData = await res.json();
         } catch (_) {}
     }
@@ -1299,17 +1305,22 @@ async function renderChartsView() {
 
     function makeApexChart(id, config) {
         const el = document.getElementById(id);
-        if (!el) return null;
+        if (!el) {
+            console.warn('ApexCharts: element not found', id);
+            return null;
+        }
         config.theme = config.theme || { mode: getThemeMode() };
         try {
             const chart = new ApexCharts(el, config);
             chart.render().catch(function(err) {
                 console.warn('ApexCharts render error for', id, err);
+                el.innerHTML = '<div style="color:var(--text-muted);padding:40px;text-align:center;font-size:12px;">Chart failed to render. <button onclick="location.reload()" style="background:none;color:var(--accent-blue);border:1px solid currentColor;border-radius:4px;padding:4px 12px;cursor:pointer;font:inherit;margin-top:8px;">Retry</button></div>';
             });
             chartsInstances.push(chart);
             return chart;
         } catch (err) {
             console.warn('ApexCharts creation error for', id, err);
+            el.innerHTML = '<div style="color:var(--text-muted);padding:40px;text-align:center;font-size:12px;">Chart failed to initialize. Check console for details.</div>';
             return null;
         }
     }

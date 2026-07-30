@@ -5,7 +5,8 @@ Fetches option chain data for all F&O stocks and saves compact JSON.
 import json
 import os
 import time
-from datetime import datetime, timezone
+import glob
+from datetime import datetime, timezone, timedelta
 from nsefetch.config import load_settings
 from nsefetch.client import NSEHttpClient
 
@@ -107,7 +108,14 @@ def fetch_one(client, symbol, retries=3):
             raw = records.get("data", [])
 
             # Filter to nearest expiry only (v3 uses "expiryDates" plural)
-            filtered = [r for r in raw if r.get("expiryDates") == nearest_expiry]
+            # expiryDates may be a string or a single-element list depending on API version
+            def _matches_expiry(record):
+                ed = record.get("expiryDates")
+                if isinstance(ed, list):
+                    return len(ed) > 0 and str(ed[0]) == nearest_expiry
+                return str(ed) == nearest_expiry if ed else False
+
+            filtered = [r for r in raw if _matches_expiry(r)]
 
             # Extract compact data
             strikes = []
@@ -148,6 +156,22 @@ def fetch_one(client, symbol, retries=3):
                 return symbol, None
 
     return symbol, None
+
+
+def cleanup_old_history(history_dir, max_days=30):
+    """Removes archived JSON files older than max_days in docs/oc_history/."""
+    if not os.path.exists(history_dir):
+        return
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_days)
+    for f_path in glob.glob(os.path.join(history_dir, "*.json")):
+        try:
+            fname = os.path.basename(f_path).replace(".json", "")
+            file_date = datetime.strptime(fname, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            if file_date < cutoff:
+                os.remove(f_path)
+                print(f"  Removed old history snapshot: {f_path}")
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
@@ -202,13 +226,15 @@ if __name__ == "__main__":
     os.makedirs(history_dir, exist_ok=True)
 
     # IST date (UTC+5:30) for consistent date-keying
-    from datetime import timedelta
     ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
     date_key = ist_now.strftime("%Y-%m-%d")
 
     archive_path = os.path.join(history_dir, f"{date_key}.json")
     with open(archive_path, "w") as f:
         json.dump(output, f)
+
+    # Clean up stale history snapshots (>30 days old) to prevent unbounded growth
+    cleanup_old_history(history_dir, max_days=30)
 
     print(f"\nDone! Saved {len(results)} stocks to {path}")
     print(f"Archived snapshot → {archive_path}")
