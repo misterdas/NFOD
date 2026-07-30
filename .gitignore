@@ -1,0 +1,8 @@
+# Lighthouse audit outputs
+lighthouse*.json
+lh_*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
