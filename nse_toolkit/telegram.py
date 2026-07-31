@@ -281,23 +281,17 @@ def build_takeaways_message() -> str:
 
 
 def build_table_message(title, lc, sc, date, prev, prev2, rows, icon):
-    """One compact line per participant so the message wraps cleanly on mobile.
-
-    Fixed-width <pre> columns overflow on narrow screens; instead each participant
-    is its own line with pipe separators: change (L/S/Net) plus carried Today/1D/2D.
-    """
-    t, e, n = rows.get(date), rows.get(prev), rows.get(prev2)
-    lines = [f"{icon} <b>{html.escape(title)}</b>"]
+    """Columnar participant table: Longs/Shorts change and Net (no carried Today/1D/2D)."""
+    t, e, _ = rows.get(date), rows.get(prev), rows.get(prev2)
+    lines = [f"{icon} <b>{html.escape(title)}</b>", "<pre>"]
+    lines.append(f"{'Part':<7}{'Longs':>12}{'Shorts':>12}{'Net':>13}")
     for part in PARTICIPANTS:
-        rt, re_, rn = (t or {}).get(part), (e or {}).get(part), (n or {}).get(part)
+        rt, re_ = (t or {}).get(part), (e or {}).get(part)
         lg = _chg(rt, re_, lc)
         sh = _chg(rt, re_, sc)
         net = lg - sh if (lg is not None and sh is not None) else None
-        lines.append(
-            f"{part}: L {_inr(lg)} S {_inr(sh)} Net {_inr(net)} | "
-            f"Today {_inr(_net(rt, lc, sc))} 1D {_inr(_net(re_, lc, sc) if e else None)} "
-            f"2D {_inr(_net(rn, lc, sc) if n else None)}"
-        )
+        lines.append(f"{part:<7}{_inr(lg):>12}{_inr(sh):>12}{_inr(net):>13}")
+    lines.append("</pre>")
     lines.append("")
     return "\n".join(lines)
 
