@@ -23,7 +23,8 @@ from nsefetch.client import NSEHttpClient
 
 from nse_toolkit.config import (
     FDCP_DAYS,
-    OC_WORKERS, OC_DELAY, OC_RETRIES,
+    OC_WORKERS, OC_DELAY, OC_RETRIES, OC_BLOCK_COOLDOWN,
+    OC_BREAKER_BLOCK_THRESHOLD, OC_BREAKER_FAILURE_THRESHOLD, OC_BREAKER_COOLDOWN,
     OHLC_DAYS,
     ALL_FNO_STOCKS, FETCH_INDICES,
     FDCP_FILE, OUTPUT_DIR, NSE_DATA_FILE, HISTORY_DIR, OHLC_FILE,
@@ -97,13 +98,20 @@ def _fetch_one_symbol(
     session_blocked: threading.Event,
     session_reset: threading.Event,
 ) -> tuple[str, Optional[dict]]:
-    """Fetch option chain for a single symbol with retry and coordinated session reset."""
+    """Fetch option chain for a single symbol with retry and coordinated session reset.
+
+    When NSE's anti-bot blocks a request, the first worker to notice pauses all
+    workers (via the shared events), waits out the block with a bounded cooldown,
+    force-refreshes the session cookies, and lets everyone resume — instead of the
+    old behavior where each blocked request consumed a retry and the whole tail of
+    symbols failed once nsefetch's internal circuit breaker opened.
+    """
     for attempt in range(1, OC_RETRIES + 1):
         try:
-            # If another worker hit a 403, wait for global re-bootstrap
+            # If another worker hit a block, wait for the global cooldown + reset
             if session_blocked.is_set():
                 _log(f"  OC: {symbol} waiting for session reset...")
-                session_reset.wait(timeout=15)
+                session_reset.wait(timeout=OC_BLOCK_COOLDOWN + 10)
                 session_blocked.clear()
 
             contract_info = client.request_json(
@@ -166,14 +174,18 @@ def _fetch_one_symbol(
             return symbol, {"ltp": underlying, "expiry": nearest_expiry, "strikes": strikes}
 
         except Exception as e:
-            if "blocked" in str(e).lower() or "403" in str(e):
-                # First worker to hit the block orchestrates the reset
+            msg = str(e).lower()
+            if "blocked" in msg or "403" in msg or "circuit breaker" in msg or "half-open" in msg:
                 if not session_blocked.is_set():
+                    # First worker to notice the block orchestrates the global pause
                     session_blocked.set()
                     session_reset.clear()
-                    _log(f"  OC: Session blocked — re-bootstrapping...")
+                    _log(f"  OC: Session blocked — cooling down {OC_BLOCK_COOLDOWN}s, "
+                         f"then re-bootstrapping...")
                     try:
-                        client.bootstrap_session()
+                        # Wait out NSE's anti-bot window before re-syncing cookies
+                        time.sleep(OC_BLOCK_COOLDOWN)
+                        client.bootstrap_session(force=True)
                         session_reset.set()
                         _log(f"  OC: Session reset OK, retrying {symbol}...")
                     except Exception as be:
@@ -181,7 +193,7 @@ def _fetch_one_symbol(
                         session_reset.set()
                 else:
                     # Another worker is already handling the reset
-                    session_reset.wait(timeout=15)
+                    session_reset.wait(timeout=OC_BLOCK_COOLDOWN + 10)
                 if attempt < OC_RETRIES:
                     continue
             elif attempt < OC_RETRIES:
@@ -218,7 +230,11 @@ def fetch_option_chain(workers: int = OC_WORKERS) -> dict:
     timestamp = datetime.now(timezone.utc).isoformat()
 
     _log("[OC] Bootstrapping NSE session...")
-    settings = load_settings()
+    settings = load_settings(
+        circuit_breaker_block_threshold=OC_BREAKER_BLOCK_THRESHOLD,
+        circuit_breaker_failure_threshold=OC_BREAKER_FAILURE_THRESHOLD,
+        circuit_breaker_cooldown_seconds=OC_BREAKER_COOLDOWN,
+    )
     client = NSEHttpClient(settings=settings)
     client.bootstrap_session()
 

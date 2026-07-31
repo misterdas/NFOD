@@ -21,6 +21,12 @@ FDCP_WORKERS = 5       # parallel workers for FDCP date fetching
 OC_WORKERS = 3        # parallel workers for option chain symbol fetching
 OC_DELAY = 0.05        # inter-request backoff (seconds)
 OC_RETRIES = 3         # max retries per symbol
+OC_BLOCK_COOLDOWN = 5  # global pause (seconds) after an NSE anti-bot block before retrying
+# nsefetch internal circuit breaker: raise thresholds so a burst of blocks doesn't
+# hard-open the breaker mid-run (which made the whole tail fail instantly).
+OC_BREAKER_BLOCK_THRESHOLD = 50
+OC_BREAKER_FAILURE_THRESHOLD = 50
+OC_BREAKER_COOLDOWN = 5
 
 # ── OHLC fetch defaults ────────────────────────────────────────────────────
 OHLC_DAYS = 75
