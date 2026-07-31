@@ -29,6 +29,9 @@ from nse_toolkit.config import FDCP_FILE, OUTPUT_FILE, sort_dates_chronologicall
 # Telegram hard limit per text message
 MAX_MSG = 4000
 
+# Live dashboard (GitHub Pages) the web-app button opens
+DASHBOARD_URL = "https://misterdas.github.io/NFOD/"
+
 # Mirrors app.js INSTRUMENTS (id, title, longCol, shortCol)
 INSTRUMENTS = [
     ("Index Futures", "Future Index Long", "Future Index Short"),
@@ -278,21 +281,23 @@ def build_takeaways_message() -> str:
 
 
 def build_table_message(title, lc, sc, date, prev, prev2, rows, icon):
+    """One compact line per participant so the message wraps cleanly on mobile.
+
+    Fixed-width <pre> columns overflow on narrow screens; instead each participant
+    is its own line with pipe separators: change (L/S/Net) plus carried Today/1D/2D.
+    """
     t, e, n = rows.get(date), rows.get(prev), rows.get(prev2)
-    lines = [f"{icon} <b>{html.escape(title)}</b>", "<pre>"]
-    lines.append(f"{'Part':<7}{'Longs':>12}{'Shorts':>12}{'Net':>13}"
-                 f"{'Today':>12}{'1D':>12}{'2D':>12}")
+    lines = [f"{icon} <b>{html.escape(title)}</b>"]
     for part in PARTICIPANTS:
         rt, re_, rn = (t or {}).get(part), (e or {}).get(part), (n or {}).get(part)
         lg = _chg(rt, re_, lc)
         sh = _chg(rt, re_, sc)
         net = lg - sh if (lg is not None and sh is not None) else None
         lines.append(
-            f"{part:<7}{_inr(lg):>12}{_inr(sh):>12}{_inr(net):>13}"
-            f"{_inr(_net(rt, lc, sc)):>12}"
-            f"{_inr(_net(re_, lc, sc) if e else None):>12}"
-            f"{_inr(_net(rn, lc, sc) if n else None):>12}")
-    lines.append("</pre>")
+            f"{part}: L {_inr(lg)} S {_inr(sh)} Net {_inr(net)} | "
+            f"Today {_inr(_net(rt, lc, sc))} 1D {_inr(_net(re_, lc, sc) if e else None)} "
+            f"2D {_inr(_net(rn, lc, sc) if n else None)}"
+        )
     lines.append("")
     return "\n".join(lines)
 
@@ -321,18 +326,30 @@ def build_gross_oi_messages() -> list[str]:
         if len("\n".join(chunks) + "\n" + msg) > MAX_MSG:
             chunks.append("")
         chunks[-1] = "\n".join([chunks[-1], msg])
+
+    footer = "\n—\n📊 <b>View full dashboard:</b>"
+    if len("\n".join(chunks) + "\n" + footer) > MAX_MSG:
+        chunks.append("")
+    chunks[-1] = "\n".join([chunks[-1], footer])
     return [c for c in chunks if c.strip()]
 
 
-def send_message(token: str, chat_id: str, text: str) -> bool:
-    """Send one HTML message via urllib (stdlib only)."""
+def send_message(token: str, chat_id: str, text: str, buttons: list[list[dict]] | None = None) -> bool:
+    """Send one HTML message via urllib (stdlib only).
+
+    `buttons` is an InlineKeyboardMarkup row-of-rows, e.g.
+    [[{"text": "View Dashboard", "url": DASHBOARD_URL}]].
+    """
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = urllib.parse.urlencode({
+    payload = {
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "HTML",
         "disable_web_page_preview": "true",
-    }).encode()
+    }
+    if buttons:
+        payload["reply_markup"] = json.dumps({"inline_keyboard": buttons})
+    data = urllib.parse.urlencode(payload).encode()
     req = urllib.request.Request(url, data=data)
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.status == 200
@@ -352,12 +369,15 @@ def send_gross_oi_telegram() -> bool:
         print("[TELEGRAM] No FDCP data — nothing to send.")
         return False
 
+    # Dashboard button goes on the last (or only) message
+    buttons = [[{"text": "📊 View Dashboard", "url": DASHBOARD_URL}]]
     for i, msg in enumerate(messages):
-        ok = send_message(token, chat_id, msg)
+        send_buttons = buttons if i == len(messages) - 1 else None
+        ok = send_message(token, chat_id, msg, buttons=send_buttons)
         if not ok:
             print(f"[TELEGRAM] Failed sending chunk {i + 1}/{len(messages)}")
             return False
-    print(f"[TELEGRAM] Sent Gross OI ({len(messages)} message(s)).")
+    print(f"[TELEGRAM] Sent Gross OI ({len(messages)} message(s)) + dashboard button.")
     return True
 
 
