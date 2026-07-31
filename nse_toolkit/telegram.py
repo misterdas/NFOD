@@ -77,7 +77,14 @@ def _chg(today: dict | None, prev: dict | None, col: str) -> float | None:
 
 
 def build_kpi_message(date: str, rows: dict) -> str:
-    """Replicates updateKPIs(): FII futures net, Client/Pro call net, bias."""
+    """Replicates updateKPIs(): FII futures net, Client/Pro call net, bias.
+
+    Bias = FII futures change + Pro index-call net + Pro index-put net
+    (puts signed so that put writing/short-selling — i.e. net short PUT change —
+    counts as bullish, while net long PUT buying counts as bearish). The Pro
+    put leg was missing and let a single desk's call flow flip the card to
+    BULLISH even when Pros were net-selling puts (e.g. -204k on 31-07-2026).
+    """
     t = rows[date]
     dates = list(rows.keys())
     idx = dates.index(date) if date in dates else -1
@@ -95,8 +102,12 @@ def build_kpi_message(date: str, rows: dict) -> str:
     pr_t, pr_p = t.get("Pro"), (p or {}).get("Pro")
     pro_calls = (_chg(pr_t, pr_p, "Option Index Call Long")
                  - _chg(pr_t, pr_p, "Option Index Call Short")) if pr_t and pr_p else None
+    # Puts: net short change (short - long); writing/selling puts = bullish,
+    # net long put buying = bearish protection.
+    pro_puts = (_chg(pr_t, pr_p, "Option Index Put Short")
+                - _chg(pr_t, pr_p, "Option Index Put Long")) if pr_t and pr_p else None
 
-    bias = (fii_fut_net or 0) + (pro_calls or 0)
+    bias = (fii_fut_net or 0) + (pro_calls or 0) + (pro_puts or 0)
     if bias > 20000:
         bias_txt, bias_sub = "BULLISH", "Smart Money Buying"
         bias_icon = GREEN
