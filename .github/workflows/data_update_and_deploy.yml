@@ -29,11 +29,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests nsefetch yfinance
+          pip install -r requirements.txt
 
       - name: Run data fetch scripts
         run: python main.py all
