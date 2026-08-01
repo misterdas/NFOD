@@ -11,6 +11,7 @@ NFOD.views.gross = (function () {
   ];
   const PARTS = ["Client", "DII", "FII", "Pro"];
   const DAYS = 8; // sparkline window
+  let renderSeq = 0;
 
   function sparklineFor(part, inst, dateIdx) {
     const vals = [];
@@ -144,6 +145,7 @@ NFOD.views.gross = (function () {
 
   function render(state) {
     const view = document.getElementById("view-gross");
+    const token = ++renderSeq;
     const idx = state.dateIndex;
     const tm = NFOD.data.getParticipantMap(state.dates[idx]);
     const pm = state.dates[idx - 1] ? NFOD.data.getParticipantMap(state.dates[idx - 1]) : null;
@@ -163,7 +165,8 @@ NFOD.views.gross = (function () {
     view.innerHTML = body;
     // Takeaways loaded async
     NFOD.data.loadMoneyFlow().then(mf => {
-      const tw = document.querySelector(".dash-grid");
+      if (token !== renderSeq) return;      // stale render — a newer one superseded us
+      const tw = view.querySelector(".dash-grid");
       if (tw) tw.insertAdjacentHTML("beforeend", renderTakeaways(mf));
     });
     bindExports(view);
