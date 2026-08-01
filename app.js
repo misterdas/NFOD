@@ -25,18 +25,18 @@ function clampIdx(i) { return NFOD.utils.clamp(i, 0, NFOD.state.dates.length - 1
 function setDate(i) { NFOD.state.dateIndex = i; renderDateNav(); $("#footer-date").textContent = "Date: " + NFOD.getDate(); renderActiveView(); }
 NFOD.getDate = () => NFOD.state.dates[NFOD.state.dateIndex];
 
-function switchView(name) {
+NFOD.switchView = function switchView(name) {
   NFOD.state.activeView = name;
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.view === name));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + name));
   renderActiveView();
-}
+};
 function renderActiveView() {
   const v = NFOD.state.activeView;
   if (NFOD.views[v] && typeof NFOD.views[v].render === "function") NFOD.views[v].render(NFOD.state);
 }
 function bindTabs() {
-  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => switchView(b.dataset.view));
+  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => NFOD.switchView(b.dataset.view));
 }
 
 /* Market status (IST) */
@@ -49,8 +49,8 @@ function marketStatus() {
   const { day, h, m } = istParts();
   if (day === 0 || day === 6) return { label: "CLOSED", live: false };
   const mins = h * 60 + m;
-  if (mins >= 555 && mins < 570) return { label: "PRE-MARKET", live: false };
-  if (mins >= 570 && mins <= 930) return { label: "LIVE", live: true };
+  if (mins >= 540 && mins < 555) return { label: "PRE-MARKET", live: false };
+  if (mins >= 555 && mins <= 930) return { label: "LIVE", live: true };
   return { label: "CLOSED", live: false };
 }
 function renderMarketStatus() {
