@@ -158,9 +158,10 @@ button:disabled { cursor: default; }
 .select:focus { border-color: var(--accent); outline: none; }
 
 .date-chip {
+  display: inline-block;
   font-family: var(--font-mono); font-variant-numeric: tabular-nums;
   min-width: 96px; text-align: center;
-  border-color: var(--border);
+  border: 1px solid var(--border);
   background: var(--surface-2);
 }
 .date-chip:hover { border-color: var(--border-strong); }
@@ -210,7 +211,11 @@ button:disabled { cursor: default; }
   letter-spacing: .1em; color: var(--text-2);
 }
 
-.table-scroll { overflow-x: auto; }
+.table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 420px;
+}
 
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th {
