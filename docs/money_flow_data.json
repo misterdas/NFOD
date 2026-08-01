@@ -100,7 +100,135 @@
       "client": 0.0
     }
   },
-  "index_rolls": {
+  "verdict": {
+    "score": -19.075,
+    "bias": "MODERATE BEARISH",
+    "actionDesc": "Operators are capping upside via Call writing.",
+    "scoreBreakdown": {
+      "fii": 1.0,
+      "pro": 0.6,
+      "dii": 0.4,
+      "client": 0.0
+    }
+  },
+  "participants": {
+    "fii": {
+      "futures": {
+        "net": 13499.0,
+        "long": 326.0,
+        "short": -13173.0,
+        "stockNet": 22174.0,
+        "stockLong": 6491.0,
+        "stockShort": -15683.0,
+        "netCarried": -173113.0
+      },
+      "options": {
+        "ce": {
+          "long": 27717.0,
+          "short": 35957.0,
+          "netShort": 8240.0
+        },
+        "pe": {
+          "long": 109958.0,
+          "short": 96913.0,
+          "netShort": -13045.0
+        },
+        "stkCeNet": 8703.0,
+        "stkPeNet": -7366.0
+      },
+      "rawScore": 7
+    },
+    "pro": {
+      "futures": {
+        "net": -3584.0,
+        "long": -1488.0,
+        "short": 2096.0,
+        "stockNet": -5831.0,
+        "stockLong": 5063.0,
+        "stockShort": 10894.0,
+        "netCarried": -18.0
+      },
+      "options": {
+        "ce": {
+          "long": 115520.0,
+          "short": 91673.0,
+          "netShort": -23847.0
+        },
+        "pe": {
+          "long": 418219.0,
+          "short": 214148.0,
+          "netShort": -204071.0
+        },
+        "stkCeNet": 9795.0,
+        "stkPeNet": 25099.0
+      },
+      "rawScore": -17
+    },
+    "dii": {
+      "futures": {
+        "net": -4351.0,
+        "long": -4351.0,
+        "short": 0.0,
+        "stockNet": -8270.0,
+        "stockLong": 5094.0,
+        "stockShort": 13364.0,
+        "netCarried": 45207.0
+      },
+      "options": {
+        "ce": {
+          "long": 150.0,
+          "short": 0.0,
+          "netShort": -150.0
+        },
+        "pe": {
+          "long": 320.0,
+          "short": 25.0,
+          "netShort": -295.0
+        },
+        "stkCeNet": 16585.0,
+        "stkPeNet": -720.0
+      },
+      "rawScore": -25
+    },
+    "client": {
+      "futures": {
+        "net": -5564.0,
+        "long": -2403.0,
+        "short": 3161.0,
+        "stockNet": -8073.0,
+        "stockLong": 896.0,
+        "stockShort": 8969.0,
+        "netCarried": 0
+      },
+      "options": {
+        "ce": {
+          "long": 282432.0,
+          "short": 298190.0,
+          "netBuy": -15758.0
+        },
+        "pe": {
+          "long": 438295.0,
+          "short": 655706.0,
+          "netBuy": -217411.0
+        },
+        "stkCeNet": -35083.0,
+        "stkPeNet": -17013.0
+      }
+    }
+  },
+  "retail": {
+    "trapAlarm": null,
+    "confirmationMessage": "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor.",
+    "confirmationScore": -5,
+    "adjustment": 0
+  },
+  "weights": {
+    "fii": 1.0,
+    "pro": 0.6,
+    "dii": 0.4,
+    "client": 0.0
+  },
+  "rolls": {
     "NIFTY": {
       "ltp": 24383.6,
       "expiry": "04-Aug-2026",
@@ -129,15 +257,15 @@
         },
         {
           "type": "CALL_SQUEEZE",
-          "strike": 24150,
-          "badge": "CALL WRITER SQUEEZE",
-          "desc": "Bears forced to cover CE at 24150 as LTP (24,383.6) crossed above."
-        },
-        {
-          "type": "CALL_SQUEEZE",
           "strike": 24200,
           "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 24200 as LTP (24,383.6) crossed above."
+        },
+        {
+          "type": "CALL_SQUEEZE",
+          "strike": 24250,
+          "badge": "CALL WRITER SQUEEZE",
+          "desc": "Bears forced to cover CE at 24250 as LTP (24,383.6) crossed above."
         }
       ]
     },
@@ -219,7 +347,7 @@
       "traps_and_squeezes": []
     }
   },
-  "stock_breadth": {
+  "breadth": {
     "call_writing_bearish": [
       {
         "symbol": "NIFTY",
@@ -700,7 +828,7 @@
       "put_unwinding": 4
     }
   },
-  "conviction_trends": {
+  "conviction": {
     "NIFTY": {
       "dates": [
         "2026-07-27",
@@ -1534,7 +1662,7 @@
       ]
     }
   },
-  "flow_divergence": [
+  "divergence": [
     {
       "symbol": "NIFTY",
       "strike": 24350,

@@ -928,6 +928,79 @@ def build_multiday_conviction(history_dir: str, participant_summary: dict | None
 
 # ── Master runner ───────────────────────────────────────────────────────────
 
+def _nested_summary(ps: dict) -> dict:
+    """Map flat participant_summary → nested verdict/participants/retail.
+
+    Flat participant_summary is kept in the payload untouched for telegram.py;
+    this nested view is what the new dashboard consumes.
+    """
+    parts = {}
+    for name, pref in {"fii": "fii", "pro": "pro", "dii": "dii"}.items():
+        parts[name] = {
+            "futures": {
+                "net": ps.get(f"{pref}_fut_net_change", 0),
+                "long": ps.get(f"{pref}_fut_long_change", 0),
+                "short": ps.get(f"{pref}_fut_short_change", 0),
+                "stockNet": ps.get(f"{pref}_stk_fut_net_change", 0),
+                "stockLong": ps.get(f"{pref}_stk_fut_long_change", 0),
+                "stockShort": ps.get(f"{pref}_stk_fut_short_change", 0),
+                "netCarried": ps.get(f"{pref}_fut_net_carried", 0),
+            },
+            "options": {
+                "ce": {
+                    "long": ps.get(f"{pref}_ce_long_change", 0),
+                    "short": ps.get(f"{pref}_ce_short_change", 0),
+                    "netShort": ps.get(f"{pref}_ce_net_short_change", 0),
+                },
+                "pe": {
+                    "long": ps.get(f"{pref}_pe_long_change", 0),
+                    "short": ps.get(f"{pref}_pe_short_change", 0),
+                    "netShort": ps.get(f"{pref}_pe_net_short_change", 0),
+                },
+                "stkCeNet": ps.get(f"{pref}_stk_ce_net_change", 0),
+                "stkPeNet": ps.get(f"{pref}_stk_pe_net_change", 0),
+            },
+            "rawScore": ps.get(f"{pref}_raw_score", 0),
+        }
+    parts["client"] = {
+        "futures": {
+            "net": ps.get("client_fut_net_change", 0),
+            "long": ps.get("client_fut_long_change", 0),
+            "short": ps.get("client_fut_short_change", 0),
+            "stockNet": ps.get("client_stk_fut_net_change", 0),
+            "stockLong": ps.get("client_stk_fut_long_change", 0),
+            "stockShort": ps.get("client_stk_fut_short_change", 0),
+            "netCarried": ps.get("client_fut_net_carried", 0),  # ponytail: no client carried source key — 0 default; wire if computed
+        },
+        "options": {
+            "ce": {"long": ps.get("client_ce_long_change", 0),
+                   "short": ps.get("client_ce_short_change", 0),
+                   "netBuy": ps.get("client_ce_net_buy", 0)},
+            "pe": {"long": ps.get("client_pe_long_change", 0),
+                   "short": ps.get("client_pe_short_change", 0),
+                   "netBuy": ps.get("client_pe_net_buy", 0)},
+            "stkCeNet": ps.get("client_stk_ce_net_change", 0),
+            "stkPeNet": ps.get("client_stk_pe_net_change", 0),
+        },
+    }
+    return {
+        "verdict": {
+            "score": ps.get("smart_money_score", 0),
+            "bias": ps.get("bias_label", "NEUTRAL"),
+            "actionDesc": ps.get("action_desc", ""),
+            "scoreBreakdown": ps.get("weights", {}),
+        },
+        "participants": parts,
+        "retail": {
+            "trapAlarm": ps.get("retail_trap_alarm"),
+            "confirmationMessage": ps.get("retail_confirmation_message"),
+            "confirmationScore": ps.get("retail_confirmation_score", 0),
+            "adjustment": ps.get("trap_adjustment", 0),
+        },
+        "weights": ps.get("weights", {}),
+    }
+
+
 def run_engine():
     """Master runner: FDCP + Option Chain + Archives → money_flow_data.json."""
     print("[ENGINE] Running Institutional Verdict Engine...")
@@ -964,6 +1037,10 @@ def run_engine():
             "iv_modifier": participant_summary.get("iv_modifier_applied", 0),
         }
 
+    nested = _nested_summary(participant_summary) if participant_summary else {
+        "verdict": {"score": 0, "bias": "NEUTRAL", "actionDesc": ""},
+        "participants": {}, "retail": {}, "weights": {},
+    }
     verdict_payload = {
         "timestamp": timestamp,
         "executive_summary": {
@@ -972,11 +1049,15 @@ def run_engine():
             "action_desc": participant_summary["action_desc"] if participant_summary else "No participant data available.",
             "score_breakdown": score_breakdown,
         },
-        "participant_summary": participant_summary,
-        "index_rolls": index_rolls,
-        "stock_breadth": stock_breadth,
-        "conviction_trends": conviction_trends,
-        "flow_divergence": flow_divergence,
+        "participant_summary": participant_summary,   # kept flat — telegram.py reads this
+        "verdict": nested["verdict"],
+        "participants": nested["participants"],
+        "retail": nested["retail"],
+        "weights": nested["weights"],
+        "rolls": index_rolls,
+        "breadth": stock_breadth,
+        "conviction": conviction_trends,
+        "divergence": flow_divergence,
         "stock_count": len(stocks),
     }
 
