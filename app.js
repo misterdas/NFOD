@@ -1,6 +1,6 @@
 window.NFOD = window.NFOD || {};
 NFOD.views = NFOD.views || {};
-NFOD.state = { dateIndex: 0, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
+NFOD.state = { dateIndex: NFOD.data.availableDates.length - 1, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
 
 const $ = (sel, root) => (root || document).querySelector(sel);
 
@@ -69,11 +69,21 @@ function bindTheme() {
     NFOD.state.theme = t;
     document.body.classList.toggle("theme-light", t === "light");
     document.body.classList.toggle("theme-dark", t !== "light");
+    if (NFOD.state.activeView === "charts" && NFOD.views.charts.render) NFOD.views.charts.render(NFOD.state);
   };
   apply("dark");
   btn.onclick = () => apply(NFOD.state.theme === "dark" ? "light" : "dark");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  bindTabs(); bindTheme(); renderDateNav(); renderMarketStatus(); renderActiveView();
+  bindTabs(); bindTheme(); renderDateNav(); renderMarketStatus();
+  $("#footer-date").textContent = "Date: " + NFOD.getDate();
+  renderActiveView();
 });
+
+NFOD.debuglog = (msg) => {
+  if (new URLSearchParams(location.search).get("debug") !== "1") return;
+  const el = document.getElementById("debug-log");
+  if (el) { el.hidden = false; el.textContent += "\n" + msg; }
+};
+window.addEventListener("error", (e) => NFOD.debuglog("ERROR: " + e.message));
