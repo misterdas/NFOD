@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body>
+  <script src="../../../lib/sparkline.js"></script>
+  <script>
+    window.__RESULTS = {};
+    function check(name, cond) { window.__RESULTS[name] = !!cond; }
+
+    const c1 = document.createElement("div"); document.body.appendChild(c1);
+    const r1 = NFOD.sparkline.render(c1, [1,5,3,8,2], "#34d399");
+    check("five-point-svg", r1.tagName === "svg" && r1.getAttribute("class") === "sparkline");
+    const pts1 = r1.querySelector("polyline").getAttribute("points").split(" ").map(p => p.split(",").map(Number));
+    check("five-point-count", pts1.length === 5);
+    check("five-point-x", pts1[0][0] === 2 && pts1[4][0] === 62);
+    check("five-point-y-range", pts1.every(([,y]) => y >= 2 && y <= 14));
+    // [1,5,3,8,2]: min=1 -> y14 (bottom), max=8 -> y2 (top)
+    const yMin = pts1[0][1], yMax = pts1[3][1];
+    check("five-point-min-bottom", yMin === 14);
+    check("five-point-max-top", yMax === 2);
+
+    const c2 = document.createElement("div"); document.body.appendChild(c2);
+    const r2 = NFOD.sparkline.render(c2, [1,1,1], "#f00");
+    check("flat-no-divzero", r2.tagName === "svg");
+    const pts2 = r2.querySelector("polyline").getAttribute("points").split(" ");
+    check("flat-points", pts2.length === 3 && pts2.every(p => p.endsWith(",14.0")));
+
+    const c3 = document.createElement("div"); document.body.appendChild(c3);
+    const r3 = NFOD.sparkline.render(c3, [1], "#f00");
+    check("single-dot", r3.tagName.toLowerCase() === "span" && r3.className === "sparkline-empty" && r3.textContent === "·");
+
+    const c4 = document.createElement("div"); document.body.appendChild(c4);
+    const r4 = NFOD.sparkline.render(c4, null, "#f00");
+    check("null-empty", r4.tagName.toLowerCase() === "span" && r4.className === "sparkline-empty");
+
+    const c5 = document.createElement("div"); document.body.appendChild(c5);
+    const r5 = NFOD.sparkline.render(c5, [], "#f00");
+    check("empty-arr", r5.tagName.toLowerCase() === "span" && r5.className === "sparkline-empty");
+
+    // returns svg
+    check("returns-svg", r1 === c1.firstChild && r1.tagName === "svg");
+    // re-render clears
+    const r1b = NFOD.sparkline.render(c1, [1,2,3,4,5], "#00f");
+    check("re-render-clears", c1.querySelectorAll("svg").length === 1 && c1.firstChild === r1b);
+  </script>
+</body></html>

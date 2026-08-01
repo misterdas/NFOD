@@ -1,0 +1,151 @@
+# Review package: 9c0dca9..HEAD
+
+## Commits
+3903ddb test: smoke assertions + debug hook + theme chart sync
+
+## Files changed
+ app.js          | 14 ++++++++++++--
+ styles.css      |  4 ++--
+ test/smoke.html | 34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 48 insertions(+), 4 deletions(-)
+
+## Diff
+diff --git a/app.js b/app.js
+index 01f6788..73991dc 100644
+--- a/app.js
++++ b/app.js
+@@ -1,13 +1,13 @@
+ window.NFOD = window.NFOD || {};
+ NFOD.views = NFOD.views || {};
+-NFOD.state = { dateIndex: 0, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
++NFOD.state = { dateIndex: NFOD.data.availableDates.length - 1, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
+ 
+ const $ = (sel, root) => (root || document).querySelector(sel);
+ 
+ function renderDateNav() {
+   const s = NFOD.state;
+   const wrap = $("#date-nav");
+   const latest = s.dates.length - 1;
+   wrap.innerHTML = `
+     <button class="btn btn-sm btn-ghost" id="d-prev" aria-label="Previous">‹</button>
+     <button class="btn btn-sm date-chip" id="d-picker">${s.dates[s.dateIndex]}</button>
+@@ -62,18 +62,28 @@ function renderMarketStatus() {
+     const { h, m } = istParts();
+     $("#ist-clock").textContent = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + " IST";
+   }, 1000);
+ }
+ function bindTheme() {
+   const btn = $("#btn-theme");
+   const apply = (t) => {
+     NFOD.state.theme = t;
+     document.body.classList.toggle("theme-light", t === "light");
+     document.body.classList.toggle("theme-dark", t !== "light");
++    if (NFOD.state.activeView === "charts" && NFOD.views.charts.render) NFOD.views.charts.render(NFOD.state);
+   };
+   apply("dark");
+   btn.onclick = () => apply(NFOD.state.theme === "dark" ? "light" : "dark");
+ }
+ 
+ document.addEventListener("DOMContentLoaded", () => {
+-  bindTabs(); bindTheme(); renderDateNav(); renderMarketStatus(); renderActiveView();
++  bindTabs(); bindTheme(); renderDateNav(); renderMarketStatus();
++  $("#footer-date").textContent = "Date: " + NFOD.getDate();
++  renderActiveView();
+ });
++
++NFOD.debuglog = (msg) => {
++  if (new URLSearchParams(location.search).get("debug") !== "1") return;
++  const el = document.getElementById("debug-log");
++  if (el) { el.hidden = false; el.textContent += "\n" + msg; }
++};
++window.addEventListener("error", (e) => NFOD.debuglog("ERROR: " + e.message));
+diff --git a/styles.css b/styles.css
+index 19b346c..d1d67f8 100644
+--- a/styles.css
++++ b/styles.css
+@@ -251,21 +251,21 @@ button:disabled { cursor: default; }
+ .data-table .participant { min-width: 84px; }
+ 
+ .spark-cell { width: 68px; text-align: center; }
+ .sparkline { display: inline-block; vertical-align: middle; }
+ .sparkline-empty { color: var(--text-3); }
+ 
+ .export-csv { margin: var(--space-2) var(--space-3); }
+ 
+ /* ── Dashboard grid / right rail ───────────────────────────── */
+ .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--space-5); }
+-.main-col { display: flex; flex-direction: column; gap: var(--space-5); }
++.main-col { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+ 
+ .right-rail { display: flex; flex-direction: column; gap: var(--space-4); align-self: start; position: sticky; top: 112px; }
+ .rail-title {
+   font-size: 11px; font-weight: 700; text-transform: uppercase;
+   letter-spacing: .1em; color: var(--text-2); padding: 0 var(--space-1);
+ }
+ .rail-card .block-header { padding: var(--space-2) var(--space-3); }
+ .action-label { font-family: var(--font-sans); color: var(--text-2); text-align: left; }
+ 
+ .takeaways { margin-top: var(--space-5); }
+@@ -520,21 +520,21 @@ button:disabled { cursor: default; }
+   .breadth-grid { grid-template-columns: repeat(2, 1fr); }
+ }
+ @media (max-width: 900px) {
+   .rolls-grid { grid-template-columns: 1fr; }
+   .charts-grid { grid-template-columns: 1fr; }
+   .breadth-grid { grid-template-columns: 1fr; }
+   .app-footer { justify-content: center; text-align: center; }
+ }
+ @media (max-width: 640px) {
+   body { font-size: 12px; }
+-  .app-header { padding: var(--space-3); gap: var(--space-2); }
++  .app-header { padding: var(--space-3); gap: var(--space-2); flex-wrap: wrap; }
+   .brand-sub { display: none; }
+   .header-center { order: 3; width: 100%; justify-content: center; padding-top: var(--space-1); }
+   .tab-bar { padding: var(--space-2) var(--space-3); }
+   .app-main { padding: var(--space-3); }
+   .kpi-value { font-size: 20px; }
+   .verdict-gauge { font-size: 34px; }
+   .cal-popover { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); width: min(320px, calc(100vw - 16px)); }
+   .roll-cells { grid-template-columns: 1fr; }
+   .divg-item { flex-direction: column; gap: 2px; }
+   .app-footer { gap: var(--space-1); }
+diff --git a/test/smoke.html b/test/smoke.html
+new file mode 100644
+index 0000000..a424391
+--- /dev/null
++++ b/test/smoke.html
+@@ -0,0 +1,34 @@
++<!DOCTYPE html>
++<html lang="en"><head><meta charset="UTF-8"><title>Smoke</title></head>
++<body>
++<!-- Minimal harness: utils + data + sparkline + gross view. NFOD.state set
++     manually (app.js not loaded — its DOMContentLoaded would double-run). -->
++<div id="view-gross"></div>
++<script src="../lib/utils.js"></script>
++<script src="../data.js"></script>
++<script src="../lib/sparkline.js"></script>
++<script src="../views/gross.js"></script>
++<script>
++let pass = 0, fail = 0;
++function eq(name, got, want) {
++  const ok = JSON.stringify(got) === JSON.stringify(want);
++  ok ? pass++ : fail++;
++  console.log((ok ? "PASS" : "FAIL") + " " + name + (ok ? "" : " got=" + JSON.stringify(got) + " want=" + JSON.stringify(want)));
++}
++// Set minimal state (mirrors app.js default)
++NFOD.state = { dateIndex: NFOD.data.availableDates.length - 1, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
++eq("csv dates exist", NFOD.data.availableDates.length > 10, true);
++eq("dates chronological", NFOD.utils.sortDatesChronological(["03-07-2026","01-07-2026","02-07-2026"])[0], "01-07-2026");
++eq("fmt negative lakhs", NFOD.utils.formatIndianNum(-180398), "-1,80,398");
++eq("fmt null", NFOD.utils.formatIndianNum(null), "-");
++eq("clamp", NFOD.utils.clamp(999, -150, 150), 150);
++eq("expiry suffix", NFOD.utils.monthlyExpirySuffix(3), "| Monthly Expiry in 3 Days");
++// map has the 4 participants (embedded CSV also carries a TOTAL row)
++eq("participant keys present", ["Client", "DII", "FII", "Pro"].every(k => k in NFOD.data.getParticipantMap(NFOD.data.availableDates[0])), true);
++// Render gross view into #view-gross, count rows: 6 instrument tables × 4 participants (right-rail cards excluded)
++NFOD.views.gross.render(NFOD.state);
++const view = document.getElementById("view-gross");
++const rows = view.querySelectorAll(".main-col .data-table tbody tr");
++eq("6 tables × 4 rows", rows.length, 24);
++console.log("RESULT: " + pass + " pass, " + fail + " fail");
++</script></body></html>

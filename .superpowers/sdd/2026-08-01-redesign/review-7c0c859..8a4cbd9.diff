@@ -1,0 +1,80 @@
+# Review package: 7c0c859..HEAD
+
+## Commits
+8a4cbd9 fix(gross): stale-safe takeaways to prevent duplicate blocks on rapid nav
+
+## Files changed
+ views/gross.js | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/views/gross.js b/views/gross.js
+index 68716c0..83c4db4 100644
+--- a/views/gross.js
++++ b/views/gross.js
+@@ -4,20 +4,21 @@ NFOD.views.gross = (function () {
+   const INSTRUMENTS = [
+     { id: "index-futures", title: "Index Futures", l: "Future Index Long", s: "Future Index Short" },
+     { id: "index-calls", title: "Index Calls", l: "Option Index Call Long", s: "Option Index Call Short" },
+     { id: "index-puts", title: "Index Puts", l: "Option Index Put Long", s: "Option Index Put Short" },
+     { id: "stock-futures", title: "Stock Futures", l: "Future Stock Long", s: "Future Stock Short" },
+     { id: "stock-calls", title: "Stock Calls", l: "Option Stock Call Long", s: "Option Stock Call Short" },
+     { id: "stock-puts", title: "Stock Puts", l: "Option Stock Put Long", s: "Option Stock Put Short" },
+   ];
+   const PARTS = ["Client", "DII", "FII", "Pro"];
+   const DAYS = 8; // sparkline window
++  let renderSeq = 0;
+ 
+   function sparklineFor(part, inst, dateIdx) {
+     const vals = [];
+     const start = Math.max(0, dateIdx - DAYS + 1);
+     for (let i = start; i <= dateIdx; i++) {
+       const d = NFOD.state.dates[i];
+       const m = NFOD.data.getParticipantMap(d);
+       const r = m[part];
+       if (!r) { vals.push(null); continue; }
+       vals.push((r[inst.l] || 0) - (r[inst.s] || 0));
+@@ -137,40 +138,42 @@ NFOD.views.gross = (function () {
+             <tr><td class="action-label">${x.instrument}</td>
+             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${x.action}</td>
+             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${NFOD.utils.formatIndianNum(x.net)}</td></tr>`).join("")}
+           </table></div>`;
+       }).join("")}
+     </div>`;
+   }
+ 
+   function render(state) {
+     const view = document.getElementById("view-gross");
++    const token = ++renderSeq;
+     const idx = state.dateIndex;
+     const tm = NFOD.data.getParticipantMap(state.dates[idx]);
+     const pm = state.dates[idx - 1] ? NFOD.data.getParticipantMap(state.dates[idx - 1]) : null;
+     let netActions = [];
+     INSTRUMENTS.forEach(inst => {
+       PARTS.forEach(p => {
+         const r = tm[p] || {}, rp = pm && pm[p];
+         const net = rp ? (r[inst.l] - rp[inst.l]) - (r[inst.s] - rp[inst.s]) : null;
+         if (net) netActions.push({ participant: p, instrument: inst.title, action: net > 0 ? "Bought" : "Sold", net });
+       });
+     });
+     const body = renderKPIs(tm, pm) +
+       `<main class="dash-grid">
+         <div class="main-col">${INSTRUMENTS.map(i => renderInstrumentTable(i, idx)).join("")}</div>
+         ${renderRightRail(netActions)}
+       </main>`;
+     view.innerHTML = body;
+     // Takeaways loaded async
+     NFOD.data.loadMoneyFlow().then(mf => {
+-      const tw = document.querySelector(".dash-grid");
++      if (token !== renderSeq) return;      // stale render — a newer one superseded us
++      const tw = view.querySelector(".dash-grid");
+       if (tw) tw.insertAdjacentHTML("beforeend", renderTakeaways(mf));
+     });
+     bindExports(view);
+   }
+   function bindExports(view) {
+     view.querySelectorAll(".export-csv").forEach(btn => {
+       btn.onclick = () => {
+         const inst = INSTRUMENTS.find(i => i.id === btn.dataset.inst);
+         const rows = [["Participant", "Longs Δ", "Shorts Δ", "Net Today", "Today", "1D Ago", "2D Ago"]];
+         PARTS.forEach(p => {

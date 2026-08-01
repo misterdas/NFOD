@@ -1,0 +1,126 @@
+# Review package: f0f84fa..HEAD
+
+## Commits
+d7d7c74 fix(app): correct IST market windows, export NFOD.switchView
+96b8536 fix(plan): correct IST windows (540-555 PRE, 555-930 LIVE), export NFOD.switchView
+
+## Files changed
+ app.js                                        | 10 +++++-----
+ docs/superpowers/plans/2026-08-01-redesign.md | 13 +++++++------
+ 2 files changed, 12 insertions(+), 11 deletions(-)
+
+## Diff
+diff --git a/app.js b/app.js
+index 6c9bc29..01f6788 100644
+--- a/app.js
++++ b/app.js
+@@ -18,46 +18,46 @@ function renderDateNav() {
+   $("#d-latest").onclick = () => setDate(latest);
+   $("#d-picker").onclick = (e) => {
+     e.stopPropagation();
+     createDatePicker({ anchor: $("#d-picker"), dates: s.dates, onSelect: setDate });
+   };
+ }
+ function clampIdx(i) { return NFOD.utils.clamp(i, 0, NFOD.state.dates.length - 1); }
+ function setDate(i) { NFOD.state.dateIndex = i; renderDateNav(); $("#footer-date").textContent = "Date: " + NFOD.getDate(); renderActiveView(); }
+ NFOD.getDate = () => NFOD.state.dates[NFOD.state.dateIndex];
+ 
+-function switchView(name) {
++NFOD.switchView = function switchView(name) {
+   NFOD.state.activeView = name;
+   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + name));
+   renderActiveView();
+-}
++};
+ function renderActiveView() {
+   const v = NFOD.state.activeView;
+   if (NFOD.views[v] && typeof NFOD.views[v].render === "function") NFOD.views[v].render(NFOD.state);
+ }
+ function bindTabs() {
+-  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => switchView(b.dataset.view));
++  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => NFOD.switchView(b.dataset.view));
+ }
+ 
+ /* Market status (IST) */
+ function istParts() {
+   const now = new Date();
+   const ist = new Date(now.getTime() + 330 * 60000);
+   return { day: ist.getUTCDay(), h: ist.getUTCHours(), m: ist.getUTCMinutes() };
+ }
+ function marketStatus() {
+   const { day, h, m } = istParts();
+   if (day === 0 || day === 6) return { label: "CLOSED", live: false };
+   const mins = h * 60 + m;
+-  if (mins >= 555 && mins < 570) return { label: "PRE-MARKET", live: false };
+-  if (mins >= 570 && mins <= 930) return { label: "LIVE", live: true };
++  if (mins >= 540 && mins < 555) return { label: "PRE-MARKET", live: false };
++  if (mins >= 555 && mins <= 930) return { label: "LIVE", live: true };
+   return { label: "CLOSED", live: false };
+ }
+ function renderMarketStatus() {
+   const st = marketStatus();
+   const el = $("#market-status");
+   el.innerHTML = `<span class="status-pill ${st.live ? "live" : ""}">● ${st.label}</span>
+     <span class="status-clock" id="ist-clock"></span>`;
+   setInterval(() => {
+     const { h, m } = istParts();
+     $("#ist-clock").textContent = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + " IST";
+diff --git a/docs/superpowers/plans/2026-08-01-redesign.md b/docs/superpowers/plans/2026-08-01-redesign.md
+index edc85ca..eb1391b 100644
+--- a/docs/superpowers/plans/2026-08-01-redesign.md
++++ b/docs/superpowers/plans/2026-08-01-redesign.md
+@@ -422,46 +422,47 @@ function renderDateNav() {
+   $("#d-latest").onclick = () => setDate(latest);
+   $("#d-picker").onclick = (e) => {
+     e.stopPropagation();
+     createDatePicker({ anchor: $("#d-picker"), dates: s.dates, onSelect: setDate });
+   };
+ }
+ function clampIdx(i) { return NFOD.utils.clamp(i, 0, NFOD.state.dates.length - 1); }
+ function setDate(i) { NFOD.state.dateIndex = i; renderDateNav(); $("#footer-date").textContent = "Date: " + NFOD.getDate(); renderActiveView(); }
+ NFOD.getDate = () => NFOD.state.dates[NFOD.state.dateIndex];
+ 
+-function switchView(name) {
++NFOD.switchView = function switchView(name) {
+   NFOD.state.activeView = name;
+   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + name));
+   renderActiveView();
+-}
++};
+ function renderActiveView() {
+   const v = NFOD.state.activeView;
+   if (NFOD.views[v] && typeof NFOD.views[v].render === "function") NFOD.views[v].render(NFOD.state);
+ }
+ function bindTabs() {
+-  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => switchView(b.dataset.view));
++  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => NFOD.switchView(b.dataset.view));
+ }
+ 
+-/* Market status (IST) */
++/* Market status (IST) — NSE pre-open 09:00-09:15, continuous 09:15-15:30.
++   Minutes: 540 = 09:00, 555 = 09:15, 930 = 15:30. */
+ function istParts() {
+   const now = new Date();
+   const ist = new Date(now.getTime() + 330 * 60000);
+   return { day: ist.getUTCDay(), h: ist.getUTCHours(), m: ist.getUTCMinutes() };
+ }
+ function marketStatus() {
+   const { day, h, m } = istParts();
+   if (day === 0 || day === 6) return { label: "CLOSED", live: false };
+   const mins = h * 60 + m;
+-  if (mins >= 555 && mins < 570) return { label: "PRE-MARKET", live: false };
+-  if (mins >= 570 && mins <= 930) return { label: "LIVE", live: true };
++  if (mins >= 540 && mins < 555) return { label: "PRE-MARKET", live: false };
++  if (mins >= 555 && mins <= 930) return { label: "LIVE", live: true };
+   return { label: "CLOSED", live: false };
+ }
+ function renderMarketStatus() {
+   const st = marketStatus();
+   const el = $("#market-status");
+   el.innerHTML = `<span class="status-pill ${st.live ? "live" : ""}">● ${st.label}</span>
+     <span class="status-clock" id="ist-clock"></span>`;
+   setInterval(() => {
+     const { h, m } = istParts();
+     $("#ist-clock").textContent = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + " IST";

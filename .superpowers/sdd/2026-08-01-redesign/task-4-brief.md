@@ -1,0 +1,83 @@
+### Task 4: index.html — shell
+
+**Files:**
+- Create: `index.html` (replaces existing)
+
+**Interfaces:**
+- Consumes: all CSS/JS files by reference.
+- Produces: static shell with containers the views populate: `#header`, `#date-nav`, `#market-status`, `#tab-bar`, `#view-gross`, `#view-verdict`, `#view-charts`, `#footer`, `#debug-log`.
+
+- [ ] **Step 1: Write shell**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OI Analysis — Participant OI Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <header id="header" class="app-header">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div class="brand-text">
+        <h1>OI Analysis</h1>
+        <span class="brand-sub">Participant OI · Institutional Verdicts</span>
+      </div>
+    </div>
+    <div class="header-center" id="date-nav"></div>
+    <div class="header-right">
+      <div id="market-status" class="status-wrap"></div>
+      <button id="btn-theme" class="btn btn-icon" aria-label="Toggle theme">◐</button>
+      <button id="btn-menu" class="btn btn-icon" aria-label="Menu">☰</button>
+      <div id="menu-popover" class="menu-popover" hidden></div>
+    </div>
+  </header>
+  <nav id="tab-bar" class="tab-bar">
+    <button class="tab-btn active" data-view="gross">Gross OI</button>
+    <button class="tab-btn" data-view="verdict">Verdict</button>
+    <button class="tab-btn" data-view="charts">Charts</button>
+  </nav>
+  <main class="app-main">
+    <section id="view-gross" class="view active"></section>
+    <section id="view-verdict" class="view"></section>
+    <section id="view-charts" class="view"></section>
+  </main>
+  <footer class="app-footer">
+    <span>Gopal Das</span>
+    <span id="footer-date">Date: --</span>
+    <span>NFD Participant OI Engine v3.0</span>
+  </footer>
+  <div id="debug-log" hidden></div>
+  <script src="lib/utils.js"></script>
+  <script src="data.js"></script>
+  <script src="lib/sparkline.js"></script>
+  <script src="lib/calendar.js"></script>
+  <script src="views/gross.js"></script>
+  <script src="views/verdict.js"></script>
+  <script src="views/charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+Script order matters: utils → data → libs → views → app.
+
+- [ ] **Step 2: Verify**
+
+Open `index.html` locally: header renders, tabs present, three empty view sections, no JS errors (views render nothing yet — Task 8+ fills them). `data.js` loads without syntax error (check console).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add index.html
+git commit -m "feat(html): new app shell with view containers"
+```
+
+---
+
