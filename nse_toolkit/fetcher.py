@@ -352,9 +352,9 @@ def cleanup_old_history(history_dir: str, max_days: int = 30) -> None:
 
 def update_embedded_csv() -> None:
     """Rebuild the embedded CSV string in app.js from FDCP_Data.csv."""
-    appjs_path = "app.js"
+    appjs_path = "data.js"
     if not os.path.exists(FDCP_FILE) or not os.path.exists(appjs_path):
-        _log("[EMBED] FDCP_Data.csv or app.js not found — skipping embedded CSV update.")
+        _log("[EMBED] FDCP_Data.csv or data.js not found — skipping embedded CSV update.")
         return
 
     import csv as csv_mod
@@ -382,14 +382,14 @@ def update_embedded_csv() -> None:
 
         start = content.find(prefix)
         if start == -1:
-            _log("[EMBED] Could not find _EMBEDDED_CSV in app.js — skipping.")
+            _log(f"[EMBED] Could not find _EMBEDDED_CSV in {appjs_path} — skipping.")
             return
 
         # Content begins right after the opening quote
         content_start = start + len(prefix)
         end = content.find(suffix, content_start)
         if end == -1:
-            _log("[EMBED] Could not find closing of _EMBEDDED_CSV in app.js — skipping.")
+            _log(f"[EMBED] Could not find closing of _EMBEDDED_CSV in {appjs_path} — skipping.")
             return
 
         # Build replacement
@@ -398,7 +398,7 @@ def update_embedded_csv() -> None:
             f.write(new_content)
 
         date_count = len(data_lines) // 5
-        _log(f"[EMBED] Updated app.js embedded CSV ({date_count} dates).")
+        _log(f"[EMBED] Updated {appjs_path} embedded CSV ({date_count} dates).")
 
     except Exception as e:
         _log(f"[EMBED] Error updating embedded CSV: {e}")
