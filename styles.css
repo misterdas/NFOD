@@ -561,6 +561,7 @@ button:disabled { cursor: default; }
     position: static !important; background: #fff !important; color: #000 !important;
     border: 1px solid #000 !important;
   }
+  .table-scroll { max-height: none; overflow: visible; }
   .data-table { border-collapse: collapse; }
   .badge, .pill, .status-pill, .pos-up, .pos-down, .verdict-gauge,
   .section-label, .breadth-head.up, .breadth-head.down { color: #000 !important; background: #fff !important; -webkit-text-fill-color: #000 !important; }
