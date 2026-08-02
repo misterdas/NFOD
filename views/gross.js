@@ -10,6 +10,7 @@ NFOD.views.gross = (function () {
     { id: "stock-puts", title: "Stock Puts", l: "Option Stock Put Long", s: "Option Stock Put Short" },
   ];
   const PARTS = ["Client", "DII", "FII", "Pro"];
+  const PARTICIPANT_LABELS = { Client: "Clients", DII: "DII", FII: "FII", Pro: "Pros" };
   const DAYS = 8; // sparkline window
   let renderSeq = 0;
 
@@ -49,11 +50,19 @@ NFOD.views.gross = (function () {
       const carried1 = rp ? rp[inst.l] - rp[inst.s] : null;
       const carried2 = rp2 ? rp2[inst.l] - rp2[inst.s] : null;
       const cls = v => v === null ? "-" : v >= 0 ? "pos-up" : "pos-down";
+      // Action labels (Added/Closed/Bought/Sold) like the old dashboard
+      const act = (v, bearishPos) => v === null || v === 0 ? ["-", ""]
+        : v > 0 ? ["Added", bearishPos ? "pos-down" : "pos-up"]
+        : ["Closed", bearishPos ? "pos-up" : "pos-down"];
+      const actNet = v => v === null || v === 0 ? ["-", ""] : v > 0 ? ["Bought", "pos-up"] : ["Sold", "pos-down"];
+      const [la, lc] = act(longD, false);
+      const [sa, sc] = act(shortD, true);
+      const [na, nc] = actNet(net);
       rows += `<tr>
-        <td class="sticky-col-first participant">${p}s</td>
-        <td class="${cls(longD)}">${NFOD.utils.formatIndianNum(longD)}</td>
-        <td class="${cls(shortD)}">${NFOD.utils.formatIndianNum(shortD)}</td>
-        <td class="${cls(net)}">${NFOD.utils.formatIndianNum(net)}</td>
+        <td class="sticky-col-first participant">${PARTICIPANT_LABELS[p] || p}</td>
+        <td class="action-label ${lc}">${la}</td><td class="${lc}">${NFOD.utils.formatIndianNum(longD)}</td>
+        <td class="action-label ${sc}">${sa}</td><td class="${sc}">${NFOD.utils.formatIndianNum(shortD)}</td>
+        <td class="action-label ${nc}">${na}</td><td class="${nc}">${NFOD.utils.formatIndianNum(net)}</td>
         <td class="${cls(carried)}">${NFOD.utils.formatIndianNum(carried)}</td>
         <td class="${cls(carried1)}">${NFOD.utils.formatIndianNum(carried1)}</td>
         <td class="${cls(carried2)}">${NFOD.utils.formatIndianNum(carried2)}</td>
@@ -62,15 +71,23 @@ NFOD.views.gross = (function () {
     return `<div class="instrument-block">
       <div class="block-header">${inst.title}</div>
       <div class="table-scroll">
-        <table class="data-table">
+        <table class="data-table oi-table">
+          <colgroup>
+            <col class="col-participant">
+            <col class="col-label"><col class="col-value">
+            <col class="col-label"><col class="col-value">
+            <col class="col-label"><col class="col-value">
+            <col class="col-value"><col class="col-value"><col class="col-value">
+            <col class="col-spark">
+          </colgroup>
           <thead><tr>
-            <th class="sticky-col-first">Participant</th><th>Longs Δ</th><th>Shorts Δ</th>
-            <th>Net Today</th><th>Today</th><th>1D Ago</th><th>2D Ago</th><th>Trend</th>
+            <th class="sticky-col-first">Participant</th>
+            <th colspan="2">Longs</th><th colspan="2">Shorts</th><th colspan="2">Net Today</th>
+            <th>Today</th><th>1D Ago</th><th>2D Ago</th><th>Trend</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <button class="btn btn-sm btn-ghost export-csv" data-inst="${inst.id}">Export CSV</button>
     </div>`;
   }
 
@@ -133,8 +150,12 @@ NFOD.views.gross = (function () {
       ${PARTS.map(p => {
         const acts = netActions.filter(x => x.participant === p);
         return `<div class="instrument-block rail-card">
-          <div class="block-header">${p}s</div>
-          <table class="data-table compact">${acts.map(x => `
+          <div class="block-header">${PARTICIPANT_LABELS[p] || p}</div>
+          <table class="data-table compact rail-table">
+            <colgroup>
+              <col class="col-inst"><col class="col-act"><col class="col-val">
+            </colgroup>
+            ${acts.map(x => `
             <tr><td class="action-label">${x.instrument}</td>
             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${x.action}</td>
             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${NFOD.utils.formatIndianNum(x.net)}</td></tr>`).join("")}
@@ -168,24 +189,6 @@ NFOD.views.gross = (function () {
       if (token !== renderSeq) return;      // stale render — a newer one superseded us
       const tw = view.querySelector(".dash-grid");
       if (tw) tw.insertAdjacentHTML("beforeend", renderTakeaways(mf));
-    });
-    bindExports(view);
-  }
-  function bindExports(view) {
-    view.querySelectorAll(".export-csv").forEach(btn => {
-      btn.onclick = () => {
-        const inst = INSTRUMENTS.find(i => i.id === btn.dataset.inst);
-        const rows = [["Participant", "Longs Δ", "Shorts Δ", "Net Today", "Today", "1D Ago", "2D Ago"]];
-        PARTS.forEach(p => {
-          const r = NFOD.data.getParticipantMap(NFOD.getDate())[p] || {};
-          rows.push([p, r[inst.l], r[inst.s], (r[inst.l] || 0) - (r[inst.s] || 0), r[inst.l], r[inst.s], "-"]);
-        });
-        const csv = rows.map(r => r.join(",")).join("\n");
-        const a = document.createElement("a");
-        a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-        a.download = inst.id + "-" + NFOD.getDate() + ".csv";
-        a.click();
-      };
     });
   }
   return { render };

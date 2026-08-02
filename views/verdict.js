@@ -88,10 +88,10 @@ NFOD.views.verdict = (function () {
     return `<div class="instrument-block"><div class="block-header">Multi-Day Strike Conviction Matrix</div>
       <div class="conv-tabs">${Object.keys(conv).map(sym =>
         `<button class="tab-btn ${sym === current ? "active" : ""}" data-sym="${sym}">${sym}</button>`).join("")}</div>
-      <table class="data-table"><thead><tr>
+      <div class="table-scroll-x"><table class="data-table"><thead><tr>
         <th>CE Flow</th><th>CE Conviction</th><th>Call OI Δ</th><th>Strike</th>
         <th>Put OI Δ</th><th>PE Conviction</th><th>PE Flow</th></tr></thead>
-      <tbody id="conv-body">${renderTable(current)}</tbody></table></div>`;
+      <tbody id="conv-body">${renderTable(current)}</tbody></table></div></div>`;
   }
 
   function breadthPanel(mf) {

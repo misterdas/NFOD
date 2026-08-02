@@ -3,6 +3,7 @@ NFOD.views = NFOD.views || {};
 NFOD.state = { dateIndex: NFOD.data.availableDates.length - 1, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
 
 const $ = (sel, root) => (root || document).querySelector(sel);
+let statusInterval = null;
 
 function renderDateNav() {
   const s = NFOD.state;
@@ -27,16 +28,12 @@ NFOD.getDate = () => NFOD.state.dates[NFOD.state.dateIndex];
 
 NFOD.switchView = function switchView(name) {
   NFOD.state.activeView = name;
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.view === name));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + name));
   renderActiveView();
 };
 function renderActiveView() {
   const v = NFOD.state.activeView;
   if (NFOD.views[v] && typeof NFOD.views[v].render === "function") NFOD.views[v].render(NFOD.state);
-}
-function bindTabs() {
-  document.querySelectorAll(".tab-btn").forEach(b => b.onclick = () => NFOD.switchView(b.dataset.view));
 }
 
 /* Market status (IST) */
@@ -54,11 +51,12 @@ function marketStatus() {
   return { label: "CLOSED", live: false };
 }
 function renderMarketStatus() {
+  if (statusInterval) clearInterval(statusInterval);
   const st = marketStatus();
   const el = $("#market-status");
   el.innerHTML = `<span class="status-pill ${st.live ? "live" : ""}">● ${st.label}</span>
     <span class="status-clock" id="ist-clock"></span>`;
-  setInterval(() => {
+  statusInterval = setInterval(() => {
     const { h, m } = istParts();
     $("#ist-clock").textContent = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + " IST";
   }, 1000);
@@ -69,14 +67,39 @@ function bindTheme() {
     NFOD.state.theme = t;
     document.body.classList.toggle("theme-light", t === "light");
     document.body.classList.toggle("theme-dark", t !== "light");
-    if (NFOD.state.activeView === "charts" && NFOD.views.charts.render) NFOD.views.charts.render(NFOD.state);
+    if (NFOD.state.activeView === "charts" && NFOD.views.charts && NFOD.views.charts.render) NFOD.views.charts.render(NFOD.state);
   };
   apply("dark");
   btn.onclick = () => apply(NFOD.state.theme === "dark" ? "light" : "dark");
 }
 
+function bindMenu() {
+  const btn = $("#btn-menu");
+  const popover = $("#menu-popover");
+  if (!btn || !popover) return;
+  popover.innerHTML = `
+    <button class="menu-item" data-view="gross" onclick="NFOD.switchView('gross'); $('#menu-popover').hidden=true;">Gross OI</button>
+    <button class="menu-item" data-view="verdict" onclick="NFOD.switchView('verdict'); $('#menu-popover').hidden=true;">Verdict</button>
+    <button class="menu-item" data-view="charts" onclick="NFOD.switchView('charts'); $('#menu-popover').hidden=true;">Charts</button>
+  `;
+  const syncActive = () => {
+    popover.querySelectorAll(".menu-item").forEach(i =>
+      i.classList.toggle("active", i.dataset.view === NFOD.state.activeView));
+  };
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    if (popover.hidden) syncActive();
+    popover.hidden = !popover.hidden;
+  };
+  document.addEventListener("click", (e) => {
+    if (!popover.hidden && !popover.contains(e.target) && e.target !== btn) {
+      popover.hidden = true;
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  bindTabs(); bindTheme(); renderDateNav(); renderMarketStatus();
+  bindTheme(); bindMenu(); renderDateNav(); renderMarketStatus();
   $("#footer-date").textContent = "Date: " + NFOD.getDate();
   renderActiveView();
 });
