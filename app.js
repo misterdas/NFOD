@@ -3,7 +3,6 @@ NFOD.views = NFOD.views || {};
 NFOD.state = { dateIndex: NFOD.data.availableDates.length - 1, dates: NFOD.data.availableDates, activeView: "gross", theme: "dark" };
 
 const $ = (sel, root) => (root || document).querySelector(sel);
-let statusInterval = null;
 
 function renderDateNav() {
   const s = NFOD.state;
@@ -36,31 +35,6 @@ function renderActiveView() {
   if (NFOD.views[v] && typeof NFOD.views[v].render === "function") NFOD.views[v].render(NFOD.state);
 }
 
-/* Market status (IST) */
-function istParts() {
-  const now = new Date();
-  const ist = new Date(now.getTime() + 330 * 60000);
-  return { day: ist.getUTCDay(), h: ist.getUTCHours(), m: ist.getUTCMinutes() };
-}
-function marketStatus() {
-  const { day, h, m } = istParts();
-  if (day === 0 || day === 6) return { label: "CLOSED", live: false };
-  const mins = h * 60 + m;
-  if (mins >= 540 && mins < 555) return { label: "PRE-MARKET", live: false };
-  if (mins >= 555 && mins <= 930) return { label: "LIVE", live: true };
-  return { label: "CLOSED", live: false };
-}
-function renderMarketStatus() {
-  if (statusInterval) clearInterval(statusInterval);
-  const st = marketStatus();
-  const el = $("#market-status");
-  el.innerHTML = `<span class="status-pill ${st.live ? "live" : ""}">● ${st.label}</span>
-    <span class="status-clock" id="ist-clock"></span>`;
-  statusInterval = setInterval(() => {
-    const { h, m } = istParts();
-    $("#ist-clock").textContent = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + " IST";
-  }, 1000);
-}
 function bindTheme() {
   const btn = $("#btn-theme");
   const apply = (t) => {
@@ -99,7 +73,7 @@ function bindMenu() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  bindTheme(); bindMenu(); renderDateNav(); renderMarketStatus();
+  bindTheme(); bindMenu(); renderDateNav();
   $("#footer-date").textContent = "Date: " + NFOD.getDate();
   renderActiveView();
 });
