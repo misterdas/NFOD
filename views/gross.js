@@ -10,7 +10,7 @@ NFOD.views.gross = (function () {
     { id: "stock-puts", title: "Stock Puts", l: "Option Stock Put Long", s: "Option Stock Put Short" },
   ];
   const PARTS = ["Client", "DII", "FII", "Pro"];
-  const PARTICIPANT_LABELS = { Client: "Clients", DII: "DII", FII: "FII", Pro: "Pros" };
+  const PARTICIPANT_LABELS = { Client: "Client", DII: "DII", FII: "FII", Pro: "Pro" };
   const DAYS = 8; // sparkline window
   let renderSeq = 0;
 
@@ -156,7 +156,7 @@ NFOD.views.gross = (function () {
               <col class="col-inst"><col class="col-act"><col class="col-val">
             </colgroup>
             ${acts.map(x => `
-            <tr><td class="action-label">${x.instrument}</td>
+            <tr><th scope="row" class="action-label">${x.instrument}</th>
             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${x.action}</td>
             <td class="${x.net >= 0 ? "pos-up" : "pos-down"}">${NFOD.utils.formatIndianNum(x.net)}</td></tr>`).join("")}
           </table></div>`;
@@ -183,12 +183,13 @@ NFOD.views.gross = (function () {
         <div class="main-col">${INSTRUMENTS.map(i => renderInstrumentTable(i, idx)).join("")}</div>
         ${renderRightRail(netActions)}
       </main>`;
-    view.innerHTML = body;
-    // Takeaways loaded async
+    // Reserve the takeaways slot (min-height in CSS) so the async fill below
+    // doesn't shift the page — that append was the dominant CLS source.
+    view.innerHTML = body + `<div class="takeaways" id="takeaways-slot"></div>`;
     NFOD.data.loadMoneyFlow().then(mf => {
       if (token !== renderSeq) return;      // stale render — a newer one superseded us
-      const tw = view.querySelector(".dash-grid");
-      if (tw) tw.insertAdjacentHTML("beforeend", renderTakeaways(mf));
+      const slot = view.querySelector("#takeaways-slot");
+      if (slot) slot.innerHTML = renderTakeaways(mf);
     });
   }
   return { render };

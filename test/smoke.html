@@ -26,9 +26,12 @@ eq("expiry suffix", NFOD.utils.monthlyExpirySuffix(3), "| Monthly Expiry in 3 Da
 // map has the 4 participants (embedded CSV also carries a TOTAL row)
 eq("participant keys present", ["Client", "DII", "FII", "Pro"].every(k => k in NFOD.data.getParticipantMap(NFOD.data.availableDates[0])), true);
 // Render gross view into #view-gross, count rows: 6 instrument tables × 4 participants (right-rail cards excluded)
-NFOD.views.gross.render(NFOD.state);
-const view = document.getElementById("view-gross");
-const rows = view.querySelectorAll(".main-col .data-table tbody tr");
-eq("6 tables × 4 rows", rows.length, 24);
-console.log("RESULT: " + pass + " pass, " + fail + " fail");
+// Tables render synchronously; takeaways fill the reserved slot async (not asserted here)
+(async () => {
+  NFOD.views.gross.render(NFOD.state);
+  const view = document.getElementById("view-gross");
+  const rows = view.querySelectorAll(".main-col .data-table tbody tr");
+  eq("6 tables × 4 rows", rows.length, 24);
+  console.log("RESULT: " + pass + " pass, " + fail + " fail");
+})();
 </script></body></html>

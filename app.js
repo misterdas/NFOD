@@ -75,7 +75,14 @@ function bindMenu() {
 document.addEventListener("DOMContentLoaded", () => {
   bindTheme(); bindMenu(); renderDateNav();
   $("#footer-date").textContent = "Date: " + NFOD.getDate();
-  renderActiveView();
+  try {
+    renderActiveView();
+  } finally {
+    // Reveal views now that content is painted — same task, so the browser
+    // cannot paint the empty shell in between (CLS guard, see styles.css).
+    // finally: even if a view render throws, the page must never stay invisible.
+    document.body.classList.add("ready");
+  }
 });
 
 NFOD.debuglog = (msg) => {
