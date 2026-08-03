@@ -58,7 +58,7 @@ def _fetch_fdcp_single_date(date_str: str) -> Optional[pd.DataFrame]:
 def fetch_fdcp(days: int = FDCP_DAYS) -> int:
     """
     Fetch FDCP participant OI data for the last `days` days (sequential).
-    Saves to FDCP_Data.csv. Returns the number of rows written.
+    Merges with existing FDCP_Data.csv (preserves history). Returns the number of new rows added.
     """
     end = datetime.now()
     dates = [(end - timedelta(days=d)).strftime("%d%m%Y") for d in range(days)]
@@ -76,10 +76,24 @@ def fetch_fdcp(days: int = FDCP_DAYS) -> int:
         _log("[FDCP] No data fetched. FDCP_Data.csv not updated.")
         return 0
 
-    df = pd.concat(frames, ignore_index=True, axis=0)
-    df.to_csv(FDCP_FILE, index=False)
-    _log(f"[FDCP] Saved {len(df)} rows to {FDCP_FILE}.")
-    return len(df)
+    new_df = pd.concat(frames, ignore_index=True, axis=0)
+
+    # Merge with existing CSV to preserve history (deduplicate by Client Type + Date)
+    if os.path.exists(FDCP_FILE):
+        existing_df = pd.read_csv(FDCP_FILE)
+        existing_df.columns = existing_df.columns.str.strip()
+        combined = pd.concat([existing_df, new_df], ignore_index=True)
+        # Keep the last occurrence of each (Client Type, Date) pair
+        combined = combined.drop_duplicates(subset=["Client Type", "Date"], keep="last")
+        combined = combined.sort_values(["Date", "Client Type"]).reset_index(drop=True)
+        new_rows = len(combined) - len(existing_df)
+        combined.to_csv(FDCP_FILE, index=False)
+        _log(f"[FDCP] Merged {len(new_df)} new rows, {new_rows} added (total {len(combined)} rows).")
+        return max(0, new_rows)
+    else:
+        new_df.to_csv(FDCP_FILE, index=False)
+        _log(f"[FDCP] Saved {len(new_df)} rows to {FDCP_FILE}.")
+        return len(new_df)
 
 
 # ── Option Chain Fetch ─────────────────────────────────────────────────────
