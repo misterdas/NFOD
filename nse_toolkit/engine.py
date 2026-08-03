@@ -157,6 +157,165 @@ def _participant_score(p: dict, fut_th: float, opt_th: float) -> int:
     return max(-25, min(25, int(s)))
 
 
+def _score_date_pair(
+    fii_today: dict, fii_prev: dict | None,
+    pro_today: dict, pro_prev: dict | None,
+    dii_today: dict, dii_prev: dict | None,
+    client_today: dict, client_prev: dict | None,
+    latest_date: str | None, prev_date: str | None,
+    iv_modifier: float = 0.0,
+) -> dict:
+    """Full flat participant_summary dict for one (today, prev) FDCP pair.
+
+    Shared by `load_participant_data` (latest pair, live IV modifier) and
+    `build_score_history` (every historical pair, IV modifier 0) so per-date
+    scores use identical math — never re-implement scoring in two places.
+    """
+    fii = _load_participant_changes(fii_today, fii_prev)
+    pro = _load_participant_changes(pro_today, pro_prev)
+    dii = _load_participant_changes(dii_today, dii_prev)
+    client = _load_participant_changes(client_today, client_prev)
+
+    # Client (Retail) net buy — used ONLY for the contrarian trap overlay
+    client_ce_net_buy = client["ce_long_chg"] - client["ce_short_chg"]
+    client_pe_net_buy = client["pe_long_chg"] - client["pe_short_chg"]
+
+    fii_raw_score = _participant_score(fii, FII_FUT_THRESHOLD, FII_OPT_THRESHOLD)
+    pro_raw_score = _participant_score(pro, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD)
+    dii_raw_score = _participant_score(dii, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD)
+
+    # Explicit weighted composite: FII > Pro > DII. Client excluded by design.
+    weighted_score = (
+        fii_raw_score * FII_WEIGHT
+        + pro_raw_score * PRO_WEIGHT
+        + dii_raw_score * DII_WEIGHT
+    )
+    weighted_score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score))
+
+    # FII-DII Alignment Modifier
+    fii_dii_modifier = 0
+    if fii_raw_score > 0 and dii_raw_score > 0:
+        fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+    elif fii_raw_score < 0 and dii_raw_score < 0:
+        fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+    elif fii_raw_score * dii_raw_score < 0:
+        fii_dii_modifier = -min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
+
+    # Retail Trap / Contrarian Sentiment Filter
+    retail_trap_alarm: str | None = None
+    trap_adjustment = 0
+    retail_confirmation_message: str | None = None
+    retail_confirmation_score = 0
+
+    if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > FII_OPT_THRESHOLD:
+        trap_adjustment = -15
+        retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
+    elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > FII_OPT_THRESHOLD:
+        trap_adjustment = 15
+        retail_trap_alarm = "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts."
+
+    if trap_adjustment == 0:
+        if client_ce_net_buy < -RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] < -FII_OPT_THRESHOLD:
+            retail_confirmation_score = 5
+            retail_confirmation_message = "RETAIL CALL CONFIRMATION: Retail not chasing rally as FIIs cover calls."
+        elif client_pe_net_buy < -RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] < -FII_OPT_THRESHOLD:
+            retail_confirmation_score = -5
+            retail_confirmation_message = "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor."
+
+    score = max(
+        -SCORE_CLIP,
+        min(
+            SCORE_CLIP,
+            weighted_score + trap_adjustment + retail_confirmation_score + fii_dii_modifier + iv_modifier,
+        ),
+    )
+
+    if score >= 40:
+        bias_label = "HIGH CONFIDENCE BULLISH"
+        action_desc = "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors."
+    elif score >= 15:
+        bias_label = "MODERATE BULLISH"
+        action_desc = "Net positive institutional flows with mild Put short additions."
+    elif score <= -40:
+        bias_label = "HIGH CONFIDENCE BEARISH"
+        action_desc = "FIIs are adding heavy Call shorts while unwinding Put support."
+    elif score <= -15:
+        bias_label = "MODERATE BEARISH"
+        action_desc = "Operators are capping upside via Call writing."
+    else:
+        bias_label = "NEUTRAL / SIDEWAYS"
+        action_desc = "Mixed operator signals — expecting rangebound consolidation."
+
+    weighted_clipped_before_adjustments = float(weighted_score)
+
+    # ── Build flat output dict ───────────────────────────────────────
+    # Use a helper to save ~100 lines of repetitive key-value wiring.
+    def _p_out(name: str, p: dict, raw_score: int) -> dict:
+        return {
+            f"{name}_fut_net_change": p["fut_chg"],
+            f"{name}_fut_long_change": p["fut_long_chg"],
+            f"{name}_fut_short_change": p["fut_short_chg"],
+            f"{name}_ce_long_change": p["ce_long_chg"],
+            f"{name}_ce_short_change": p["ce_short_chg"],
+            f"{name}_ce_net_short_change": p["ce_net_short_chg"],
+            f"{name}_pe_long_change": p["pe_long_chg"],
+            f"{name}_pe_short_change": p["pe_short_chg"],
+            f"{name}_pe_net_short_change": p["pe_net_short_chg"],
+            f"{name}_raw_score": raw_score,
+            f"{name}_stk_fut_net_change": p["stk_fut_chg"],
+            f"{name}_stk_fut_long_change": p["stk_fut_long_chg"],
+            f"{name}_stk_fut_short_change": p["stk_fut_short_chg"],
+            f"{name}_stk_ce_net_change": p["stk_ce_short_chg"] - p["stk_ce_long_chg"],
+            f"{name}_stk_pe_net_change": p["stk_pe_short_chg"] - p["stk_pe_long_chg"],
+        }
+
+    result: dict = {
+        "date": latest_date,
+        "prev_date": prev_date,
+        "smart_money_score": score,
+        "bias_label": bias_label,
+        "action_desc": action_desc,
+        "retail_trap_alarm": retail_trap_alarm,
+        "trap_adjustment": trap_adjustment,
+        "retail_confirmation_message": retail_confirmation_message,
+        "retail_confirmation_score": retail_confirmation_score,
+        "fii_dii_modifier": fii_dii_modifier,
+        "iv_modifier_applied": iv_modifier,
+        "weighted_clipped_before_adjustments": weighted_clipped_before_adjustments,
+    }
+    result.update(_p_out("fii", fii, fii_raw_score))
+    result.update(_p_out("pro", pro, pro_raw_score))
+    result.update(_p_out("dii", dii, dii_raw_score))
+
+    # Client-specific
+    result.update({
+        "client_ce_net_buy": client_ce_net_buy,
+        "client_pe_net_buy": client_pe_net_buy,
+        "client_ce_long_change": client["ce_long_chg"],
+        "client_ce_short_change": client["ce_short_chg"],
+        "client_pe_long_change": client["pe_long_chg"],
+        "client_pe_short_change": client["pe_short_chg"],
+        "client_fut_net_change": client["fut_chg"],
+        "client_fut_long_change": client["fut_long_chg"],
+        "client_fut_short_change": client["fut_short_chg"],
+        "client_stk_fut_net_change": client["stk_fut_chg"],
+        "client_stk_fut_long_change": client["stk_fut_long_chg"],
+        "client_stk_fut_short_change": client["stk_fut_short_chg"],
+        "client_stk_ce_net_change": client["stk_ce_short_chg"] - client["stk_ce_long_chg"],
+        "client_stk_pe_net_change": client["stk_pe_short_chg"] - client["stk_pe_long_chg"],
+    })
+
+    # Carried positions
+    result.update({
+        "fii_fut_net_carried": float(fii_today.get("Future Index Long", 0)) - float(fii_today.get("Future Index Short", 0)),
+        "pro_fut_net_carried": float(pro_today.get("Future Index Long", 0)) - float(pro_today.get("Future Index Short", 0)),
+        "dii_fut_net_carried": float(dii_today.get("Future Index Long", 0)) - float(dii_today.get("Future Index Short", 0)),
+        "weights": {"fii": FII_WEIGHT, "pro": PRO_WEIGHT, "dii": DII_WEIGHT, "client": 0.0},
+    })
+
+    return result
+
+
 def load_participant_data(iv_modifier: float = 0) -> dict | None:
     """Load latest FDCP data and derive FII, Pro & DII daily positioning shifts."""
     if not os.path.exists(FDCP_FILE):
@@ -182,162 +341,75 @@ def load_participant_data(iv_modifier: float = 0) -> dict | None:
             sub = df[(df["Client Type"] == p_type) & (df["Date"] == d_str)]
             return sub.iloc[0].to_dict() if not sub.empty else {}
 
-        fii_today = get_row("FII", latest_date)
-        fii_prev = get_row("FII", prev_date)
-        pro_today = get_row("Pro", latest_date)
-        pro_prev = get_row("Pro", prev_date)
-        dii_today = get_row("DII", latest_date)
-        dii_prev = get_row("DII", prev_date)
-        client_today = get_row("Client", latest_date)
-        client_prev = get_row("Client", prev_date)
-
-        fii = _load_participant_changes(fii_today, fii_prev)
-        pro = _load_participant_changes(pro_today, pro_prev)
-        dii = _load_participant_changes(dii_today, dii_prev)
-        client = _load_participant_changes(client_today, client_prev)
-
-        # Client (Retail) net buy — used ONLY for the contrarian trap overlay
-        client_ce_net_buy = client["ce_long_chg"] - client["ce_short_chg"]
-        client_pe_net_buy = client["pe_long_chg"] - client["pe_short_chg"]
-
-        fii_raw_score = _participant_score(fii, FII_FUT_THRESHOLD, FII_OPT_THRESHOLD)
-        pro_raw_score = _participant_score(pro, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD)
-        dii_raw_score = _participant_score(dii, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD)
-
-        # Explicit weighted composite: FII > Pro > DII. Client excluded by design.
-        weighted_score = (
-            fii_raw_score * FII_WEIGHT
-            + pro_raw_score * PRO_WEIGHT
-            + dii_raw_score * DII_WEIGHT
+        return _score_date_pair(
+            get_row("FII", latest_date), get_row("FII", prev_date),
+            get_row("Pro", latest_date), get_row("Pro", prev_date),
+            get_row("DII", latest_date), get_row("DII", prev_date),
+            get_row("Client", latest_date), get_row("Client", prev_date),
+            latest_date, prev_date, iv_modifier,
         )
-        weighted_score = max(-SCORE_CLIP, min(SCORE_CLIP, weighted_score))
-
-        # FII-DII Alignment Modifier
-        fii_dii_modifier = 0
-        if fii_raw_score > 0 and dii_raw_score > 0:
-            fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
-        elif fii_raw_score < 0 and dii_raw_score < 0:
-            fii_dii_modifier = min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
-        elif fii_raw_score * dii_raw_score < 0:
-            fii_dii_modifier = -min(10, abs(fii_raw_score) * abs(dii_raw_score) / 200)
-
-        # Retail Trap / Contrarian Sentiment Filter
-        retail_trap_alarm: str | None = None
-        trap_adjustment = 0
-        retail_confirmation_message: str | None = None
-        retail_confirmation_score = 0
-
-        if client_ce_net_buy > RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] > FII_OPT_THRESHOLD:
-            trap_adjustment = -15
-            retail_trap_alarm = "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls."
-        elif client_pe_net_buy > RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] > FII_OPT_THRESHOLD:
-            trap_adjustment = 15
-            retail_trap_alarm = "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts."
-
-        if trap_adjustment == 0:
-            if client_ce_net_buy < -RETAIL_TRAP_THRESHOLD and fii["ce_net_short_chg"] < -FII_OPT_THRESHOLD:
-                retail_confirmation_score = 5
-                retail_confirmation_message = "RETAIL CALL CONFIRMATION: Retail not chasing rally as FIIs cover calls."
-            elif client_pe_net_buy < -RETAIL_TRAP_THRESHOLD and fii["pe_net_short_chg"] < -FII_OPT_THRESHOLD:
-                retail_confirmation_score = -5
-                retail_confirmation_message = "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor."
-
-        score = max(
-            -SCORE_CLIP,
-            min(
-                SCORE_CLIP,
-                weighted_score + trap_adjustment + retail_confirmation_score + fii_dii_modifier + iv_modifier,
-            ),
-        )
-
-        if score >= 40:
-            bias_label = "HIGH CONFIDENCE BULLISH"
-            action_desc = "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors."
-        elif score >= 15:
-            bias_label = "MODERATE BULLISH"
-            action_desc = "Net positive institutional flows with mild Put short additions."
-        elif score <= -40:
-            bias_label = "HIGH CONFIDENCE BEARISH"
-            action_desc = "FIIs are adding heavy Call shorts while unwinding Put support."
-        elif score <= -15:
-            bias_label = "MODERATE BEARISH"
-            action_desc = "Operators are capping upside via Call writing."
-        else:
-            bias_label = "NEUTRAL / SIDEWAYS"
-            action_desc = "Mixed operator signals — expecting rangebound consolidation."
-
-        weighted_clipped_before_adjustments = float(weighted_score)
-
-        # ── Build flat output dict ───────────────────────────────────────
-        # Use a helper to save ~100 lines of repetitive key-value wiring.
-        def _p_out(name: str, p: dict, raw_score: int) -> dict:
-            return {
-                f"{name}_fut_net_change": p["fut_chg"],
-                f"{name}_fut_long_change": p["fut_long_chg"],
-                f"{name}_fut_short_change": p["fut_short_chg"],
-                f"{name}_ce_long_change": p["ce_long_chg"],
-                f"{name}_ce_short_change": p["ce_short_chg"],
-                f"{name}_ce_net_short_change": p["ce_net_short_chg"],
-                f"{name}_pe_long_change": p["pe_long_chg"],
-                f"{name}_pe_short_change": p["pe_short_chg"],
-                f"{name}_pe_net_short_change": p["pe_net_short_chg"],
-                f"{name}_raw_score": raw_score,
-                f"{name}_stk_fut_net_change": p["stk_fut_chg"],
-                f"{name}_stk_fut_long_change": p["stk_fut_long_chg"],
-                f"{name}_stk_fut_short_change": p["stk_fut_short_chg"],
-                f"{name}_stk_ce_net_change": p["stk_ce_short_chg"] - p["stk_ce_long_chg"],
-                f"{name}_stk_pe_net_change": p["stk_pe_short_chg"] - p["stk_pe_long_chg"],
-            }
-
-        result: dict = {
-            "date": latest_date,
-            "prev_date": prev_date,
-            "smart_money_score": score,
-            "bias_label": bias_label,
-            "action_desc": action_desc,
-            "retail_trap_alarm": retail_trap_alarm,
-            "trap_adjustment": trap_adjustment,
-            "retail_confirmation_message": retail_confirmation_message,
-            "retail_confirmation_score": retail_confirmation_score,
-            "fii_dii_modifier": fii_dii_modifier,
-            "iv_modifier_applied": iv_modifier,
-            "weighted_clipped_before_adjustments": weighted_clipped_before_adjustments,
-        }
-        result.update(_p_out("fii", fii, fii_raw_score))
-        result.update(_p_out("pro", pro, pro_raw_score))
-        result.update(_p_out("dii", dii, dii_raw_score))
-
-        # Client-specific
-        result.update({
-            "client_ce_net_buy": client_ce_net_buy,
-            "client_pe_net_buy": client_pe_net_buy,
-            "client_ce_long_change": client["ce_long_chg"],
-            "client_ce_short_change": client["ce_short_chg"],
-            "client_pe_long_change": client["pe_long_chg"],
-            "client_pe_short_change": client["pe_short_chg"],
-            "client_fut_net_change": client["fut_chg"],
-            "client_fut_long_change": client["fut_long_chg"],
-            "client_fut_short_change": client["fut_short_chg"],
-            "client_stk_fut_net_change": client["stk_fut_chg"],
-            "client_stk_fut_long_change": client["stk_fut_long_chg"],
-            "client_stk_fut_short_change": client["stk_fut_short_chg"],
-            "client_stk_ce_net_change": client["stk_ce_short_chg"] - client["stk_ce_long_chg"],
-            "client_stk_pe_net_change": client["stk_pe_short_chg"] - client["stk_pe_long_chg"],
-        })
-
-        # Carried positions
-        result.update({
-            "fii_fut_net_carried": float(fii_today.get("Future Index Long", 0)) - float(fii_today.get("Future Index Short", 0)),
-            "pro_fut_net_carried": float(pro_today.get("Future Index Long", 0)) - float(pro_today.get("Future Index Short", 0)),
-            "dii_fut_net_carried": float(dii_today.get("Future Index Long", 0)) - float(dii_today.get("Future Index Short", 0)),
-            "weights": {"fii": FII_WEIGHT, "pro": PRO_WEIGHT, "dii": DII_WEIGHT, "client": 0.0},
-        })
-
-        return result
 
     except Exception as e:
         print(f"Error parsing FDCP data: {e}")
         return None
+
+
+def build_score_history(latest_summary: dict | None = None) -> list[dict]:
+    """Per-date verdict score history from every FDCP date (oldest → newest).
+
+    Historical dates have no archived option-chain IV, so `iv_modifier` is 0 for
+    them; the newest entry is stamped from `latest_summary` (the live engine
+    output) so the banner and the history can never disagree on today's score.
+    """
+    if not os.path.exists(FDCP_FILE):
+        return []
+
+    try:
+        df = pd.read_csv(FDCP_FILE)
+        df.columns = df.columns.str.strip()
+        dates = sort_dates_chronologically(list(df["Date"].unique()))
+
+        def get_row(p_type: str, d_str: str | None) -> dict:
+            if not d_str:
+                return {}
+            sub = df[(df["Client Type"] == p_type) & (df["Date"] == d_str)]
+            return sub.iloc[0].to_dict() if not sub.empty else {}
+
+        history: list[dict] = []
+        for i, d in enumerate(dates):
+            prev = dates[i - 1] if i > 0 else None
+            summary = _score_date_pair(
+                get_row("FII", d), get_row("FII", prev),
+                get_row("Pro", d), get_row("Pro", prev),
+                get_row("DII", d), get_row("DII", prev),
+                get_row("Client", d), get_row("Client", prev),
+                d, prev, iv_modifier=0,
+            )
+            history.append({
+                "date": d,
+                "prev_date": prev,
+                "score": summary["smart_money_score"],
+                "bias": summary["bias_label"],
+                "actionDesc": summary["action_desc"],
+                "fiiRawScore": summary["fii_raw_score"],
+                "proRawScore": summary["pro_raw_score"],
+                "diiRawScore": summary["dii_raw_score"],
+            })
+
+        if latest_summary and history:
+            history[-1].update({
+                "score": latest_summary["smart_money_score"],
+                "bias": latest_summary["bias_label"],
+                "actionDesc": latest_summary["action_desc"],
+                "fiiRawScore": latest_summary["fii_raw_score"],
+                "proRawScore": latest_summary["pro_raw_score"],
+                "diiRawScore": latest_summary["dii_raw_score"],
+                "ivModifier": latest_summary.get("iv_modifier_applied", 0),
+            })
+        return history
+    except Exception as e:
+        print(f"[ENGINE] Error building score history: {e}")
+        return []
 
 
 # ── Index Roll Detection ───────────────────────────────────────────────────
@@ -1050,6 +1122,7 @@ def run_engine():
             "score_breakdown": score_breakdown,
         },
         "participant_summary": participant_summary,   # kept flat — telegram.py reads this
+        "score_history": build_score_history(participant_summary),  # per-date verdict history — dashboard date nav
         "verdict": nested["verdict"],
         "participants": nested["participants"],
         "retail": nested["retail"],

@@ -187,7 +187,7 @@ def build_takeaways_message() -> str:
     icon = "🟢" if l >= 15 else "🔴" if l <= -15 else "🟡"
     verdict = ("Strongly Bullish" if l >= 40 else "Bullish" if l >= 15
                else "Strongly Bearish" if l <= -40 else "Bearish" if l <= -15 else "Mixed / Neutral")
-    lines = [f"{icon} <b>{verdict}</b> — Smart Money Score: <b>{'+' if l > 0 else ''}{l:g}</b>"]
+    lines = [f"{icon} <b>{verdict}</b> — Smart Money Score: <b>{'+' if l > 0 else ''}{l:.2f}</b>"]
 
     d_str = ps.get("date") or ""
     r = _days_to_monthly_expiry(d_str)

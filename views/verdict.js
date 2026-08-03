@@ -4,19 +4,51 @@ NFOD.views.verdict = (function () {
   let cached = null;
   function biasCls(b) { return /BULLISH/i.test(b || "") ? "bullish" : /BEARISH/i.test(b || "") ? "bearish" : "neutral"; }
 
-  function execBanner(mf) {
+  function scoreEntry(state) {
+    // Per-date score history emitted by the engine; falls back to the live
+    // snapshot for the latest date when history is absent (stale payload).
+    const hist = (cached && cached.score_history) || [];
+    const date = state.dates[state.dateIndex];
+    const found = hist.find(h => h.date === date);
+    if (found) return found;
+    const ps = (cached && cached.participant_summary) || {};
+    if (ps.date === date) return { date: ps.date, score: ps.smart_money_score, bias: ps.bias_label, actionDesc: ps.action_desc };
+    return null;
+  }
+
+  function execBanner(mf, state) {
     const v = mf.verdict || {};
-    const score = v.score ?? mf.executive_summary?.smart_money_score ?? 0;
-    const bias = v.bias || mf.executive_summary?.bias_label || "NEUTRAL";
+    const entry = scoreEntry(state);
+    const date = state.dates[state.dateIndex];
+    if (!entry) {
+      return `<section class="verdict-banner">
+        <div class="banner-left">
+          <div class="banner-row"><span class="badge neutral">NO DATA</span>
+          <span class="banner-title">INSTITUTIONAL MARKET VERDICT</span></div>
+          <p class="banner-desc">No verdict computed for ${date}. Regenerate docs/money_flow_data.json to backfill the score history.</p>
+        </div>
+        <div class="banner-right">
+          <div class="score-label">Smart Money Score</div>
+          <div class="verdict-gauge">—</div>
+        </div>
+      </section>`;
+    }
+    const score = entry.score ?? v.score ?? mf.executive_summary?.smart_money_score ?? 0;
+    const bias = entry.bias || v.bias || mf.executive_summary?.bias_label || "NEUTRAL";
+    const actionDesc = entry.actionDesc || v.actionDesc || mf.executive_summary?.action_desc || "";
+    const psDate = (mf.participant_summary || {}).date;
+    const meta = psDate && entry.date !== psDate
+      ? `<p class="banner-meta">Historical score for ${entry.date} — detail panels below show the latest snapshot (${psDate}).</p>` : "";
     return `<section class="verdict-banner">
       <div class="banner-left">
         <div class="banner-row"><span class="badge ${biasCls(bias)}">${bias}</span>
         <span class="banner-title">INSTITUTIONAL MARKET VERDICT</span></div>
-        <p class="banner-desc">${v.actionDesc || mf.executive_summary?.action_desc || ""}</p>
+        <p class="banner-desc">${actionDesc}</p>
+        ${meta}
       </div>
       <div class="banner-right">
         <div class="score-label">Smart Money Score</div>
-        <div class="verdict-gauge ${score > 0 ? "pos-up" : score < 0 ? "pos-down" : ""}">${score > 0 ? "+" : ""}${score}</div>
+        <div class="verdict-gauge ${score > 0 ? "pos-up" : score < 0 ? "pos-down" : ""}">${score > 0 ? "+" : ""}${score.toFixed(2)}</div>
       </div>
     </section>`;
   }
@@ -130,7 +162,7 @@ NFOD.views.verdict = (function () {
         <button class="btn btn-sm retry-btn" onclick="NFOD.views.verdict.reset()">Retry</button></div>`;
       return;
     }
-    view.innerHTML = execBanner(cached) + rollsPanel(cached) + stancePanel(cached) +
+    view.innerHTML = execBanner(cached, state) + rollsPanel(cached) + stancePanel(cached) +
       convictionPanel(cached) + divergencePanel(cached) + breadthPanel(cached);
     view.querySelectorAll(".conv-tabs .tab-btn").forEach(btn => {
       btn.onclick = () => {

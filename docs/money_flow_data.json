@@ -100,6 +100,439 @@
       "client": 0.0
     }
   },
+  "score_history": [
+    {
+      "date": "02-06-2026",
+      "prev_date": null,
+      "score": 0.0,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 0,
+      "proRawScore": 0,
+      "diiRawScore": 0
+    },
+    {
+      "date": "03-06-2026",
+      "prev_date": "02-06-2026",
+      "score": 1.325000000000001,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": -25,
+      "proRawScore": 25,
+      "diiRawScore": 23
+    },
+    {
+      "date": "04-06-2026",
+      "prev_date": "03-06-2026",
+      "score": -16.0,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -16,
+      "proRawScore": 0,
+      "diiRawScore": 0
+    },
+    {
+      "date": "05-06-2026",
+      "prev_date": "04-06-2026",
+      "score": -23.0,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -18,
+      "proRawScore": 0,
+      "diiRawScore": 0
+    },
+    {
+      "date": "08-06-2026",
+      "prev_date": "05-06-2026",
+      "score": -34.325,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": -2,
+      "diiRawScore": 25
+    },
+    {
+      "date": "09-06-2026",
+      "prev_date": "08-06-2026",
+      "score": 53.125,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 0,
+      "diiRawScore": 25
+    },
+    {
+      "date": "10-06-2026",
+      "prev_date": "09-06-2026",
+      "score": -6.914999999999999,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": -1,
+      "proRawScore": -25,
+      "diiRawScore": 23
+    },
+    {
+      "date": "11-06-2026",
+      "prev_date": "10-06-2026",
+      "score": -0.9849999999999992,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": -21,
+      "proRawScore": 25,
+      "diiRawScore": 17
+    },
+    {
+      "date": "12-06-2026",
+      "prev_date": "11-06-2026",
+      "score": 58.125,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": 25
+    },
+    {
+      "date": "15-06-2026",
+      "prev_date": "12-06-2026",
+      "score": -46.925,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -23,
+      "diiRawScore": 25
+    },
+    {
+      "date": "16-06-2026",
+      "prev_date": "15-06-2026",
+      "score": 11.875,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 25,
+      "proRawScore": 0,
+      "diiRawScore": -25
+    },
+    {
+      "date": "17-06-2026",
+      "prev_date": "16-06-2026",
+      "score": -10.0,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": -25,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "18-06-2026",
+      "prev_date": "17-06-2026",
+      "score": -7.0,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 5,
+      "proRawScore": -17,
+      "diiRawScore": -16
+    },
+    {
+      "date": "19-06-2026",
+      "prev_date": "18-06-2026",
+      "score": -37.1,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": -21,
+      "diiRawScore": 20
+    },
+    {
+      "date": "22-06-2026",
+      "prev_date": "19-06-2026",
+      "score": -14.25,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": -22,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "23-06-2026",
+      "prev_date": "22-06-2026",
+      "score": -29.125,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -17,
+      "proRawScore": -25,
+      "diiRawScore": 25
+    },
+    {
+      "date": "24-06-2026",
+      "prev_date": "23-06-2026",
+      "score": 34.0,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 4,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "25-06-2026",
+      "prev_date": "24-06-2026",
+      "score": 7.375,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 25,
+      "proRawScore": -25,
+      "diiRawScore": -5
+    },
+    {
+      "date": "29-06-2026",
+      "prev_date": "25-06-2026",
+      "score": -45.225,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -25,
+      "diiRawScore": -19
+    },
+    {
+      "date": "30-06-2026",
+      "prev_date": "29-06-2026",
+      "score": 34.875,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 17,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "01-07-2026",
+      "prev_date": "30-06-2026",
+      "score": 19.0,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 4,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "02-07-2026",
+      "prev_date": "01-07-2026",
+      "score": 67.6,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": 24
+    },
+    {
+      "date": "03-07-2026",
+      "prev_date": "02-07-2026",
+      "score": -28.0,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -8,
+      "proRawScore": -25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "06-07-2026",
+      "prev_date": "03-07-2026",
+      "score": 55.0,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "07-07-2026",
+      "prev_date": "06-07-2026",
+      "score": 13.290000000000001,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 18,
+      "proRawScore": -25,
+      "diiRawScore": 21
+    },
+    {
+      "date": "08-07-2026",
+      "prev_date": "07-07-2026",
+      "score": -54.4,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -24,
+      "diiRawScore": 0
+    },
+    {
+      "date": "09-07-2026",
+      "prev_date": "08-07-2026",
+      "score": 45.0,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "10-07-2026",
+      "prev_date": "09-07-2026",
+      "score": 21.6,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 25,
+      "proRawScore": 0,
+      "diiRawScore": -16
+    },
+    {
+      "date": "13-07-2026",
+      "prev_date": "10-07-2026",
+      "score": 11.725000000000001,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 25,
+      "proRawScore": -9,
+      "diiRawScore": -15
+    },
+    {
+      "date": "14-07-2026",
+      "prev_date": "13-07-2026",
+      "score": -25.0,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": 0,
+      "diiRawScore": 0
+    },
+    {
+      "date": "15-07-2026",
+      "prev_date": "14-07-2026",
+      "score": -15.4,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": 16,
+      "diiRawScore": 0
+    },
+    {
+      "date": "16-07-2026",
+      "prev_date": "15-07-2026",
+      "score": 11.925,
+      "bias": "NEUTRAL / SIDEWAYS",
+      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+      "fiiRawScore": 25,
+      "proRawScore": -17,
+      "diiRawScore": -15
+    },
+    {
+      "date": "17-07-2026",
+      "prev_date": "16-07-2026",
+      "score": 41.875,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "20-07-2026",
+      "prev_date": "17-07-2026",
+      "score": -55.0,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "21-07-2026",
+      "prev_date": "20-07-2026",
+      "score": -48.125,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -25,
+      "diiRawScore": 25
+    },
+    {
+      "date": "22-07-2026",
+      "prev_date": "21-07-2026",
+      "score": -25.0,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": 25,
+      "diiRawScore": 0
+    },
+    {
+      "date": "23-07-2026",
+      "prev_date": "22-07-2026",
+      "score": -16.875,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "24-07-2026",
+      "prev_date": "23-07-2026",
+      "score": 37.5,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 20,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "27-07-2026",
+      "prev_date": "24-07-2026",
+      "score": 21.475,
+      "bias": "MODERATE BULLISH",
+      "actionDesc": "Net positive institutional flows with mild Put short additions.",
+      "fiiRawScore": 25,
+      "proRawScore": -9,
+      "diiRawScore": -25
+    },
+    {
+      "date": "28-07-2026",
+      "prev_date": "27-07-2026",
+      "score": -59.4,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -25,
+      "diiRawScore": -16
+    },
+    {
+      "date": "29-07-2026",
+      "prev_date": "28-07-2026",
+      "score": 41.875,
+      "bias": "HIGH CONFIDENCE BULLISH",
+      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+      "fiiRawScore": 25,
+      "proRawScore": 25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "30-07-2026",
+      "prev_date": "29-07-2026",
+      "score": -19.875,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": 23,
+      "proRawScore": -25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "31-07-2026",
+      "prev_date": "30-07-2026",
+      "score": -19.075,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": 7,
+      "proRawScore": -17,
+      "diiRawScore": -25,
+      "ivModifier": 0.0
+    }
+  ],
   "verdict": {
     "score": -19.075,
     "bias": "MODERATE BEARISH",
@@ -251,12 +684,6 @@
       "traps_and_squeezes": [
         {
           "type": "CALL_SQUEEZE",
-          "strike": 24100,
-          "badge": "CALL WRITER SQUEEZE",
-          "desc": "Bears forced to cover CE at 24100 as LTP (24,383.6) crossed above."
-        },
-        {
-          "type": "CALL_SQUEEZE",
           "strike": 24200,
           "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 24200 as LTP (24,383.6) crossed above."
@@ -266,6 +693,12 @@
           "strike": 24250,
           "badge": "CALL WRITER SQUEEZE",
           "desc": "Bears forced to cover CE at 24250 as LTP (24,383.6) crossed above."
+        },
+        {
+          "type": "CALL_SQUEEZE",
+          "strike": 24300,
+          "badge": "CALL WRITER SQUEEZE",
+          "desc": "Bears forced to cover CE at 24300 as LTP (24,383.6) crossed above."
         }
       ]
     },
