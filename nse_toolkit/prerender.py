@@ -11,6 +11,7 @@ so data.js can read it synchronously instead of fetching.
 """
 
 import json
+import math
 import os
 import re
 import html as html_lib
@@ -62,7 +63,7 @@ def _to_float(v: Any) -> float | None:
 def format_indian_num(v: Any) -> str:
     """Match NFOD.utils.formatIndianNum: en-IN grouping, up to 2 decimals, '-' for null."""
     v = _to_float(v)
-    if v is None:
+    if v is None or math.isnan(v):
         return "-"
     if v == 0:
         return "0"
@@ -601,7 +602,17 @@ def _inline_json(html: str) -> str:
         except Exception as e:
             print(f"[PRERENDER] Cannot inline money_flow_data.json: {e}")
 
-    html = html.replace(_JSON_MARKER, json_str)
+    if _JSON_MARKER in html:
+        html = html.replace(_JSON_MARKER, json_str)
+    else:
+        # Marker already replaced on a previous run — find and replace the
+        # content between the inline script tags so subsequent runs update it.
+        html = re.sub(
+            r'(<script type="application/json" id="inline-money-flow">).*?(</script>)',
+            rf'\1{json_str}\2' if json_str else r'\g<0>',
+            html,
+            flags=re.DOTALL,
+        )
 
     # JSON-LD
     ps = None

@@ -113,15 +113,20 @@ def fetch_fdcp(days: int = FDCP_DAYS) -> int:
     new_df = pd.concat(frames, ignore_index=True, axis=0)
     # Strip trailing whitespace from headers (NSE CSV has padded columns)
     new_df.columns = new_df.columns.str.strip()
+    new_df = new_df.loc[:, ~new_df.columns.duplicated()]
 
     # Append to existing CSV, deduplicating by (Client Type, Date)
     if os.path.exists(FDCP_FILE):
         existing_df = pd.read_csv(FDCP_FILE)
         existing_df.columns = existing_df.columns.str.strip()
+        existing_df = existing_df.loc[:, ~existing_df.columns.duplicated()]
         combined = pd.concat([existing_df, new_df], ignore_index=True)
         # Keep the last occurrence of each (Client Type, Date) pair
         combined = combined.drop_duplicates(subset=["Client Type", "Date"], keep="last")
-        combined = combined.sort_values(["Date", "Client Type"]).reset_index(drop=True)
+        # Sort chronologically by parsed date (DD-MM-YYYY string sort mis-orders across months)
+        combined = combined.assign(
+            _dt=pd.to_datetime(combined["Date"], format="%d-%m-%Y")
+        ).sort_values(["_dt", "Client Type"]).drop(columns="_dt").reset_index(drop=True)
         new_rows = len(combined) - len(existing_df)
         combined.to_csv(FDCP_FILE, index=False)
         _log(f"[FDCP] Merged {len(new_df)} new rows, {new_rows} added (total {len(combined)} rows).")
@@ -338,7 +343,8 @@ def fetch_ohlc(days: int = OHLC_DAYS) -> list[dict]:
     end_date = (datetime.now() + timedelta(days=1)).date()
     if latest_date:
         start_date = datetime.strptime(latest_date, "%Y-%m-%d").date() + timedelta(days=1)
-        if start_date > end_date:
+        # Already have today's data — nothing to fetch
+        if datetime.strptime(latest_date, "%Y-%m-%d").date() >= datetime.now().date():
             _log(f"[OHLC] Already have latest data (last: {latest_date}). Nothing to fetch.")
             return existing_records
     else:
