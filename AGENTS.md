@@ -14,7 +14,7 @@ The system is a two-stack design: a **Python 3.14 pipeline** (fetch → compute 
 
 ```mermaid
 graph TD
-    A[NSE Archives / yfinance / jugaad-data API] -->|fetcher.py| B[Raw Ingestion: FDCP CSV, Option Chains, OHLC]
+    A[NSE Archives / yfinance / nsefetch API] -->|fetcher.py| B[Raw Ingestion: FDCP CSV, Option Chains, OHLC]
     B -->|engine.py| C[Analytical Verdict Engine]
     C -->|Generates JSON| D[docs/ & embedded CSV in data.js]
     C -->|telegram.py| E[Telegram Alerts]
@@ -22,9 +22,9 @@ graph TD
 ```
 
 ### Pipeline (`main.py`), in exact phase order:
-1. **fdcp** — `fetch_fdcp()` pulls participant OI CSVs from `https://archives.nseindia.com/content/nsccl/fao_participant_oi_{DDMMYYYY}.csv` incrementally: skips dates already in `FDCP_Data.csv`, walking back from today until it hits an existing date (caught up) or `days` (default 60) is exhausted. Appends new rows with dedup by `(Client Type, Date)`, then `update_embedded_csv()` rewrites the `_EMBEDDED_CSV` string inside `data.js`.
-2. **oc** — `fetch_option_chain()` pulls full option-chain snapshots via `jugaad-data` (`NSELive.index_option_chain` / `NSELive.equities_option_chain`) into `docs/nse_data.json` + daily archives `docs/oc_history/YYYY-MM-DD.json` (30-day retention). **Engine-only data — the frontend never reads it.**
-3. **ohlc** — `fetch_ohlc()` pulls `^NSEI` history via `yfinance`, appending only dates after the latest record in `docs/ohlc_data.json` (falls back to `OHLC_DAYS` window on cold start).
+1. **fdcp** — `fetch_fdcp()` pulls participant OI CSVs from `https://archives.nseindia.com/content/nsccl/fao_participant_oi_{DDMMYYYY}.csv` into `FDCP_Data.csv`, then `update_embedded_csv()` rewrites the `_EMBEDDED_CSV` string inside `data.js`.
+2. **oc** — `fetch_option_chain()` pulls full option-chain snapshots via `nsefetch` (`NSEHttpClient`) into `docs/nse_data.json` + daily archives `docs/oc_history/YYYY-MM-DD.json` (30-day retention). **Engine-only data — the frontend never reads it.**
+3. **ohlc** — `fetch_ohlc()` pulls `^NSEI` history via `yfinance` into `docs/ohlc_data.json`.
 4. **engine** — `run_engine()` combines FDCP + option chain + history → `docs/money_flow_data.json`.
 5. **telegram** — `send_gross_oi_telegram()` posts chunked HTML messages (≤4000 chars) to the Telegram Bot API.
 
@@ -73,11 +73,11 @@ There is **no build step, no package.json, no make targets**. CI runs `python ma
 ### Python
 - **Types**: modern syntax throughout — `list[str]`, `dict | None` (`X | None`); `from typing import Optional` still used in `fetcher.py`.
 - **Logging**: plain `print` with `[ENGINE]`/`[FDCP]`/`[OC]`/`[OHLC]`/`[TELEGRAM]` prefix tags; thread-safe `_log()` in fetcher. No `logging` module.
-- **Error handling**: broad `except Exception` with graceful degradation — return `None`/`""`/`False` and continue (pipeline must not hard-fail on a missing/empty feed). Anti-bot detection: substring match on lowercased exception (`"blocked"`, `"403"`, `"too many"`, `"rate limit"`).
-- **Concurrency**: `ThreadPoolExecutor` + `as_completed` for option-chain fetch only; a `threading.Event` pair (`session_blocked`/`session_reset`) coordinates anti-bot cooldown. **Thread-local `NSELive` instances** (`_thread_local` + `_get_nse_live()` in `fetcher.py`) avoid sharing jugaad-data sessions across threads — each worker bootstraps its own. On block, the first responder clears its stale session so the next call gets a fresh `NSELive`. FDCP/OHLC are sequential.
+- **Error handling**: broad `except Exception` with graceful degradation — return `None`/`""`/`False` and continue (pipeline must not hard-fail on a missing/empty feed). Anti-bot detection: substring match on lowercased exception (`"blocked"`, `"403"`, `"circuit breaker"`, `"half-open"`).
+- **Concurrency**: `ThreadPoolExecutor` + `as_completed` for option-chain fetch only; a `threading.Event` pair (`session_blocked`/`session_reset`) coordinates anti-bot cooldown + `client.bootstrap_session(force=True)`. FDCP/OHLC are sequential.
 - **Naming**: `snake_case` functions, `SCREAMING_SNAKE` constants, docstrings on public functions. Double-quoted strings.
 - **JSON encoding**: run everything through `config.clean_val()` before `json.dump` (converts numpy scalars, `NaN`→`None`, recurses).
-- **Config**: every tunable (weights `FII 1.0 / PRO 0.6 / DII 0.4`, thresholds, IV bounds, ~210-symbol `ALL_FNO_STOCKS` static list) lives in `nse_toolkit/config.py` — never hardcode a new threshold elsewhere. `fetcher.py` `get_fno_symbols()` fetches the live F&O symbol list from NSE master-quote via jugaad-data's session, falling back to `ALL_FNO_STOCKS` on failure.
+- **Config**: every tunable (weights `FII 1.0 / PRO 0.6 / DII 0.4`, thresholds, IV bounds, ~200-symbol list) lives in `nse_toolkit/config.py` — never hardcode a new threshold elsewhere.
 - **Dates**: dayfirst everywhere. FDCP dates `DD-MM-YYYY`; OC archives keyed `%Y-%m-%d` in **IST (UTC+5:30 hardcoded)** while `cleanup_old_history` compares UTC; expiry strings `DD-MMM-YYYY`.
 
 ### JavaScript
@@ -101,22 +101,22 @@ There is **no build step, no package.json, no make targets**. CI runs `python ma
 ## Important Files
 - `main.py` — CLI entry; `python main.py all` is what CI runs.
 - `nse_toolkit/config.py` — all constants + `clean_val`/`sort_dates_chronologically`; imported by every module.
-- `nse_toolkit/fetcher.py` — all network I/O; exports `fetch_fdcp` (incremental append), `fetch_option_chain` (jugaad-data NSELive, thread-local sessions, ThreadPoolExecutor + anti-bot Events), `fetch_ohlc` (incremental append), `update_embedded_csv`, `cleanup_old_history`, `get_fno_symbols`.
+- `nse_toolkit/fetcher.py` — all network I/O; exports `fetch_fdcp`, `fetch_option_chain`, `fetch_ohlc`, `update_embedded_csv`, `cleanup_old_history`.
 - `nse_toolkit/engine.py` — verdict engine: `run_engine`, `load_participant_data`, `compute_iv_modifier`, plus rolls/breadth/divergence/conviction analyses.
-- `nse_toolkit/telegram.py` — Telegram alert builder/sender; reads `FDCP_Data.csv` for KPI cards + 6 instrument tables, and `docs/money_flow_data.json` (`participant_summary`) only for Key Takeaways. Mirrors `views/gross.js` math exactly.
+- `nse_toolkit/telegram.py` — Telegram builders/sender; reads `docs/money_flow_data.json` (flat `participant_summary` only).
 - `index.html` — dashboard entry; defines the shell ids and the 8-script load order.
 - `app.js` — state + tab routing + chrome (date nav, theme, menu, `?debug=1` logging).
 - `data.js` — embedded `_EMBEDDED_CSV` + `NFOD.data` fetchers; the only place `docs/*.json` URLs are constructed.
 - `views/gross.js`, `views/verdict.js`, `views/charts.js` — the three renderers.
 - `lib/utils.js` — shared pure helpers; `lib/sparkline.js`, `lib/calendar.js` — components.
-- `styles.css` — all theming/layout (605 lines, dark-first tokens, print stylesheet).
+- `styles.css` — all theming/layout (578 lines, dark-first tokens, print stylesheet).
 - `requirements.txt` — exact pins (below).
 - `.github/workflows/data_update_and_deploy.yml` — the only CI workflow.
 
 ---
 
 ## Runtime/Tooling Preferences
-- **Python**: 3.14 required; exact pins in `requirements.txt`: `pandas==3.0.5`, `requests==2.34.2`, `jugaad-data==0.35.1`, `yfinance==1.5.2`. `jugaad-data` is an **open-source PyPI package** providing `NSELive` for NSE's new website API — replaces the private `nsefetch` package. jugaad-data is **not thread-safe**; `fetcher.py` uses `threading.local()` for per-worker `NSELive` instances. Keep pins exact; no dev/test dependencies declared.
+- **Python**: 3.14 required; exact pins in `requirements.txt`: `pandas==3.0.5`, `requests==2.34.2`, `nsefetch==0.1.0`, `yfinance==1.5.2`. `nsefetch==0.1.0` is a **private package** providing `NSEHttpClient`/`load_settings` with an internal circuit breaker — `OC_BREAKER_*` config constants exist only to keep it from hard-opening during burst 403s. Keep pins exact; no dev/test dependencies declared.
 - **Frontend**: zero-dependency ES6 vanilla JS, classic `<script>` tags, no Node/Bun/npm/TypeScript/build step. Only external resources: Google Fonts (`Inter`, `JetBrains Mono`) and dynamically-injected unversioned ApexCharts CDN (`https://cdn.jsdelivr.net/npm/apexcharts`). Chart.js is **not** used.
 - **Hosting**: GitHub Pages serving repo root; CI runs on `ubuntu-latest` with secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
 - **Git**: workflow uses `actions/checkout@v4`, `setup-python@v5`, `configure-pages@v4`, `upload-pages-artifact@v3`, `deploy-pages@v4`.
@@ -134,7 +134,7 @@ There is **no build step, no package.json, no make targets**. CI runs `python ma
 ## Gotchas (read before editing)
 1. **`views/charts.js` was repaired (2026-08-02)** — the old file failed to parse so the Charts tab silently no-oped. The live view now renders `NFOD.views.charts.render(state)`: ApexCharts candlestick + call/put line series on a uniform 1-day x-axis (`CHART_BASE` epoch origin), OHLC dates normalized to `DD-MM-YYYY`, charts destroyed and rebuilt on every re-render, and `ensureApex()` error-card fallback when the CDN is unreachable.
 2. **`_EMBEDDED_CSV` boundary markers are contract**: `fetcher.py` `update_embedded_csv()` rewrites text between `var _EMBEDDED_CSV="` and `";let rawCSVData=` in `data.js`. Changing surrounding code or reformatting the blob (header says "Do not reformat") silently breaks regeneration; `date_count = len(data_lines) // 5` assumes 5 rows/date.
-3. **Dead config**: `FDCP_WORKERS = 5` does nothing (FDCP fetch is sequential). `main.py --dry-run` duplicates engine scoring math inline — engine changes can drift it. `nsefetch` and its `OC_BREAKER_*` config constants have been removed (replaced by jugaad-data).
+3. **Dead config**: `FDCP_WORKERS = 5` does nothing (FDCP fetch is sequential). `main.py --dry-run` duplicates engine scoring math inline — engine changes can drift it.
 4. **Telegram mirrors the dashboard by design**: `telegram.py` reimplements the Gross OI math (KPI bias ±20000, instrument/participant names, last-Tuesday expiry). It must stay in sync with `views/gross.js` and `lib/utils.js`; changing one side desyncs alerts. `MAX_MSG = 4000` chunking.
 5. **Timezone mix**: OC archive filenames use IST, history cleanup compares UTC, engine DTE uses naive local time. Be deliberate when touching date logic.
 6. **`load_participant_data`/`run_engine` degrade to `None`/no-output** when `FDCP_Data.csv`/`nse_data.json` are missing — downstream treats that as empty output, not error.
