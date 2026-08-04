@@ -46,7 +46,7 @@ PARTICIPANTS = ["Client", "DII", "FII", "Pro"]
 GREEN, RED, NEUT = "\U0001F7E2", "\U0001F534", "⚪"  # 🟢 🔴 ⚪
 
 
-def _inr(v: float) -> str:
+def _inr(v: float | None) -> str:
     """Indian-comma number, sign preserved. '-' when None."""
     if v is None:
         return "-"
@@ -92,20 +92,16 @@ def build_kpi_message(date: str, rows: dict) -> str:
     p = rows.get(prev_date) if prev_date else None
 
     fii_t, fii_p = t.get("FII"), (p or {}).get("FII")
-    fii_fut_net = (_chg(fii_t, fii_p, "Future Index Long")
-                   - _chg(fii_t, fii_p, "Future Index Short")) if fii_t and fii_p else None
+    fii_fut_net = (_chg(fii_t, fii_p, "Future Index Long") or 0) - (_chg(fii_t, fii_p, "Future Index Short") or 0) if fii_t and fii_p else None
 
     cl_t, cl_p = t.get("Client"), (p or {}).get("Client")
-    client_calls = (_chg(cl_t, cl_p, "Option Index Call Long")
-                    - _chg(cl_t, cl_p, "Option Index Call Short")) if cl_t and cl_p else None
+    client_calls = (_chg(cl_t, cl_p, "Option Index Call Long") or 0) - (_chg(cl_t, cl_p, "Option Index Call Short") or 0) if cl_t and cl_p else None
 
     pr_t, pr_p = t.get("Pro"), (p or {}).get("Pro")
-    pro_calls = (_chg(pr_t, pr_p, "Option Index Call Long")
-                 - _chg(pr_t, pr_p, "Option Index Call Short")) if pr_t and pr_p else None
+    pro_calls = (_chg(pr_t, pr_p, "Option Index Call Long") or 0) - (_chg(pr_t, pr_p, "Option Index Call Short") or 0) if pr_t and pr_p else None
     # Puts: net short change (short - long); writing/selling puts = bullish,
     # net long put buying = bearish protection.
-    pro_puts = (_chg(pr_t, pr_p, "Option Index Put Short")
-                - _chg(pr_t, pr_p, "Option Index Put Long")) if pr_t and pr_p else None
+    pro_puts = (_chg(pr_t, pr_p, "Option Index Put Short") or 0) - (_chg(pr_t, pr_p, "Option Index Put Long") or 0) if pr_t and pr_p else None
 
     bias = (fii_fut_net or 0) + (pro_calls or 0) + (pro_puts or 0)
     if bias > 20000:
@@ -301,7 +297,7 @@ def build_table_message(title, lc, sc, date, prev, prev2, rows, icon):
         lg = _chg(rt, re_, lc)
         sh = _chg(rt, re_, sc)
         net = lg - sh if (lg is not None and sh is not None) else None
-        lines.append(f"{part:<7}{_inr(lg):>12}{_inr(sh):>12}{_inr(net):>13}")
+        lines.append(f"{part:<7}{_inr(lg):>12}{_inr(sh):>12}{_inr(net):>13}")  # type: ignore[arg-type]
     lines.append("</pre>")
     lines.append("")
     return "\n".join(lines)

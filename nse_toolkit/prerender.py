@@ -194,17 +194,17 @@ def render_kpis(tm: dict, pm: dict | None) -> str:
 
     fii_fut = None
     if fii_t and fii_p:
-        fii_fut = _chg(fii_t, fii_p, "Future Index Long") - _chg(fii_t, fii_p, "Future Index Short")
+        fii_fut = (_chg(fii_t, fii_p, "Future Index Long") or 0) - (_chg(fii_t, fii_p, "Future Index Short") or 0)
 
     cl_calls = None
     if client_t and client_p:
-        cl_calls = _chg(client_t, client_p, "Option Index Call Long") - _chg(client_t, client_p, "Option Index Call Short")
+        cl_calls = (_chg(client_t, client_p, "Option Index Call Long") or 0) - (_chg(client_t, client_p, "Option Index Call Short") or 0)
 
     pr_calls = None
     pr_puts = None
     if pro_t and pro_p:
-        pr_calls = _chg(pro_t, pro_p, "Option Index Call Long") - _chg(pro_t, pro_p, "Option Index Call Short")
-        pr_puts = _chg(pro_t, pro_p, "Option Index Put Short") - _chg(pro_t, pro_p, "Option Index Put Long")
+        pr_calls = (_chg(pro_t, pro_p, "Option Index Call Long") or 0) - (_chg(pro_t, pro_p, "Option Index Call Short") or 0)
+        pr_puts = (_chg(pro_t, pro_p, "Option Index Put Short") or 0) - (_chg(pro_t, pro_p, "Option Index Put Long") or 0)
 
     bias = (fii_fut or 0) + (pr_calls or 0) + (pr_puts or 0)
     bias_txt = "BULLISH" if bias > 20000 else "BEARISH" if bias < -20000 else "NEUTRAL / MIXED"
@@ -315,7 +315,7 @@ def render_right_rail(tm: dict, pm: dict | None) -> str:
                 rp = pm.get(p)
                 if not r or not rp:
                     continue
-                net = _chg(r, rp, inst["l"]) - _chg(r, rp, inst["s"])
+                net = (_chg(r, rp, inst["l"]) or 0) - (_chg(r, rp, inst["s"]) or 0)
                 if net and net != 0:
                     net_actions.append({"participant": p, "instrument": inst["title"], "action": "Bought" if net > 0 else "Sold", "net": net})
 
