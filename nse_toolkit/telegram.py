@@ -17,7 +17,6 @@ False so the pipeline can keep going without failing.
 
 import html
 import json
-import math
 import os
 import urllib.parse
 import urllib.request
@@ -48,8 +47,8 @@ GREEN, RED, NEUT = "\U0001F7E2", "\U0001F534", "⚪"  # 🟢 🔴 ⚪
 
 
 def _inr(v: float | None) -> str:
-    """Indian-comma number, sign preserved. '-' when None or NaN."""
-    if v is None or math.isnan(v):
+    """Indian-comma number, sign preserved. '-' when None."""
+    if v is None:
         return "-"
     return f"{abs(int(v)):,}" if v >= 0 else f"-{abs(int(v)):,}"
 
