@@ -369,11 +369,11 @@ def fetch_ohlc(days: int = OHLC_DAYS) -> list[dict]:
                 d = str(idx).split()[0]
             new_records.append({
                 "date": d,
-                "open": round(float(row["Open"]), 2),  # pyright: ignore[reportArgumentType]
-                "high": round(float(row["High"]), 2),  # pyright: ignore[reportArgumentType]
-                "low": round(float(row["Low"]), 2),  # pyright: ignore[reportArgumentType]
-                "close": round(float(row["Close"]), 2),  # pyright: ignore[reportArgumentType]
-                "volume": int(row["Volume"]) if bool(pd.notna(row["Volume"])) else 0,  # pyright: ignore[reportArgumentType]
+                "open": round(float(row["Open"]), 2),  # type: ignore[reportArgumentType]
+                "high": round(float(row["High"]), 2),  # type: ignore[reportArgumentType]
+                "low": round(float(row["Low"]), 2),  # type: ignore[reportArgumentType]
+                "close": round(float(row["Close"]), 2),  # type: ignore[reportArgumentType]
+                "volume": int(row["Volume"]) if bool(pd.notna(row["Volume"])) else 0,  # type: ignore[reportArgumentType]
             })
         _log(f"  {new_records[0]['date']} -> {new_records[-1]['date']} ({len(new_records)} new records)")
 
