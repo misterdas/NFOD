@@ -32,6 +32,10 @@ NFOD.data = (function () {
     return map;
   }
   async function loadMoneyFlow() {
+    const inline = document.getElementById("inline-money-flow");
+    if (inline && inline.textContent && inline.textContent.trim()) {
+      try { return JSON.parse(inline.textContent.trim()); } catch(e) { return null; }
+    }
     try {
       const res = await fetch(NFOD.utils.cacheBust("docs/money_flow_data.json"));
       if (!res.ok) return null;

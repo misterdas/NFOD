@@ -8,14 +8,15 @@ Usage:
     python main.py ohlc                   # Fetch NIFTY OHLC data only
     python main.py engine                 # Run verdict engine only
     python main.py engine --dry-run       # Run engine in dry-run (diagnostics) mode
+    python main.py prerender              # Prerender static HTML into index.html
     python main.py telegram               # Send Gross OI page to Telegram
 """
 
 import argparse
-
 from nse_toolkit.fetcher import fetch_fdcp, fetch_option_chain, fetch_ohlc, update_embedded_csv
 from nse_toolkit.engine import run_engine, load_participant_data, compute_iv_modifier
 from nse_toolkit.telegram import send_gross_oi_telegram
+from nse_toolkit.prerender import prerender_index
 from nse_toolkit.config import SCORE_CLIP, FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT, NSE_DATA_FILE
 from nse_toolkit.config import FII_FUT_THRESHOLD, FII_OPT_THRESHOLD, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD
 import json
@@ -98,6 +99,10 @@ def cmd_engine(dry_run: bool = False):
         run_engine()
 
 
+def cmd_prerender():
+    prerender_index()
+
+
 def cmd_telegram():
     send_gross_oi_telegram()
 
@@ -111,7 +116,9 @@ def cmd_all():
     cmd_ohlc()
     print("\n=== Phase 4: Verdict Engine ===")
     cmd_engine()
-    print("\n=== Phase 5: Telegram Gross OI ===")
+    print("\n=== Phase 5: Prerender Static HTML ===")
+    cmd_prerender()
+    print("\n=== Phase 6: Telegram Gross OI ===")
     cmd_telegram()
     print("\n=== All phases complete! ===")
 
@@ -126,7 +133,7 @@ def main():
         "command",
         nargs="?",
         default="all",
-        choices=["all", "fdcp", "oc", "ohlc", "engine", "telegram"],
+        choices=["all", "fdcp", "oc", "ohlc", "engine", "prerender", "telegram"],
         help="Pipeline phase to run (default: all)",
     )
     parser.add_argument(
@@ -147,6 +154,8 @@ def main():
         cmd_ohlc()
     elif args.command == "engine":
         cmd_engine(dry_run=args.dry_run)
+    elif args.command == "prerender":
+        cmd_prerender()
     elif args.command == "telegram":
         cmd_telegram()
 

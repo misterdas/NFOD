@@ -114,7 +114,10 @@ button:disabled { cursor: default; }
    (early FCP). */
 body:not(.ready) .app-main,
 body:not(.ready) .app-footer { visibility: hidden; }
-
+/* Prerendered static fallback for AI readers and no-JS users — overrides parent
+   visibility:hidden (CSS visibility:visible on a child re-enables rendering).
+   When app.js loads, view.innerHTML replaces the section content, wiping this. */
+.noscript-fallback { visibility: visible; }
 .app-footer {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap;
   padding: var(--space-3) var(--space-5);
