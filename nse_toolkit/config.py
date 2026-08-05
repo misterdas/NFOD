@@ -9,7 +9,7 @@ import numpy as np
 
 # ── Paths ──────────────────────────────────────────────────────────────────
 OUTPUT_DIR = "docs"
-FDCP_FILE = "FDCP_Data.csv"
+FDCP_FILE = os.path.join(OUTPUT_DIR, "FDCP_Data.csv")
 NSE_DATA_FILE = os.path.join(OUTPUT_DIR, "nse_data.json")
 HISTORY_DIR = os.path.join(OUTPUT_DIR, "oc_history")
 OHLC_FILE = os.path.join(OUTPUT_DIR, "ohlc_data.json")

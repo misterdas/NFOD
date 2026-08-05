@@ -13,6 +13,9 @@ env/
 .env
 .env.*
 
+# Regeneratable pipeline outputs (not served by Pages; rebuilt by main.py fdcp)
+docs/FDCP_Data.csv
+
 # Editors / IDEs
 .vscode/
 .idea/
