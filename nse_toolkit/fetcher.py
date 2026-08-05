@@ -13,6 +13,9 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
 from typing import Optional
 
 import pandas as pd
@@ -49,13 +52,36 @@ def _log(msg: str):
 
 # ── FDCP Fetch ─────────────────────────────────────────────────────────────
 
+FDCP_COLUMNS = [
+    "Client Type", "Future Index Long", "Future Index Short", "Future Stock Long",
+    "Future Stock Short", "Option Index Call Long", "Option Index Put Long",
+    "Option Index Call Short", "Option Index Put Short", "Option Stock Call Long",
+    "Option Stock Put Long", "Option Stock Call Short", "Option Stock Put Short",
+    "Total Long Contracts", "Total Short Contracts", "Date",
+]
+
+
 def _fetch_fdcp_single_date(date_str: str) -> Optional[pd.DataFrame]:
     """Fetch FDCP CSV for a single date and return a DataFrame with a Date column."""
     url = f"https://archives.nseindia.com/content/nsccl/fao_participant_oi_{date_str}.csv"
     try:
         resp = requests.get(url, timeout=15)
-        df = pd.read_csv(io.StringIO(resp.content.decode("utf-8")), skiprows=1)
+        content = resp.content.decode("utf-8")
+        lines = content.splitlines()
+        header_line = next(i for i, l in enumerate(lines) if "Client Type" in l)
+        df = pd.read_csv(io.StringIO(content), skiprows=header_line)
+        df.columns = df.columns.str.strip()
+        df = df.loc[:, ~df.columns.duplicated()]
         df["Date"] = datetime.strptime(date_str, "%d%m%Y").strftime("%d-%m-%Y")
+        # Validate column integrity — reject partial/misaligned parses
+        if list(df.columns) != FDCP_COLUMNS:
+            missing = set(FDCP_COLUMNS) - set(df.columns)
+            _log(f"  FDCP: Column mismatch for {date_str} — missing: {missing}")
+            return None
+        # Guard against empty result sets
+        if df.empty:
+            _log(f"  FDCP: Empty DataFrame for {date_str}")
+            return None
         _log(f"  FDCP: Done for {df['Date'].iloc[0]}")
         return df
     except Exception:
@@ -70,17 +96,26 @@ def fetch_fdcp(days: int = FDCP_DAYS) -> int:
     it hits an existing date (caught up) or `days` is exhausted.
     Returns the number of new rows added.
     """
-    end = datetime.now()
+    end = datetime.now(timezone.utc).astimezone(IST)  # IST-aware for NSE business days
 
-    # Collect dates already saved in the CSV
+    # Collect dates already saved in the CSV (validate structure first)
     existing_dates: set[str] = set()
     if os.path.exists(FDCP_FILE):
         try:
             existing_df_check = pd.read_csv(FDCP_FILE)
             existing_df_check.columns = existing_df_check.columns.str.strip()
-            existing_dates = set(existing_df_check["Date"].unique())
-        except Exception:
-            pass
+            existing_df_check = existing_df_check.loc[:, ~existing_df_check.columns.duplicated()]
+            if "Date" in existing_df_check.columns and "Client Type" in existing_df_check.columns:
+                dates_in_file = set(existing_df_check["Date"].unique())
+                dup_count = len(existing_df_check) - existing_df_check[["Client Type", "Date"]].drop_duplicates().shape[0]
+                if dup_count:
+                    _log(f"[FDCP] WARNING: existing CSV has {dup_count} duplicate (Client Type, Date) rows — corruption likely")
+                existing_dates = dates_in_file
+            else:
+                _log("[FDCP] WARNING: existing CSV has missing columns — will overwrite")
+        except Exception as e:
+            _log(f"[FDCP] WARNING: could not read existing CSV ({e}) — will overwrite")
+            existing_dates = set()
 
     # Walk back from today, skipping dates already saved
     dates_to_fetch: list[str] = []
@@ -111,25 +146,35 @@ def fetch_fdcp(days: int = FDCP_DAYS) -> int:
         return 0
 
     new_df = pd.concat(frames, ignore_index=True, axis=0)
-    # Strip trailing whitespace from headers (NSE CSV has padded columns)
     new_df.columns = new_df.columns.str.strip()
     new_df = new_df.loc[:, ~new_df.columns.duplicated()]
+
+    # Enforce canonical column order on new data
+    new_df = new_df.reindex(columns=FDCP_COLUMNS)
 
     # Append to existing CSV, deduplicating by (Client Type, Date)
     if os.path.exists(FDCP_FILE):
         existing_df = pd.read_csv(FDCP_FILE)
         existing_df.columns = existing_df.columns.str.strip()
         existing_df = existing_df.loc[:, ~existing_df.columns.duplicated()]
-        combined = pd.concat([existing_df, new_df], ignore_index=True)
-        # Keep the last occurrence of each (Client Type, Date) pair
-        combined = combined.drop_duplicates(subset=["Client Type", "Date"], keep="last")
-        # Sort chronologically by parsed date (DD-MM-YYYY string sort mis-orders across months)
-        combined = combined.assign(
-            _dt=pd.to_datetime(combined["Date"], format="%d-%m-%Y")
-        ).sort_values(["_dt", "Client Type"]).drop(columns="_dt").reset_index(drop=True)
+
+        # If existing CSV is structurally corrupt (wrong columns), start fresh
+        if list(existing_df.columns) != FDCP_COLUMNS:
+            _log("[FDCP] Existing CSV has corrupted structure — will overwrite with fresh data")
+            combined = new_df
+        else:
+            existing_df = existing_df.reindex(columns=FDCP_COLUMNS)
+            combined = pd.concat([existing_df, new_df], ignore_index=True)
+            # Keep the last occurrence of each (Client Type, Date) pair
+            combined = combined.drop_duplicates(subset=["Client Type", "Date"], keep="last")
+            # Sort chronologically by parsed date (DD-MM-YYYY string sort mis-orders across months)
+            combined = combined.assign(
+                _dt=pd.to_datetime(combined["Date"], format="%d-%m-%Y", errors="coerce")
+            ).sort_values(["_dt", "Client Type"]).drop(columns="_dt").reset_index(drop=True)
+
         new_rows = len(combined) - len(existing_df)
         combined.to_csv(FDCP_FILE, index=False)
-        _log(f"[FDCP] Merged {len(new_df)} new rows, {new_rows} added (total {len(combined)} rows).")
+        _log(f"[FDCP] Merged {len(new_df)} new rows, {max(0, new_rows)} added (total {len(combined)} rows).")
         return max(0, new_rows)
     else:
         new_df.to_csv(FDCP_FILE, index=False)
