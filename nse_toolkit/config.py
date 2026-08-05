@@ -25,6 +25,9 @@ OC_BLOCK_COOLDOWN = 5  # global pause (seconds) after an NSE anti-bot block befo
 # ── OHLC fetch defaults ────────────────────────────────────────────────────
 OHLC_DAYS = 75
 
+# ── CPR ─────────────────────────────────────────────────────────────────────
+CPR_SEND_TELEGRAM = True   # set False to stop the CPR Telegram send (Phase 7)
+
 # ── Participant weights (FII > Pro > DII > Client) ─────────────────────────
 FII_WEIGHT = 1.00
 PRO_WEIGHT = 0.60

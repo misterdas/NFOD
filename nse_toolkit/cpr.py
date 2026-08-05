@@ -18,7 +18,7 @@ import os
 import pandas as pd
 import yfinance as yf
 
-from .config import clean_val
+from .config import clean_val, CPR_SEND_TELEGRAM
 from .telegram import send_message
 
 _INDEX_YF = {
@@ -145,6 +145,10 @@ def send_cpr_telegram(symbol: str = "NIFTY") -> bool:
     Credentials from env (same as telegram.py): TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID.
     Returns False (with warning) if creds missing or CPR computation fails.
     """
+    if not CPR_SEND_TELEGRAM:
+        print("[CPR] CPR_SEND_TELEGRAM=False — skipping send.")
+        return False
+
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
     if not token or not chat_id:
