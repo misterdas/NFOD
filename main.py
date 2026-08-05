@@ -18,7 +18,7 @@ from nse_toolkit.fetcher import fetch_fdcp, fetch_option_chain, fetch_ohlc, upda
 from nse_toolkit.engine import run_engine, load_participant_data, compute_iv_modifier
 from nse_toolkit.telegram import send_gross_oi_telegram
 from nse_toolkit.prerender import prerender_index
-from nse_toolkit.cpr import get_today_cpr, get_prior_day_cpr
+from nse_toolkit.cpr import get_today_cpr, get_prior_day_cpr, send_cpr_telegram
 from nse_toolkit.config import SCORE_CLIP, FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT, NSE_DATA_FILE
 from nse_toolkit.config import FII_FUT_THRESHOLD, FII_OPT_THRESHOLD, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD
 import json
@@ -39,7 +39,7 @@ def cmd_ohlc():
 
 
 def cmd_cpr():
-    """Compute CPR for NIFTY, NIFTYBANK."""
+    """Compute CPR for NIFTY, NIFTYBANK and send today's CPR to Telegram."""
     for sym in ["NIFTY", "BANK"]:
         try:
             prior = get_prior_day_cpr(sym)
@@ -49,6 +49,8 @@ def cmd_cpr():
             print(f"  Today CPR:    P={today['pivot']:.2f} F={today['floor']:.2f} C={today['ceiling']:.2f} range={today['range']:.2f}")
         except Exception as e:
             print(f"\n{sym}: CPR computation failed — {e}")
+    # Send today's CPR for NIFTY to Telegram (creds from env; skips if missing)
+    send_cpr_telegram("NIFTY")
 
 
 def cmd_engine(dry_run: bool = False):

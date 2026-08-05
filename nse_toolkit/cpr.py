@@ -13,9 +13,13 @@ Data sources:
 For closing value use 1min, else use daily candle.
 """
 import datetime as dt
+import os
+
 import pandas as pd
 import yfinance as yf
+
 from .config import clean_val
+from .telegram import send_message
 
 _INDEX_YF = {
     "NIFTY": "^NSEI",
@@ -128,6 +132,45 @@ def get_prior_day_cpr(symbol: str = "NIFTY"):
     cpr.update({"symbol": symbol, "high": h, "low": l, "close": c,
                 "date": dt.date.today().isoformat(), "source": "prior_day"})
     return cpr
+
+
+def _fmt(v) -> str:
+    """Comma + 2-decimal number for Telegram."""
+    return f"{float(v):,.2f}"
+
+
+def send_cpr_telegram(symbol: str = "NIFTY") -> bool:
+    """Fetch today's CPR for `symbol` and send it to Telegram.
+
+    Credentials from env (same as telegram.py): TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID.
+    Returns False (with warning) if creds missing or CPR computation fails.
+    """
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if not token or not chat_id:
+        print("[CPR] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set — skipping send.")
+        return False
+
+    try:
+        cpr = get_today_cpr(symbol)
+    except Exception as e:
+        print(f"[CPR] CPR computation failed for {symbol} — {e}")
+        return False
+
+    msg = "\n".join([
+        "<b>📐 NIFTY — Today's CPR</b>",
+        f"📅 {cpr['date']}",
+        "",
+        f"Pivot (P):   <b>{_fmt(cpr['pivot'])}</b>",
+        f"Floor (F):   <b>{_fmt(cpr['floor'])}</b>",
+        f"Ceiling (C): <b>{_fmt(cpr['ceiling'])}</b>",
+        f"Range (C−F): <b>{_fmt(cpr['range'])}</b>",
+    ])
+    if not send_message(token, chat_id, msg):
+        print("[CPR] Failed sending CPR message.")
+        return False
+    print(f"[CPR] Sent {symbol} CPR to Telegram.")
+    return True
 
 
 if __name__ == "__main__":
