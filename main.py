@@ -6,6 +6,7 @@ Usage:
     python main.py fdcp                   # Fetch FDCP participant OI data only
     python main.py oc                     # Fetch option chain data only
     python main.py ohlc                   # Fetch NIFTY OHLC data only
+    python main.py cpr                    # Compute CPR for major NSE indices
     python main.py engine                 # Run verdict engine only
     python main.py engine --dry-run       # Run engine in dry-run (diagnostics) mode
     python main.py prerender              # Prerender static HTML into index.html
@@ -17,6 +18,7 @@ from nse_toolkit.fetcher import fetch_fdcp, fetch_option_chain, fetch_ohlc, upda
 from nse_toolkit.engine import run_engine, load_participant_data, compute_iv_modifier
 from nse_toolkit.telegram import send_gross_oi_telegram
 from nse_toolkit.prerender import prerender_index
+from nse_toolkit.cpr import get_today_cpr, get_prior_day_cpr
 from nse_toolkit.config import SCORE_CLIP, FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT, NSE_DATA_FILE
 from nse_toolkit.config import FII_FUT_THRESHOLD, FII_OPT_THRESHOLD, PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD, DII_FUT_THRESHOLD, DII_OPT_THRESHOLD
 import json
@@ -34,6 +36,19 @@ def cmd_oc():
 
 def cmd_ohlc():
     fetch_ohlc()
+
+
+def cmd_cpr():
+    """Compute CPR for NIFTY, NIFTYBANK."""
+    for sym in ["NIFTY", "BANK"]:
+        try:
+            prior = get_prior_day_cpr(sym)
+            today = get_today_cpr(sym)
+            print(f"\n{sym}:")
+            print(f"  Prior-day CPR: P={prior['pivot']:.2f} F={prior['floor']:.2f} C={prior['ceiling']:.2f} range={prior['range']:.2f}")
+            print(f"  Today CPR:    P={today['pivot']:.2f} F={today['floor']:.2f} C={today['ceiling']:.2f} range={today['range']:.2f}")
+        except Exception as e:
+            print(f"\n{sym}: CPR computation failed — {e}")
 
 
 def cmd_engine(dry_run: bool = False):
@@ -120,6 +135,8 @@ def cmd_all():
     cmd_prerender()
     print("\n=== Phase 6: Telegram Gross OI ===")
     cmd_telegram()
+    print("\n=== Phase 7: CPR Calculation ===")
+    cmd_cpr()
     print("\n=== All phases complete! ===")
 
 
@@ -133,7 +150,7 @@ def main():
         "command",
         nargs="?",
         default="all",
-        choices=["all", "fdcp", "oc", "ohlc", "engine", "prerender", "telegram"],
+        choices=["all", "fdcp", "oc", "ohlc", "engine", "prerender", "telegram", "cpr"],
         help="Pipeline phase to run (default: all)",
     )
     parser.add_argument(
@@ -158,6 +175,8 @@ def main():
         cmd_prerender()
     elif args.command == "telegram":
         cmd_telegram()
+    elif args.command == "cpr":
+        cmd_cpr()
 
 
 if __name__ == "__main__":
