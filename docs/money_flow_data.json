@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-05T13:13:35.169588+00:00",
+  "timestamp": "2026-08-05T13:32:48.617974+00:00",
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BEARISH",
     "smart_money_score": -61.875,
@@ -750,8 +750,8 @@
       "max_pain": 14925,
       "magnet_strike": 14950.0,
       "expiry_range": "14,475 \u2013 15,525",
-      "pcr_oi": 0.7729110331718027,
-      "pcr_doi": 0.39747827151426124,
+      "pcr_oi": 0.7729317269076306,
+      "pcr_doi": 0.39752693437806075,
       "divergence": "NEUTRAL",
       "resistance_wall": 15500,
       "fresh_resistance": 15500,
@@ -778,8 +778,8 @@
       {
         "symbol": "NIFTY",
         "ltp": 24624.65,
-        "net_ce_doi": 708588,
-        "net_pe_doi": 386983,
+        "net_ce_doi": 708623,
+        "net_pe_doi": 387001,
         "top_ce_write_strike": 26000,
         "top_ce_write_doi": 49512,
         "top_pe_write_strike": 24000,
@@ -838,8 +838,8 @@
       {
         "symbol": "BHARTIARTL",
         "ltp": 1978,
-        "net_ce_doi": 15608,
-        "net_pe_doi": 6111,
+        "net_ce_doi": 15626,
+        "net_pe_doi": 6110,
         "top_ce_write_strike": 2000,
         "top_ce_write_doi": 5521,
         "top_pe_write_strike": 1980,
@@ -847,7 +847,7 @@
         "top_ce_unwind_strike": 2200,
         "top_ce_unwind_doi": -137,
         "top_pe_unwind_strike": 1820,
-        "top_pe_unwind_doi": -61,
+        "top_pe_unwind_doi": -56,
         "alignment": "ALIGNED"
       },
       {
@@ -868,7 +868,7 @@
       {
         "symbol": "MIDCPNIFTY",
         "ltp": 14880.3,
-        "net_ce_doi": 8389,
+        "net_ce_doi": 8388,
         "net_pe_doi": 2844,
         "top_ce_write_strike": 15500,
         "top_ce_write_doi": 5513,
@@ -930,8 +930,8 @@
       {
         "symbol": "NIFTY",
         "ltp": 24624.65,
-        "net_ce_doi": 708588,
-        "net_pe_doi": 386983,
+        "net_ce_doi": 708623,
+        "net_pe_doi": 387001,
         "top_ce_write_strike": 26000,
         "top_ce_write_doi": 49512,
         "top_pe_write_strike": 24000,
@@ -990,8 +990,8 @@
       {
         "symbol": "BHARTIARTL",
         "ltp": 1978,
-        "net_ce_doi": 15608,
-        "net_pe_doi": 6111,
+        "net_ce_doi": 15626,
+        "net_pe_doi": 6110,
         "top_ce_write_strike": 2000,
         "top_ce_write_doi": 5521,
         "top_pe_write_strike": 1980,
@@ -999,7 +999,7 @@
         "top_ce_unwind_strike": 2200,
         "top_ce_unwind_doi": -137,
         "top_pe_unwind_strike": 1820,
-        "top_pe_unwind_doi": -61,
+        "top_pe_unwind_doi": -56,
         "alignment": "ALIGNED"
       },
       {
@@ -1035,7 +1035,7 @@
       {
         "symbol": "MIDCPNIFTY",
         "ltp": 14880.3,
-        "net_ce_doi": 8389,
+        "net_ce_doi": 8388,
         "net_pe_doi": 2844,
         "top_ce_write_strike": 15500,
         "top_ce_write_doi": 5513,
@@ -1082,10 +1082,10 @@
       {
         "symbol": "DIXON",
         "ltp": 14310,
-        "net_ce_doi": -4281,
-        "net_pe_doi": -1336,
+        "net_ce_doi": -4273,
+        "net_pe_doi": -1340,
         "top_ce_write_strike": 16500,
-        "top_ce_write_doi": 281,
+        "top_ce_write_doi": 286,
         "top_pe_write_strike": 14000,
         "top_pe_write_doi": 354,
         "top_ce_unwind_strike": 15000,
@@ -1127,7 +1127,7 @@
       {
         "symbol": "PIDILITIND",
         "ltp": 1665,
-        "net_ce_doi": -2691,
+        "net_ce_doi": -2694,
         "net_pe_doi": -524,
         "top_ce_write_strike": 1760,
         "top_ce_write_doi": 107,
@@ -1234,10 +1234,10 @@
       {
         "symbol": "DIXON",
         "ltp": 14310,
-        "net_ce_doi": -4281,
-        "net_pe_doi": -1336,
+        "net_ce_doi": -4273,
+        "net_pe_doi": -1340,
         "top_ce_write_strike": 16500,
-        "top_ce_write_doi": 281,
+        "top_ce_write_doi": 286,
         "top_pe_write_strike": 14000,
         "top_pe_write_doi": 354,
         "top_ce_unwind_strike": 15000,
@@ -1264,7 +1264,7 @@
       {
         "symbol": "PIDILITIND",
         "ltp": 1665,
-        "net_ce_doi": -2691,
+        "net_ce_doi": -2694,
         "net_pe_doi": -524,
         "top_ce_write_strike": 1760,
         "top_ce_write_doi": 107,
