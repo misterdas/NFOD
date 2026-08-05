@@ -33,4 +33,4 @@ lh_*.json
 AGENTS.md
 CLAUDE.md
 docs/superpowers/*
-test
+test/*
