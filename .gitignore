@@ -1,8 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets — never commit Telegram bot token / chat id
+.env
+.env.*
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Lighthouse audit outputs
 lighthouse*.json
 lh_*.json
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
