@@ -14,6 +14,7 @@ For closing value use 1min, else use daily candle.
 """
 import datetime as dt
 import os
+from typing import Any
 
 import pandas as pd
 import yfinance as yf
@@ -39,14 +40,15 @@ def _yesterday_315_close(symbol: str) -> float:
     if hist.empty:
         raise RuntimeError(f"No 1-min data for {symbol}")
 
-    yesterday = hist.index[-1].normalize() - pd.Timedelta(days=1)
+    # yfinance stub types the frame index as generic Index — cast via str + Timestamp is the stub-clean route
+    yesterday = pd.Timestamp(str(hist.index[-1])).normalize() - pd.Timedelta(days=1)  # type: ignore[reportAttributeAccessIssue]
     # Find 3:15 candle from yesterday's data
     mask = (hist.index == yesterday + pd.Timedelta(hours=15, minutes=15))
     if mask.any():
         return float(hist.loc[mask, "Close"].iloc[-1])
     # Fallback: last candle of yesterday
     today_open = yesterday + pd.Timedelta(hours=6, minutes=15)
-    yesterday_data = hist[hist.index < today_open]
+    yesterday_data = hist.loc[hist.index < today_open]
     if not yesterday_data.empty:
         return float(yesterday_data["Close"].iloc[-1])
     raise RuntimeError(f"Cannot find yesterday's 3:15 close for {symbol}")
@@ -74,7 +76,7 @@ def _today_315_close(symbol: str) -> float:
     hist = ticker.history(period="1d", interval="1m", prepost=False)
     if hist.empty:
         raise RuntimeError(f"No 1-min data for {symbol}")
-    today = hist.index[-1].normalize()
+    today = pd.Timestamp(str(hist.index[-1])).normalize()  # type: ignore[reportAttributeAccessIssue]
     target_ts = today + pd.Timedelta(hours=15, minutes=15)
     mask = (hist.index == target_ts)
     if mask.any():
@@ -103,7 +105,7 @@ def get_today_hlc_dynamic(symbol: str = "NIFTY"):
     return h, l, c
 
 
-def calculate_cpr(high: float, low: float, close: float):
+def calculate_cpr(high: float, low: float, close: float) -> dict[str, Any]:
     """Standard CPR from High, Low, Close."""
     pivot = (high + low + close) / 3
     floor = (high + low) / 2
@@ -116,7 +118,7 @@ def calculate_cpr(high: float, low: float, close: float):
     }
 
 
-def get_today_cpr(symbol: str = "NIFTY"):
+def get_today_cpr(symbol: str = "NIFTY") -> dict[str, Any]:
     """CPR using today's H/L (daily) + latest 1-min close."""
     h, l, c = get_today_hlc_dynamic(symbol)
     cpr = calculate_cpr(h, l, c)
@@ -125,7 +127,7 @@ def get_today_cpr(symbol: str = "NIFTY"):
     return cpr
 
 
-def get_prior_day_cpr(symbol: str = "NIFTY"):
+def get_prior_day_cpr(symbol: str = "NIFTY") -> dict[str, Any]:
     """CPR using prior day H/L (daily) + yesterday's 3:15 candle close."""
     h, l, c = get_prior_day_hlc(symbol)
     cpr = calculate_cpr(h, l, c)

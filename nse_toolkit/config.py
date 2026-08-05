@@ -3,6 +3,8 @@ Shared configuration, thresholds, paths, and utility functions for the NFOD tool
 """
 
 import os
+from typing import Any
+
 import numpy as np
 
 # ── Paths ──────────────────────────────────────────────────────────────────
@@ -89,7 +91,7 @@ FETCH_INDICES: list[str] = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "NIF
 
 # ── Utility functions ──────────────────────────────────────────────────────
 
-def clean_val(val):
+def clean_val(val) -> Any:
     """Convert numpy/pandas data types to standard Python primitives for JSON encoding."""
     if isinstance(val, (np.integer, int)):
         return int(val)
