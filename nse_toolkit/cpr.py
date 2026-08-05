@@ -164,13 +164,13 @@ def send_cpr_telegram(symbol: str = "NIFTY") -> bool:
         return False
 
     msg = "\n".join([
-        "<b>📐 NIFTY — Today's CPR</b>",
+        "<b>📐 NIFTY — CPR</b>",
         f"📅 {cpr['date']}",
         "",
-        f"Pivot (P):   <b>{_fmt(cpr['pivot'])}</b>",
-        f"Floor (F):   <b>{_fmt(cpr['floor'])}</b>",
-        f"Ceiling (C): <b>{_fmt(cpr['ceiling'])}</b>",
-        f"Range (C−F): <b>{_fmt(cpr['range'])}</b>",
+        f"TC:    <b>{_fmt(cpr['ceiling'])}</b>",
+        f"Pivot: <b>{_fmt(cpr['pivot'])}</b>",
+        f"BC:    <b>{_fmt(cpr['floor'])}</b>",
+        f"Range: <b>{_fmt(cpr['range'])}</b>",
     ])
     if not send_message(token, chat_id, msg):
         print("[CPR] Failed sending CPR message.")
