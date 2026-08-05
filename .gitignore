@@ -28,3 +28,9 @@ Thumbs.db
 # Lighthouse audit outputs
 lighthouse*.json
 lh_*.json
+
+# CLI Agents Files
+AGENTS.md
+CLAUDE.md
+docs/superpowers/*
+test
