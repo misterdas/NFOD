@@ -609,7 +609,7 @@ def _inline_json(html: str) -> str:
         # content between the inline script tags so subsequent runs update it.
         html = re.sub(
             r'(<script type="application/json" id="inline-money-flow">).*?(</script>)',
-            rf'\1{json_str}\2' if json_str else r'\g<0>',
+            lambda match: f"{match.group(1)}{json_str}{match.group(2)}" if json_str else match.group(0),
             html,
             flags=re.DOTALL,
         )
