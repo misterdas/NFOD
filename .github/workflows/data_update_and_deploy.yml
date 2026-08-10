@@ -2,8 +2,8 @@ name: Daily Data Update & Deploy to Pages
 
 on:
   # schedule:
-    # 14:30 UTC = 8:00 PM IST (Mon-Fri)
-    # - cron: '30 14 * * 1-5'
+  #   # 14:30 UTC = 8:00 PM IST (Mon-Fri)
+  #   - cron: '30 14 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,8 @@ permissions:
   pages: write
   id-token: write
 
+# Prevent multiple data-update workflow runs from modifying/pushing
+# the repository simultaneously.
 concurrency:
   group: daily-data-update
   cancel-in-progress: false
@@ -72,12 +74,20 @@ jobs:
             sleep 5
           done
 
-          echo "Failed to push after 3 attempts. Working tree state:"
+          echo "Failed to push after 3 attempts."
           git status --short
           exit 1
 
   deploy-pages:
     needs: update-data
+
+    # IMPORTANT:
+    # Serialize GitHub Pages deployments.
+    # If a newer workflow reaches deployment while an older deployment
+    # is still pending, cancel the older deployment job.
+    concurrency:
+      group: github-pages-deployment
+      cancel-in-progress: true
 
     environment:
       name: github-pages
@@ -89,10 +99,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: main
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -101,4 +111,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
