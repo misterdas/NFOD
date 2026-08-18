@@ -329,7 +329,7 @@ def build_gross_oi_messages() -> list[str]:
             chunks.append("")
         chunks[-1] = "\n".join([chunks[-1], msg])
 
-    footer = "\n-- 📊 <b>Analysis bu GOPAL</b> --"
+    footer = "\n-- 📊 <b>Analysis by GOPAL</b> --"
     if len("\n".join(chunks) + "\n" + footer) > MAX_MSG:
         chunks.append("")
     chunks[-1] = "\n".join([chunks[-1], footer])
