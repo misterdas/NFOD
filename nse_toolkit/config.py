@@ -14,6 +14,39 @@ NSE_DATA_FILE = os.path.join(OUTPUT_DIR, "nse_data.json")
 HISTORY_DIR = os.path.join(OUTPUT_DIR, "oc_history")
 OHLC_FILE = os.path.join(OUTPUT_DIR, "ohlc_data.json")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "money_flow_data.json")
+CHANGES_FILE = os.path.join(OUTPUT_DIR, "participant_changes.json")
+
+# ── participant_changes.json export (flat change-fields, written each engine run) ──
+CHANGES_KEYS = (
+    # FII index futures + options
+    "fii_fut_net_change", "fii_fut_long_change", "fii_fut_short_change",
+    "fii_ce_long_change", "fii_ce_short_change", "fii_ce_net_short_change",
+    "fii_pe_long_change", "fii_pe_short_change", "fii_pe_net_short_change",
+    # FII stock futures + options nets
+    "fii_stk_fut_net_change", "fii_stk_fut_long_change", "fii_stk_fut_short_change",
+    "fii_stk_ce_net_change", "fii_stk_pe_net_change",
+    # Pro index futures + options
+    "pro_fut_net_change", "pro_fut_long_change", "pro_fut_short_change",
+    "pro_ce_long_change", "pro_ce_short_change", "pro_ce_net_short_change",
+    "pro_pe_long_change", "pro_pe_short_change", "pro_pe_net_short_change",
+    "pro_stk_fut_net_change", "pro_stk_fut_long_change", "pro_stk_fut_short_change",
+    "pro_stk_ce_net_change", "pro_stk_pe_net_change",
+    # DII
+    "dii_fut_net_change", "dii_fut_long_change", "dii_fut_short_change",
+    "dii_ce_long_change", "dii_ce_short_change", "dii_ce_net_short_change",
+    "dii_pe_long_change", "dii_pe_short_change", "dii_pe_net_short_change",
+    "dii_stk_fut_net_change", "dii_stk_fut_long_change", "dii_stk_fut_short_change",
+    "dii_stk_ce_net_change", "dii_stk_pe_net_change",
+    # Client (retail)
+    "client_ce_net_buy", "client_pe_net_buy",
+    "client_ce_long_change", "client_ce_short_change",
+    "client_pe_long_change", "client_pe_short_change",
+    "client_fut_net_change", "client_fut_long_change", "client_fut_short_change",
+    "client_stk_fut_net_change", "client_stk_fut_long_change", "client_stk_fut_short_change",
+    "client_stk_ce_net_change", "client_stk_pe_net_change",
+    # Carried futures positions
+    "fii_fut_net_carried", "pro_fut_net_carried", "dii_fut_net_carried",
+)
 
 # ── FDCP fetch defaults ────────────────────────────────────────────────────
 FDCP_DAYS = 60         # look-back window for FDCP CSV fetch

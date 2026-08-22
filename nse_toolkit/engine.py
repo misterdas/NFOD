@@ -25,6 +25,7 @@ import pandas as pd
 
 from nse_toolkit.config import (
     FDCP_FILE, NSE_DATA_FILE, HISTORY_DIR, OUTPUT_FILE,
+    CHANGES_FILE, CHANGES_KEYS,
     FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT,
     FII_FUT_THRESHOLD, FII_OPT_THRESHOLD,
     PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD,
@@ -1140,7 +1141,19 @@ def run_engine():
     with open(OUTPUT_FILE, "w") as f:
         json.dump(cleaned, f, indent=2)
 
+    # Flat change-fields snapshot → separate JSON (written every engine run)
+    ps_clean = cleaned.get("participant_summary") or {}
+    changes_payload = {
+        "timestamp": timestamp,
+        "date": ps_clean.get("date"),
+        "prev_date": ps_clean.get("prev_date"),
+        **{k: ps_clean.get(k) for k in CHANGES_KEYS},
+    }
+    with open(CHANGES_FILE, "w") as f:
+        json.dump(changes_payload, f, indent=2)
+
     print(f"[ENGINE] OK! Saved to {OUTPUT_FILE}")
+    print(f"[ENGINE] Changes snapshot saved to {CHANGES_FILE}")
     print(f"   Bias: {verdict_payload['executive_summary']['bias_label']}")
     print(f"   Index Rolls: {list(index_rolls.keys())}")
     print(f"   Stock Breadth: Call Write={len(stock_breadth['call_writing_bearish'])}, Put Write={len(stock_breadth['put_writing_bullish'])}")
