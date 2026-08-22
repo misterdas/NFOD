@@ -25,7 +25,7 @@ import pandas as pd
 
 from nse_toolkit.config import (
     FDCP_FILE, NSE_DATA_FILE, HISTORY_DIR, OUTPUT_FILE,
-    CHANGES_FILE, CHANGES_KEYS,
+    CHANGES_FILE, CHANGES_KEYS, CHANGES_DAYS,
     FII_WEIGHT, PRO_WEIGHT, DII_WEIGHT,
     FII_FUT_THRESHOLD, FII_OPT_THRESHOLD,
     PRO_FUT_THRESHOLD, PRO_OPT_THRESHOLD,
@@ -411,6 +411,48 @@ def build_score_history(latest_summary: dict | None = None) -> list[dict]:
     except Exception as e:
         print(f"[ENGINE] Error building score history: {e}")
         return []
+
+
+def build_flat_changes_history(days: int = CHANGES_DAYS) -> dict:
+    """Flat <field>_{today|Nd_ago} export for the last `days` FDCP dates.
+
+    Reuses _score_date_pair per date pair — no scoring math duplicated here.
+    """
+    if not os.path.exists(FDCP_FILE) or days < 1:
+        return {}
+    try:
+        df = pd.read_csv(FDCP_FILE)
+        df.columns = df.columns.str.strip()
+        dates = sort_dates_chronologically(list(df["Date"].unique()))
+
+        def get_row(p_type: str, d_str: str | None) -> dict:
+            if not d_str:
+                return {}
+            sub = df[(df["Client Type"] == p_type) & (df["Date"] == d_str)]
+            return sub.iloc[0].to_dict() if not sub.empty else {}
+
+        out: dict = {}
+        for idx in range(days):
+            sfx = "today" if idx == 0 else f"{idx}d_ago"
+            i = len(dates) - 1 - idx
+            d = dates[i] if i >= 0 else None
+            prev = dates[i - 1] if i >= 1 else None
+            out[f"date_{sfx}"] = d
+            if d is None:
+                continue
+            summary = _score_date_pair(
+                get_row("FII", d), get_row("FII", prev),
+                get_row("Pro", d), get_row("Pro", prev),
+                get_row("DII", d), get_row("DII", prev),
+                get_row("Client", d), get_row("Client", prev),
+                d, prev, iv_modifier=0,
+            )
+            for k in CHANGES_KEYS:
+                out[f"{k}_{sfx}"] = summary.get(k)
+        return out
+    except Exception as e:
+        print(f"[ENGINE] Error building changes history: {e}")
+        return {}
 
 
 # ── Index Roll Detection ───────────────────────────────────────────────────
@@ -1142,15 +1184,9 @@ def run_engine():
         json.dump(cleaned, f, indent=2)
 
     # Flat change-fields snapshot → separate JSON (written every engine run)
-    ps_clean = cleaned.get("participant_summary") or {}
-    changes_payload = {
-        "timestamp": timestamp,
-        "date": ps_clean.get("date"),
-        "prev_date": ps_clean.get("prev_date"),
-        **{k: ps_clean.get(k) for k in CHANGES_KEYS},
-    }
+    changes_payload = {"timestamp": timestamp, **build_flat_changes_history()}
     with open(CHANGES_FILE, "w") as f:
-        json.dump(changes_payload, f, indent=2)
+        json.dump(clean_val(changes_payload), f, indent=2)
 
     print(f"[ENGINE] OK! Saved to {OUTPUT_FILE}")
     print(f"[ENGINE] Changes snapshot saved to {CHANGES_FILE}")

@@ -14,9 +14,12 @@ NSE_DATA_FILE = os.path.join(OUTPUT_DIR, "nse_data.json")
 HISTORY_DIR = os.path.join(OUTPUT_DIR, "oc_history")
 OHLC_FILE = os.path.join(OUTPUT_DIR, "ohlc_data.json")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "money_flow_data.json")
-CHANGES_FILE = os.path.join(OUTPUT_DIR, "participant_changes.json")
 
-# ── participant_changes.json export (flat change-fields, written each engine run) ──
+# ── participant_changes.json export ─────────────────────────────────────────
+CHANGES_FILE = os.path.join(OUTPUT_DIR, "participant_changes.json")
+CHANGES_DAYS = 3   # days exported: <field>_today, <field>_1d_ago, <field>_2d_ago
+
+# Flat change-fields exported verbatim each engine run (one entry per day-suffix)
 CHANGES_KEYS = (
     # FII index futures + options
     "fii_fut_net_change", "fii_fut_long_change", "fii_fut_short_change",
