@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-19T14:31:21.131485+00:00",
+  "timestamp": "2026-10-20T14:31:06.314639+00:00",
   "executive_summary": {
     "bias_label": "HIGH CONFIDENCE BEARISH",
     "smart_money_score": -46.32,
@@ -102,7 +102,7 @@
   },
   "score_history": [
     {
-      "date": "21-08-2026",
+      "date": "24-08-2026",
       "prev_date": null,
       "score": 0.0,
       "bias": "NEUTRAL / SIDEWAYS",
@@ -110,16 +110,6 @@
       "fiiRawScore": 0,
       "proRawScore": 0,
       "diiRawScore": 0
-    },
-    {
-      "date": "24-08-2026",
-      "prev_date": "21-08-2026",
-      "score": -51.875,
-      "bias": "HIGH CONFIDENCE BEARISH",
-      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
-      "fiiRawScore": -25,
-      "proRawScore": -25,
-      "diiRawScore": -25
     },
     {
       "date": "25-08-2026",
@@ -1376,142 +1366,142 @@
   "conviction": {
     "NIFTY": {
       "dates": [
-        "2026-10-13",
         "2026-10-14",
         "2026-10-15",
         "2026-10-16",
-        "2026-10-19"
+        "2026-10-19",
+        "2026-10-20"
       ],
       "strikes": [
         {
           "strike": 22550,
           "ce_oi_history": [
-            25671,
             20675,
             7197,
             5168,
+            2850,
             2850
           ],
           "pe_oi_history": [
-            269159,
             40198,
             52315,
             59685,
+            46680,
             46680
           ],
-          "today_ce_doi": -140392,
-          "today_pe_doi": 247074,
-          "ce_trend_delta": -22821,
+          "today_ce_doi": 12203,
+          "today_pe_doi": 11004,
+          "ce_trend_delta": -17825,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -222479,
-          "pe_conviction": "PE UNWINDING",
+          "pe_trend_delta": 6482,
+          "pe_conviction": "PE BUILDING",
           "ce_alignment": "ALIGNED",
-          "pe_alignment": "ALIGNED",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "COVERING",
-          "pe_flow_attr": "UNWINDING"
+          "pe_flow_attr": "WRITING"
         },
         {
           "strike": 22600,
           "ce_oi_history": [
-            76944,
             68638,
             28547,
             17952,
+            8601,
             8601
           ],
           "pe_oi_history": [
-            163651,
             83553,
             124064,
             149323,
+            105843,
             105843
           ],
-          "today_ce_doi": -195086,
-          "today_pe_doi": 127255,
-          "ce_trend_delta": -68343,
+          "today_ce_doi": 25587,
+          "today_pe_doi": 11777,
+          "ce_trend_delta": -60037,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -57808,
-          "pe_conviction": "PE UNWINDING",
+          "pe_trend_delta": 22290,
+          "pe_conviction": "PE BUILDING",
           "ce_alignment": "ALIGNED",
-          "pe_alignment": "ALIGNED",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "COVERING",
-          "pe_flow_attr": "UNWINDING"
+          "pe_flow_attr": "WRITING"
         },
         {
           "strike": 22650,
           "ce_oi_history": [
-            92167,
             46556,
             13851,
             10127,
+            4908,
             4908
           ],
           "pe_oi_history": [
-            195607,
             30934,
             63236,
             85717,
+            95462,
             95462
           ],
-          "today_ce_doi": -83845,
-          "today_pe_doi": 183418,
-          "ce_trend_delta": -87259,
+          "today_ce_doi": 34088,
+          "today_pe_doi": 12089,
+          "ce_trend_delta": -41648,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -100145,
-          "pe_conviction": "PE UNWINDING",
+          "pe_trend_delta": 64528,
+          "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "ALIGNED",
-          "pe_alignment": "ALIGNED",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "COVERING",
-          "pe_flow_attr": "UNWINDING"
+          "pe_flow_attr": "WRITING"
         },
         {
           "strike": 22700,
           "ce_oi_history": [
-            185174,
             139221,
             42945,
             27578,
+            16881,
             16881
           ],
           "pe_oi_history": [
-            371827,
             63544,
             173052,
             183052,
+            151354,
             151354
           ],
-          "today_ce_doi": -50585,
-          "today_pe_doi": 350293,
-          "ce_trend_delta": -168293,
+          "today_ce_doi": 78873,
+          "today_pe_doi": -377,
+          "ce_trend_delta": -122340,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -220473,
-          "pe_conviction": "PE UNWINDING",
+          "pe_trend_delta": 87810,
+          "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "ALIGNED",
-          "pe_alignment": "ALIGNED",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "COVERING",
-          "pe_flow_attr": "UNWINDING"
+          "pe_flow_attr": "WRITING"
         },
         {
           "strike": 22750,
           "ce_oi_history": [
-            311637,
             64256,
             20340,
             11064,
+            10257,
             10257
           ],
           "pe_oi_history": [
-            80239,
             12481,
             76212,
             81541,
+            124328,
             124328
           ],
-          "today_ce_doi": 184649,
-          "today_pe_doi": 74888,
-          "ce_trend_delta": -301380,
+          "today_ce_doi": 49496,
+          "today_pe_doi": -7721,
+          "ce_trend_delta": -53999,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 44089,
+          "pe_trend_delta": 111847,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "OPPOSED",
@@ -1521,24 +1511,24 @@
         {
           "strike": 22800,
           "ce_oi_history": [
-            189523,
             109233,
             45159,
             21177,
+            32415,
             32415
           ],
           "pe_oi_history": [
-            30750,
             23427,
             134975,
             160101,
+            148911,
             148911
           ],
-          "today_ce_doi": -27679,
-          "today_pe_doi": 17758,
-          "ce_trend_delta": -157108,
+          "today_ce_doi": 52155,
+          "today_pe_doi": -10011,
+          "ce_trend_delta": -76818,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 118161,
+          "pe_trend_delta": 125484,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "OPPOSED",
@@ -1548,51 +1538,51 @@
         {
           "strike": 22850,
           "ce_oi_history": [
-            95985,
             48509,
             20205,
             10174,
+            91794,
             91794
           ],
           "pe_oi_history": [
-            7320,
             5358,
             79136,
             85425,
+            242715,
             242715
           ],
-          "today_ce_doi": 548,
-          "today_pe_doi": 4887,
-          "ce_trend_delta": -4191,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 235395,
+          "today_ce_doi": 34378,
+          "today_pe_doi": -3070,
+          "ce_trend_delta": 43285,
+          "ce_conviction": "HARD RESISTANCE",
+          "pe_trend_delta": 237357,
           "pe_conviction": "SOLID FLOOR",
-          "ce_alignment": "ALIGNED",
+          "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
+          "ce_flow_attr": "RETAIL BUYING",
           "pe_flow_attr": "WRITING"
         },
         {
           "strike": 22900,
           "ce_oi_history": [
-            114309,
             92671,
             72976,
             41827,
+            363408,
             363408
           ],
           "pe_oi_history": [
-            5114,
             7600,
             123539,
             168702,
+            202833,
             202833
           ],
-          "today_ce_doi": -65237,
-          "today_pe_doi": -445,
-          "ce_trend_delta": 249099,
+          "today_ce_doi": 52003,
+          "today_pe_doi": -1975,
+          "ce_trend_delta": 270737,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 197719,
+          "pe_trend_delta": 195233,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1602,24 +1592,24 @@
         {
           "strike": 22950,
           "ce_oi_history": [
-            74960,
             48447,
             36802,
             16770,
+            226788,
             226788
           ],
           "pe_oi_history": [
-            2528,
             2629,
             53682,
             90281,
+            72549,
             72549
           ],
-          "today_ce_doi": 13967,
-          "today_pe_doi": -791,
-          "ce_trend_delta": 151828,
+          "today_ce_doi": 31574,
+          "today_pe_doi": 118,
+          "ce_trend_delta": 178341,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 70021,
+          "pe_trend_delta": 69920,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1629,24 +1619,24 @@
         {
           "strike": 23000,
           "ce_oi_history": [
-            219628,
             173840,
             131761,
             101532,
+            252235,
             252235
           ],
           "pe_oi_history": [
-            8671,
             13384,
             91867,
             172364,
+            72582,
             72582
           ],
-          "today_ce_doi": -38934,
-          "today_pe_doi": -341,
-          "ce_trend_delta": 32607,
+          "today_ce_doi": 76798,
+          "today_pe_doi": -987,
+          "ce_trend_delta": 78395,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 63911,
+          "pe_trend_delta": 59198,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1656,24 +1646,24 @@
         {
           "strike": 23050,
           "ce_oi_history": [
-            46565,
             35267,
             52859,
             51239,
+            168401,
             168401
           ],
           "pe_oi_history": [
-            889,
             1304,
             18529,
             59826,
+            30467,
             30467
           ],
-          "today_ce_doi": -38297,
-          "today_pe_doi": -432,
-          "ce_trend_delta": 121836,
+          "today_ce_doi": 19599,
+          "today_pe_doi": 721,
+          "ce_trend_delta": 133134,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 29578,
+          "pe_trend_delta": 29163,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1683,24 +1673,24 @@
         {
           "strike": 23100,
           "ce_oi_history": [
-            93955,
             79343,
             101875,
             139845,
+            201122,
             201122
           ],
           "pe_oi_history": [
-            1409,
             3573,
             18406,
             139569,
+            59938,
             59938
           ],
-          "today_ce_doi": -56621,
-          "today_pe_doi": -2145,
-          "ce_trend_delta": 107167,
+          "today_ce_doi": 17828,
+          "today_pe_doi": -40,
+          "ce_trend_delta": 121779,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 58529,
+          "pe_trend_delta": 56365,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1710,24 +1700,24 @@
         {
           "strike": 23150,
           "ce_oi_history": [
-            45310,
             32349,
             38841,
             97112,
+            138879,
             138879
           ],
           "pe_oi_history": [
-            471,
             441,
             3475,
             61369,
+            47964,
             47964
           ],
-          "today_ce_doi": -11083,
-          "today_pe_doi": -8,
-          "ce_trend_delta": 93569,
+          "today_ce_doi": 14616,
+          "today_pe_doi": 242,
+          "ce_trend_delta": 106530,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 47493,
+          "pe_trend_delta": 47523,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1737,24 +1727,24 @@
         {
           "strike": 23200,
           "ce_oi_history": [
-            97215,
             118326,
             104736,
             136376,
+            153320,
             153320
           ],
           "pe_oi_history": [
-            1684,
             1644,
             6174,
             34297,
+            18181,
             18181
           ],
-          "today_ce_doi": -61841,
-          "today_pe_doi": -1403,
-          "ce_trend_delta": 56105,
+          "today_ce_doi": 43173,
+          "today_pe_doi": 217,
+          "ce_trend_delta": 34994,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 16497,
+          "pe_trend_delta": 16537,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1764,24 +1754,24 @@
         {
           "strike": 23250,
           "ce_oi_history": [
-            36815,
             29539,
             46171,
             71636,
+            72919,
             72919
           ],
           "pe_oi_history": [
-            1067,
             517,
             1833,
             7365,
+            5422,
             5422
           ],
-          "today_ce_doi": 715,
-          "today_pe_doi": -1179,
-          "ce_trend_delta": 36104,
+          "today_ce_doi": 15900,
+          "today_pe_doi": 218,
+          "ce_trend_delta": 43380,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 4355,
+          "pe_trend_delta": 4905,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -1792,34 +1782,34 @@
     },
     "BANKNIFTY": {
       "dates": [
-        "2026-10-13",
         "2026-10-14",
         "2026-10-15",
         "2026-10-16",
-        "2026-10-19"
+        "2026-10-19",
+        "2026-10-20"
       ],
       "strikes": [
         {
           "strike": 54800,
           "ce_oi_history": [
-            4037,
             3991,
             3863,
             3786,
+            3768,
             3768
           ],
           "pe_oi_history": [
-            6448,
             6556,
             6215,
             6023,
+            5496,
             5496
           ],
-          "today_ce_doi": -1786,
-          "today_pe_doi": 1006,
-          "ce_trend_delta": -269,
+          "today_ce_doi": -46,
+          "today_pe_doi": 108,
+          "ce_trend_delta": -223,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -952,
+          "pe_trend_delta": -1060,
           "pe_conviction": "PE UNWINDING",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
@@ -1829,26 +1819,26 @@
         {
           "strike": 54900,
           "ce_oi_history": [
-            4269,
             4141,
             3616,
             3941,
+            4021,
             4021
           ],
           "pe_oi_history": [
-            5736,
             5828,
             6184,
             5534,
+            5506,
             5506
           ],
-          "today_ce_doi": -867,
-          "today_pe_doi": 527,
-          "ce_trend_delta": -248,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -230,
+          "today_ce_doi": -128,
+          "today_pe_doi": 92,
+          "ce_trend_delta": -120,
+          "ce_conviction": "STABLE",
+          "pe_trend_delta": -322,
           "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "ALIGNED",
+          "ce_alignment": "NEUTRAL",
           "pe_alignment": "ALIGNED",
           "ce_flow_attr": "--",
           "pe_flow_attr": "--"
@@ -1856,24 +1846,24 @@
         {
           "strike": 55000,
           "ce_oi_history": [
-            32664,
             31529,
             28202,
             26697,
+            28857,
             28857
           ],
           "pe_oi_history": [
-            46287,
             44121,
             44551,
             45160,
+            42216,
             42216
           ],
-          "today_ce_doi": -6752,
-          "today_pe_doi": 6967,
-          "ce_trend_delta": -3807,
+          "today_ce_doi": -1135,
+          "today_pe_doi": -2166,
+          "ce_trend_delta": -2672,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -4071,
+          "pe_trend_delta": -1905,
           "pe_conviction": "PE UNWINDING",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
@@ -1883,24 +1873,24 @@
         {
           "strike": 55100,
           "ce_oi_history": [
-            3615,
             3171,
             2979,
             2949,
+            2766,
             2766
           ],
           "pe_oi_history": [
-            6811,
             5666,
             5559,
             5173,
+            5049,
             5049
           ],
-          "today_ce_doi": -2123,
-          "today_pe_doi": 2504,
-          "ce_trend_delta": -849,
+          "today_ce_doi": -444,
+          "today_pe_doi": -1145,
+          "ce_trend_delta": -405,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -1762,
+          "pe_trend_delta": -617,
           "pe_conviction": "PE UNWINDING",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
@@ -1910,24 +1900,24 @@
         {
           "strike": 55200,
           "ce_oi_history": [
-            4133,
             4428,
             3406,
             3282,
+            3206,
             3206
           ],
           "pe_oi_history": [
-            7385,
             5878,
             5890,
             6020,
+            5690,
             5690
           ],
-          "today_ce_doi": -2674,
-          "today_pe_doi": 2108,
-          "ce_trend_delta": -927,
+          "today_ce_doi": 295,
+          "today_pe_doi": -1507,
+          "ce_trend_delta": -1222,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -1695,
+          "pe_trend_delta": -188,
           "pe_conviction": "PE UNWINDING",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
@@ -1937,105 +1927,105 @@
         {
           "strike": 55300,
           "ce_oi_history": [
-            6798,
             6961,
             5173,
             5619,
+            6205,
             6205
           ],
           "pe_oi_history": [
-            7922,
             7168,
             7951,
             8154,
+            7913,
             7913
           ],
-          "today_ce_doi": -1907,
-          "today_pe_doi": 2382,
-          "ce_trend_delta": -593,
+          "today_ce_doi": 163,
+          "today_pe_doi": -754,
+          "ce_trend_delta": -756,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -9,
-          "pe_conviction": "STABLE",
+          "pe_trend_delta": 745,
+          "pe_conviction": "PE BUILDING",
           "ce_alignment": "ALIGNED",
-          "pe_alignment": "NEUTRAL",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "--",
           "pe_flow_attr": "--"
         },
         {
           "strike": 55400,
           "ce_oi_history": [
-            5631,
             5574,
             3963,
             4135,
+            5931,
             5931
           ],
           "pe_oi_history": [
-            6689,
             5379,
             6708,
             6441,
+            6638,
             6638
           ],
-          "today_ce_doi": -995,
-          "today_pe_doi": 3034,
-          "ce_trend_delta": 300,
+          "today_ce_doi": -57,
+          "today_pe_doi": -1310,
+          "ce_trend_delta": 357,
           "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -51,
-          "pe_conviction": "STABLE",
+          "pe_trend_delta": 1259,
+          "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
-          "pe_alignment": "NEUTRAL",
+          "pe_alignment": "OPPOSED",
           "ce_flow_attr": "--",
           "pe_flow_attr": "--"
         },
         {
           "strike": 55500,
           "ce_oi_history": [
-            28247,
             29756,
             23832,
             24514,
+            34362,
             34362
           ],
           "pe_oi_history": [
-            27268,
             24400,
             29631,
             32203,
+            36009,
             36009
           ],
-          "today_ce_doi": -1462,
-          "today_pe_doi": 7100,
-          "ce_trend_delta": 6115,
+          "today_ce_doi": 1509,
+          "today_pe_doi": -2868,
+          "ce_trend_delta": 4606,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 8741,
+          "pe_trend_delta": 11609,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "RETAIL BUYING",
+          "ce_flow_attr": "--",
           "pe_flow_attr": "WRITING"
         },
         {
           "strike": 55600,
           "ce_oi_history": [
-            6533,
             5984,
             4881,
             4790,
+            9465,
             9465
           ],
           "pe_oi_history": [
-            3989,
             3303,
             5016,
             5567,
+            5145,
             5145
           ],
-          "today_ce_doi": 1758,
-          "today_pe_doi": 2547,
-          "ce_trend_delta": 2932,
+          "today_ce_doi": -549,
+          "today_pe_doi": -686,
+          "ce_trend_delta": 3481,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 1156,
+          "pe_trend_delta": 1842,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -2045,24 +2035,24 @@
         {
           "strike": 55700,
           "ce_oi_history": [
-            6143,
             6161,
             5972,
             7287,
+            9217,
             9217
           ],
           "pe_oi_history": [
-            3369,
             2681,
             6183,
             7921,
+            4912,
             4912
           ],
-          "today_ce_doi": 1131,
-          "today_pe_doi": 2082,
-          "ce_trend_delta": 3074,
+          "today_ce_doi": 18,
+          "today_pe_doi": -688,
+          "ce_trend_delta": 3056,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 1543,
+          "pe_trend_delta": 2231,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -2072,25 +2062,25 @@
         {
           "strike": 55800,
           "ce_oi_history": [
-            5370,
             5526,
             8209,
             9065,
+            11413,
             11413
           ],
           "pe_oi_history": [
-            2736,
             1996,
             6000,
             5944,
+            4783,
             4783
           ],
-          "today_ce_doi": -86,
-          "today_pe_doi": 1060,
-          "ce_trend_delta": 6043,
+          "today_ce_doi": 156,
+          "today_pe_doi": -740,
+          "ce_trend_delta": 5887,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 2047,
-          "pe_conviction": "PE BUILDING",
+          "pe_trend_delta": 2787,
+          "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
           "ce_flow_attr": "RETAIL BUYING",
@@ -2099,24 +2089,24 @@
         {
           "strike": 55900,
           "ce_oi_history": [
-            3483,
             3831,
             5819,
             6409,
+            7280,
             7280
           ],
           "pe_oi_history": [
-            1731,
             1240,
             5453,
             4496,
+            3127,
             3127
           ],
-          "today_ce_doi": 280,
-          "today_pe_doi": 626,
-          "ce_trend_delta": 3797,
+          "today_ce_doi": 348,
+          "today_pe_doi": -491,
+          "ce_trend_delta": 3449,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 1396,
+          "pe_trend_delta": 1887,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -2126,24 +2116,24 @@
         {
           "strike": 56000,
           "ce_oi_history": [
-            36785,
             39670,
             42772,
             40526,
+            48736,
             48736
           ],
           "pe_oi_history": [
-            23193,
             22100,
             24985,
             25770,
+            26534,
             26534
           ],
-          "today_ce_doi": -4912,
-          "today_pe_doi": 1282,
-          "ce_trend_delta": 11951,
+          "today_ce_doi": 2885,
+          "today_pe_doi": -1093,
+          "ce_trend_delta": 9066,
           "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 3341,
+          "pe_trend_delta": 4434,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
@@ -2153,25 +2143,25 @@
         {
           "strike": 56100,
           "ce_oi_history": [
-            1966,
             2664,
             3170,
             3820,
+            4757,
             4757
           ],
           "pe_oi_history": [
-            1402,
             679,
             1998,
             2135,
+            3917,
             3917
           ],
-          "today_ce_doi": -164,
-          "today_pe_doi": 1043,
-          "ce_trend_delta": 2791,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 2515,
-          "pe_conviction": "PE BUILDING",
+          "today_ce_doi": 698,
+          "today_pe_doi": -723,
+          "ce_trend_delta": 2093,
+          "ce_conviction": "CE BUILDING",
+          "pe_trend_delta": 3238,
+          "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
           "ce_flow_attr": "--",
@@ -2180,24 +2170,24 @@
         {
           "strike": 56200,
           "ce_oi_history": [
-            3454,
             4300,
             4065,
             4553,
+            5670,
             5670
           ],
           "pe_oi_history": [
-            842,
             1173,
             1414,
             1594,
+            1578,
             1578
           ],
-          "today_ce_doi": -384,
-          "today_pe_doi": 229,
-          "ce_trend_delta": 2216,
+          "today_ce_doi": 846,
+          "today_pe_doi": 331,
+          "ce_trend_delta": 1370,
           "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 736,
+          "pe_trend_delta": 405,
           "pe_conviction": "PE BUILDING",
           "ce_alignment": "OPPOSED",
           "pe_alignment": "OPPOSED",
