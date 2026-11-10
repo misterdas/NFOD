@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-09T14:31:10.114330+00:00",
+  "timestamp": "2026-11-10T14:31:18.585052+00:00",
   "executive_summary": {
     "bias_label": "NEUTRAL / SIDEWAYS",
     "smart_money_score": 11.875,
@@ -102,23 +102,13 @@
   },
   "score_history": [
     {
-      "date": "11-09-2026",
+      "date": "15-09-2026",
       "prev_date": null,
       "score": 0.0,
       "bias": "NEUTRAL / SIDEWAYS",
       "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
       "fiiRawScore": 0,
       "proRawScore": 0,
-      "diiRawScore": 0
-    },
-    {
-      "date": "15-09-2026",
-      "prev_date": "11-09-2026",
-      "score": -55.0,
-      "bias": "HIGH CONFIDENCE BEARISH",
-      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
-      "fiiRawScore": -25,
-      "proRawScore": -25,
       "diiRawScore": 0
     },
     {
@@ -1339,65 +1329,65 @@
   "conviction": {
     "NIFTY": {
       "dates": [
-        "2026-11-03",
         "2026-11-04",
         "2026-11-05",
         "2026-11-06",
-        "2026-11-09"
+        "2026-11-09",
+        "2026-11-10"
       ],
       "strikes": [
         {
           "strike": 24700,
           "ce_oi_history": [
-            18024,
             78693,
             95584,
             44778,
+            13812,
             13812
           ],
           "pe_oi_history": [
-            27,
             119,
             9604,
             94818,
+            86177,
             86177
           ],
-          "today_ce_doi": 9363,
-          "today_pe_doi": 10,
-          "ce_trend_delta": -4212,
+          "today_ce_doi": 16853,
+          "today_pe_doi": 68,
+          "ce_trend_delta": -64881,
           "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 86150,
+          "pe_trend_delta": 86058,
           "pe_conviction": "SOLID FLOOR",
           "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
+          "ce_flow_attr": "COVERING",
           "pe_flow_attr": "FII FLOOR"
         },
         {
           "strike": 24750,
           "ce_oi_history": [
-            4999,
             27309,
             38717,
             22839,
+            8918,
             8918
           ],
           "pe_oi_history": [
-            2,
             8,
             5063,
             59992,
+            65282,
             65282
           ],
-          "today_ce_doi": 3336,
-          "today_pe_doi": -4,
-          "ce_trend_delta": 3919,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 65280,
+          "today_ce_doi": 22628,
+          "today_pe_doi": -18,
+          "ce_trend_delta": -18391,
+          "ce_conviction": "CE UNWINDING",
+          "pe_trend_delta": 65274,
           "pe_conviction": "SOLID FLOOR",
-          "ce_alignment": "OPPOSED",
+          "ce_alignment": "ALIGNED",
           "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
+          "ce_flow_attr": "COVERING",
           "pe_flow_attr": "FII FLOOR"
         },
         {
@@ -1406,12 +1396,14 @@
             78800,
             119013,
             57398,
+            20073,
             20073
           ],
           "pe_oi_history": [
             91,
             4735,
             78150,
+            111116,
             111116
           ],
           "today_ce_doi": 17925,
@@ -1431,12 +1423,14 @@
             22205,
             34311,
             22107,
+            31633,
             31633
           ],
           "pe_oi_history": [
             16,
             1135,
             32989,
+            103781,
             103781
           ],
           "today_ce_doi": 19050,
@@ -1456,12 +1450,14 @@
             41466,
             57270,
             60582,
+            57632,
             57632
           ],
           "pe_oi_history": [
             26,
             1515,
             52140,
+            223739,
             223739
           ],
           "today_ce_doi": 13732,
@@ -1480,11 +1476,13 @@
           "ce_oi_history": [
             22582,
             29195,
+            61656,
             61656
           ],
           "pe_oi_history": [
             546,
             25964,
+            218754,
             218754
           ],
           "today_ce_doi": 8775,
@@ -1503,11 +1501,13 @@
           "ce_oi_history": [
             184006,
             170238,
+            144887,
             144887
           ],
           "pe_oi_history": [
             11933,
             75051,
+            270869,
             270869
           ],
           "today_ce_doi": 1412,
@@ -1526,11 +1526,13 @@
           "ce_oi_history": [
             24129,
             34085,
+            220173,
             220173
           ],
           "pe_oi_history": [
             221,
             9697,
+            111236,
             111236
           ],
           "today_ce_doi": 8544,
@@ -1549,11 +1551,13 @@
           "ce_oi_history": [
             60046,
             70286,
+            212851,
             212851
           ],
           "pe_oi_history": [
             548,
             15850,
+            31577,
             31577
           ],
           "today_ce_doi": 12465,
@@ -1572,11 +1576,13 @@
           "ce_oi_history": [
             18973,
             31296,
+            88824,
             88824
           ],
           "pe_oi_history": [
             78,
             2172,
+            7249,
             7249
           ],
           "today_ce_doi": 10053,
@@ -1595,11 +1601,13 @@
           "ce_oi_history": [
             86353,
             89655,
+            112103,
             112103
           ],
           "pe_oi_history": [
             821,
             5020,
+            6531,
             6531
           ],
           "today_ce_doi": 26151,
@@ -1618,11 +1626,13 @@
           "ce_oi_history": [
             19139,
             35769,
+            105262,
             105262
           ],
           "pe_oi_history": [
             0,
             1012,
+            2292,
             2292
           ],
           "today_ce_doi": 10015,
@@ -1641,11 +1651,13 @@
           "ce_oi_history": [
             66474,
             83795,
+            117568,
             117568
           ],
           "pe_oi_history": [
             733,
             2381,
+            4705,
             4705
           ],
           "today_ce_doi": 35702,
@@ -1664,11 +1676,13 @@
           "ce_oi_history": [
             20733,
             27119,
+            69016,
             69016
           ],
           "pe_oi_history": [
             0,
             717,
+            1202,
             1202
           ],
           "today_ce_doi": 13998,
@@ -1687,11 +1701,13 @@
           "ce_oi_history": [
             38474,
             76003,
+            95748,
             95748
           ],
           "pe_oi_history": [
             20,
             1043,
+            1026,
             1026
           ],
           "today_ce_doi": 23978,
@@ -1709,11 +1725,11 @@
     },
     "BANKNIFTY": {
       "dates": [
-        "2026-11-03",
         "2026-11-04",
         "2026-11-05",
         "2026-11-06",
-        "2026-11-09"
+        "2026-11-09",
+        "2026-11-10"
       ],
       "strikes": [
         {
@@ -1721,11 +1737,13 @@
           "ce_oi_history": [
             23694,
             21705,
+            23895,
             23895
           ],
           "pe_oi_history": [
             6061,
             13318,
+            24067,
             24067
           ],
           "today_ce_doi": 6894,
@@ -1744,11 +1762,13 @@
           "ce_oi_history": [
             787,
             1403,
+            2719,
             2719
           ],
           "pe_oi_history": [
             17,
             449,
+            3749,
             3749
           ],
           "today_ce_doi": 787,
@@ -1767,11 +1787,13 @@
           "ce_oi_history": [
             2189,
             2611,
+            2931,
             2931
           ],
           "pe_oi_history": [
             1,
             404,
+            4044,
             4044
           ],
           "today_ce_doi": 1382,
@@ -1790,11 +1812,13 @@
           "ce_oi_history": [
             1277,
             1463,
+            2148,
             2148
           ],
           "pe_oi_history": [
             13,
             291,
+            2562,
             2562
           ],
           "today_ce_doi": 771,
@@ -1813,11 +1837,13 @@
           "ce_oi_history": [
             776,
             1227,
+            2569,
             2569
           ],
           "pe_oi_history": [
             1,
             125,
+            3136,
             3136
           ],
           "today_ce_doi": 776,
@@ -1836,11 +1862,13 @@
           "ce_oi_history": [
             11093,
             10732,
+            11443,
             11443
           ],
           "pe_oi_history": [
             292,
             1113,
+            6512,
             6512
           ],
           "today_ce_doi": 6669,
@@ -1859,11 +1887,13 @@
           "ce_oi_history": [
             562,
             1079,
+            2792,
             2792
           ],
           "pe_oi_history": [
             2,
             43,
+            1664,
             1664
           ],
           "today_ce_doi": -82,
@@ -1882,11 +1912,13 @@
           "ce_oi_history": [
             1434,
             1905,
+            2656,
             2656
           ],
           "pe_oi_history": [
             4,
             402,
+            999,
             999
           ],
           "today_ce_doi": 997,
@@ -1905,11 +1937,13 @@
           "ce_oi_history": [
             1852,
             1608,
+            3007,
             3007
           ],
           "pe_oi_history": [
             4,
             21,
+            721,
             721
           ],
           "today_ce_doi": 1467,
@@ -1928,11 +1962,13 @@
           "ce_oi_history": [
             982,
             1308,
+            1355,
             1355
           ],
           "pe_oi_history": [
             2,
             16,
+            352,
             352
           ],
           "today_ce_doi": 223,
@@ -1951,11 +1987,13 @@
           "ce_oi_history": [
             21272,
             24244,
+            27064,
             27064
           ],
           "pe_oi_history": [
             6257,
             6924,
+            8707,
             8707
           ],
           "today_ce_doi": 4293,
@@ -1973,10 +2011,12 @@
           "strike": 60100,
           "ce_oi_history": [
             2730,
+            2958,
             2958
           ],
           "pe_oi_history": [
             1,
+            106,
             106
           ],
           "today_ce_doi": 1874,
@@ -1994,10 +2034,12 @@
           "strike": 60200,
           "ce_oi_history": [
             1553,
+            2597,
             2597
           ],
           "pe_oi_history": [
             3,
+            21,
             21
           ],
           "today_ce_doi": 819,
@@ -2015,10 +2057,12 @@
           "strike": 60300,
           "ce_oi_history": [
             759,
+            1580,
             1580
           ],
           "pe_oi_history": [
             0,
+            44,
             44
           ],
           "today_ce_doi": 272,
@@ -2036,10 +2080,12 @@
           "strike": 60400,
           "ce_oi_history": [
             708,
+            862,
             862
           ],
           "pe_oi_history": [
             4,
+            30,
             30
           ],
           "today_ce_doi": 237,
