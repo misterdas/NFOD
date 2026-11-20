@@ -1,98 +1,98 @@
 {
-  "timestamp": "2026-11-19T14:31:05.210928+00:00",
+  "timestamp": "2026-11-20T14:31:09.931292+00:00",
   "executive_summary": {
-    "bias_label": "HIGH CONFIDENCE BULLISH",
-    "smart_money_score": 68.125,
-    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+    "bias_label": "MODERATE BEARISH",
+    "smart_money_score": -16.375,
+    "action_desc": "Operators are capping upside via Call writing.",
     "score_breakdown": {
-      "fii_raw_score": 25,
+      "fii_raw_score": -25,
       "pro_raw_score": 25,
-      "dii_raw_score": 25,
+      "dii_raw_score": -5,
       "fii_weight": 1.0,
       "pro_weight": 0.6,
       "dii_weight": 0.4,
-      "weighted_clipped_before_adjustments": 50.0,
-      "trap_adjustment": 15,
-      "retail_confirmation_score": 0,
-      "fii_dii_modifier": 3.125,
+      "weighted_clipped_before_adjustments": -12.0,
+      "trap_adjustment": 0,
+      "retail_confirmation_score": -5,
+      "fii_dii_modifier": 0.625,
       "iv_modifier": 0.0
     }
   },
   "participant_summary": {
-    "date": "19-11-2026",
-    "prev_date": "18-11-2026",
-    "smart_money_score": 68.125,
-    "bias_label": "HIGH CONFIDENCE BULLISH",
-    "action_desc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
-    "retail_trap_alarm": "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts.",
-    "trap_adjustment": 15,
-    "retail_confirmation_message": null,
-    "retail_confirmation_score": 0,
-    "fii_dii_modifier": 3.125,
+    "date": "20-11-2026",
+    "prev_date": "19-11-2026",
+    "smart_money_score": -16.375,
+    "bias_label": "MODERATE BEARISH",
+    "action_desc": "Operators are capping upside via Call writing.",
+    "retail_trap_alarm": null,
+    "trap_adjustment": 0,
+    "retail_confirmation_message": "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor.",
+    "retail_confirmation_score": -5,
+    "fii_dii_modifier": 0.625,
     "iv_modifier_applied": 0.0,
-    "weighted_clipped_before_adjustments": 50.0,
-    "fii_fut_net_change": 2423.0,
-    "fii_fut_long_change": 8174.0,
-    "fii_fut_short_change": 5751.0,
-    "fii_ce_long_change": 51963.0,
-    "fii_ce_short_change": -44592.0,
-    "fii_ce_net_short_change": -96555.0,
-    "fii_pe_long_change": 181123.0,
-    "fii_pe_short_change": 222946.0,
-    "fii_pe_net_short_change": 41823.0,
-    "fii_raw_score": 25,
-    "fii_stk_fut_net_change": 33324.0,
-    "fii_stk_fut_long_change": 24574.0,
-    "fii_stk_fut_short_change": -8750.0,
-    "fii_stk_ce_net_change": -14661.0,
-    "fii_stk_pe_net_change": 13408.0,
-    "pro_fut_net_change": 6372.0,
-    "pro_fut_long_change": 6276.0,
-    "pro_fut_short_change": -96.0,
-    "pro_ce_long_change": -1201.0,
-    "pro_ce_short_change": -102712.0,
-    "pro_ce_net_short_change": -101511.0,
-    "pro_pe_long_change": 282739.0,
-    "pro_pe_short_change": 374180.0,
-    "pro_pe_net_short_change": 91441.0,
+    "weighted_clipped_before_adjustments": -12.0,
+    "fii_fut_net_change": -2207.0,
+    "fii_fut_long_change": 2348.0,
+    "fii_fut_short_change": 4555.0,
+    "fii_ce_long_change": 117743.0,
+    "fii_ce_short_change": 127409.0,
+    "fii_ce_net_short_change": 9666.0,
+    "fii_pe_long_change": 205362.0,
+    "fii_pe_short_change": 153006.0,
+    "fii_pe_net_short_change": -52356.0,
+    "fii_raw_score": -25,
+    "fii_stk_fut_net_change": 10069.0,
+    "fii_stk_fut_long_change": 10041.0,
+    "fii_stk_fut_short_change": -28.0,
+    "fii_stk_ce_net_change": -13508.0,
+    "fii_stk_pe_net_change": 2812.0,
+    "pro_fut_net_change": 17584.0,
+    "pro_fut_long_change": 14939.0,
+    "pro_fut_short_change": -2645.0,
+    "pro_ce_long_change": 112508.0,
+    "pro_ce_short_change": 98911.0,
+    "pro_ce_net_short_change": -13597.0,
+    "pro_pe_long_change": 281658.0,
+    "pro_pe_short_change": 168683.0,
+    "pro_pe_net_short_change": -112975.0,
     "pro_raw_score": 25,
-    "pro_stk_fut_net_change": 9258.0,
-    "pro_stk_fut_long_change": -10831.0,
-    "pro_stk_fut_short_change": -20089.0,
-    "pro_stk_ce_net_change": -147597.0,
-    "pro_stk_pe_net_change": 57060.0,
-    "dii_fut_net_change": -148.0,
-    "dii_fut_long_change": -357.0,
-    "dii_fut_short_change": -209.0,
-    "dii_ce_long_change": -470.0,
-    "dii_ce_short_change": -250.0,
-    "dii_ce_net_short_change": 220.0,
-    "dii_pe_long_change": -11150.0,
-    "dii_pe_short_change": -1000.0,
-    "dii_pe_net_short_change": 10150.0,
-    "dii_raw_score": 25,
-    "dii_stk_fut_net_change": -30266.0,
-    "dii_stk_fut_long_change": 14442.0,
-    "dii_stk_fut_short_change": 44708.0,
-    "dii_stk_ce_net_change": 9070.0,
-    "dii_stk_pe_net_change": -2362.0,
-    "client_ce_net_buy": -197847.0,
-    "client_pe_net_buy": 143413.0,
-    "client_ce_long_change": -263042.0,
-    "client_ce_short_change": -65195.0,
-    "client_pe_long_change": 1009026.0,
-    "client_pe_short_change": 865613.0,
-    "client_fut_net_change": -8647.0,
-    "client_fut_long_change": -7359.0,
-    "client_fut_short_change": 1288.0,
-    "client_stk_fut_net_change": -12316.0,
-    "client_stk_fut_long_change": -15322.0,
-    "client_stk_fut_short_change": -3006.0,
-    "client_stk_ce_net_change": 153188.0,
-    "client_stk_pe_net_change": -68106.0,
-    "fii_fut_net_carried": -68247.0,
-    "pro_fut_net_carried": -5543.0,
-    "dii_fut_net_carried": 22766.0,
+    "pro_stk_fut_net_change": -13342.0,
+    "pro_stk_fut_long_change": -18985.0,
+    "pro_stk_fut_short_change": -5643.0,
+    "pro_stk_ce_net_change": -121159.0,
+    "pro_stk_pe_net_change": -52266.0,
+    "dii_fut_net_change": -5615.0,
+    "dii_fut_long_change": -332.0,
+    "dii_fut_short_change": 5283.0,
+    "dii_ce_long_change": 1323.0,
+    "dii_ce_short_change": 1090.0,
+    "dii_ce_net_short_change": -233.0,
+    "dii_pe_long_change": -4402.0,
+    "dii_pe_short_change": 1500.0,
+    "dii_pe_net_short_change": 5902.0,
+    "dii_raw_score": -5,
+    "dii_stk_fut_net_change": 39793.0,
+    "dii_stk_fut_long_change": 56917.0,
+    "dii_stk_fut_short_change": 17124.0,
+    "dii_stk_ce_net_change": 1068.0,
+    "dii_stk_pe_net_change": -3762.0,
+    "client_ce_net_buy": -4163.0,
+    "client_pe_net_buy": -159429.0,
+    "client_ce_long_change": 141519.0,
+    "client_ce_short_change": 145682.0,
+    "client_pe_long_change": 345899.0,
+    "client_pe_short_change": 505328.0,
+    "client_fut_net_change": -9762.0,
+    "client_fut_long_change": -8912.0,
+    "client_fut_short_change": 850.0,
+    "client_stk_fut_net_change": -36520.0,
+    "client_stk_fut_long_change": -33174.0,
+    "client_stk_fut_short_change": 3346.0,
+    "client_stk_ce_net_change": 133599.0,
+    "client_stk_pe_net_change": 53216.0,
+    "fii_fut_net_carried": -70454.0,
+    "pro_fut_net_carried": 12041.0,
+    "dii_fut_net_carried": 17151.0,
     "weights": {
       "fii": 1.0,
       "pro": 0.6,
@@ -102,7 +102,7 @@
   },
   "score_history": [
     {
-      "date": "21-09-2026",
+      "date": "22-09-2026",
       "prev_date": null,
       "score": 0.0,
       "bias": "NEUTRAL / SIDEWAYS",
@@ -110,16 +110,6 @@
       "fiiRawScore": 0,
       "proRawScore": 0,
       "diiRawScore": 0
-    },
-    {
-      "date": "22-09-2026",
-      "prev_date": "21-09-2026",
-      "score": -3.125,
-      "bias": "NEUTRAL / SIDEWAYS",
-      "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
-      "fiiRawScore": -25,
-      "proRawScore": 25,
-      "diiRawScore": 25
     },
     {
       "date": "23-09-2026",
@@ -519,14 +509,24 @@
       "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
       "fiiRawScore": 25,
       "proRawScore": 25,
-      "diiRawScore": 25,
+      "diiRawScore": 25
+    },
+    {
+      "date": "20-11-2026",
+      "prev_date": "19-11-2026",
+      "score": -16.375,
+      "bias": "MODERATE BEARISH",
+      "actionDesc": "Operators are capping upside via Call writing.",
+      "fiiRawScore": -25,
+      "proRawScore": 25,
+      "diiRawScore": -5,
       "ivModifier": 0.0
     }
   ],
   "verdict": {
-    "score": 68.125,
-    "bias": "HIGH CONFIDENCE BULLISH",
-    "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
+    "score": -16.375,
+    "bias": "MODERATE BEARISH",
+    "actionDesc": "Operators are capping upside via Call writing.",
     "scoreBreakdown": {
       "fii": 1.0,
       "pro": 0.6,
@@ -537,113 +537,113 @@
   "participants": {
     "fii": {
       "futures": {
-        "net": 2423.0,
-        "long": 8174.0,
-        "short": 5751.0,
-        "stockNet": 33324.0,
-        "stockLong": 24574.0,
-        "stockShort": -8750.0,
-        "netCarried": -68247.0
+        "net": -2207.0,
+        "long": 2348.0,
+        "short": 4555.0,
+        "stockNet": 10069.0,
+        "stockLong": 10041.0,
+        "stockShort": -28.0,
+        "netCarried": -70454.0
       },
       "options": {
         "ce": {
-          "long": 51963.0,
-          "short": -44592.0,
-          "netShort": -96555.0
+          "long": 117743.0,
+          "short": 127409.0,
+          "netShort": 9666.0
         },
         "pe": {
-          "long": 181123.0,
-          "short": 222946.0,
-          "netShort": 41823.0
+          "long": 205362.0,
+          "short": 153006.0,
+          "netShort": -52356.0
         },
-        "stkCeNet": -14661.0,
-        "stkPeNet": 13408.0
+        "stkCeNet": -13508.0,
+        "stkPeNet": 2812.0
       },
-      "rawScore": 25
+      "rawScore": -25
     },
     "pro": {
       "futures": {
-        "net": 6372.0,
-        "long": 6276.0,
-        "short": -96.0,
-        "stockNet": 9258.0,
-        "stockLong": -10831.0,
-        "stockShort": -20089.0,
-        "netCarried": -5543.0
+        "net": 17584.0,
+        "long": 14939.0,
+        "short": -2645.0,
+        "stockNet": -13342.0,
+        "stockLong": -18985.0,
+        "stockShort": -5643.0,
+        "netCarried": 12041.0
       },
       "options": {
         "ce": {
-          "long": -1201.0,
-          "short": -102712.0,
-          "netShort": -101511.0
+          "long": 112508.0,
+          "short": 98911.0,
+          "netShort": -13597.0
         },
         "pe": {
-          "long": 282739.0,
-          "short": 374180.0,
-          "netShort": 91441.0
+          "long": 281658.0,
+          "short": 168683.0,
+          "netShort": -112975.0
         },
-        "stkCeNet": -147597.0,
-        "stkPeNet": 57060.0
+        "stkCeNet": -121159.0,
+        "stkPeNet": -52266.0
       },
       "rawScore": 25
     },
     "dii": {
       "futures": {
-        "net": -148.0,
-        "long": -357.0,
-        "short": -209.0,
-        "stockNet": -30266.0,
-        "stockLong": 14442.0,
-        "stockShort": 44708.0,
-        "netCarried": 22766.0
+        "net": -5615.0,
+        "long": -332.0,
+        "short": 5283.0,
+        "stockNet": 39793.0,
+        "stockLong": 56917.0,
+        "stockShort": 17124.0,
+        "netCarried": 17151.0
       },
       "options": {
         "ce": {
-          "long": -470.0,
-          "short": -250.0,
-          "netShort": 220.0
+          "long": 1323.0,
+          "short": 1090.0,
+          "netShort": -233.0
         },
         "pe": {
-          "long": -11150.0,
-          "short": -1000.0,
-          "netShort": 10150.0
+          "long": -4402.0,
+          "short": 1500.0,
+          "netShort": 5902.0
         },
-        "stkCeNet": 9070.0,
-        "stkPeNet": -2362.0
+        "stkCeNet": 1068.0,
+        "stkPeNet": -3762.0
       },
-      "rawScore": 25
+      "rawScore": -5
     },
     "client": {
       "futures": {
-        "net": -8647.0,
-        "long": -7359.0,
-        "short": 1288.0,
-        "stockNet": -12316.0,
-        "stockLong": -15322.0,
-        "stockShort": -3006.0,
+        "net": -9762.0,
+        "long": -8912.0,
+        "short": 850.0,
+        "stockNet": -36520.0,
+        "stockLong": -33174.0,
+        "stockShort": 3346.0,
         "netCarried": 0
       },
       "options": {
         "ce": {
-          "long": -263042.0,
-          "short": -65195.0,
-          "netBuy": -197847.0
+          "long": 141519.0,
+          "short": 145682.0,
+          "netBuy": -4163.0
         },
         "pe": {
-          "long": 1009026.0,
-          "short": 865613.0,
-          "netBuy": 143413.0
+          "long": 345899.0,
+          "short": 505328.0,
+          "netBuy": -159429.0
         },
-        "stkCeNet": 153188.0,
-        "stkPeNet": -68106.0
+        "stkCeNet": 133599.0,
+        "stkPeNet": 53216.0
       }
     }
   },
   "retail": {
-    "trapAlarm": "RETAIL PUT TRAP ALERT: Retail buying puts while FIIs aggressively write puts.",
-    "confirmationMessage": null,
-    "confirmationScore": 0,
-    "adjustment": 15
+    "trapAlarm": null,
+    "confirmationMessage": "RETAIL PUT CONFIRMATION: Retail reducing hedges while FIIs unwind put floor.",
+    "confirmationScore": -5,
+    "adjustment": 0
   },
   "weights": {
     "fii": 1.0,
@@ -667,595 +667,23 @@
   "conviction": {
     "NIFTY": {
       "dates": [
-        "2026-11-13",
         "2026-11-16",
         "2026-11-17",
         "2026-11-18",
-        "2026-11-19"
+        "2026-11-19",
+        "2026-11-20"
       ],
-      "strikes": [
-        {
-          "strike": 24800,
-          "ce_oi_history": [
-            10596
-          ],
-          "pe_oi_history": [
-            98861
-          ],
-          "today_ce_doi": -24,
-          "today_pe_doi": 8615,
-          "ce_trend_delta": -24,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 8615,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 24850,
-          "ce_oi_history": [
-            2178
-          ],
-          "pe_oi_history": [
-            42519
-          ],
-          "today_ce_doi": -521,
-          "today_pe_doi": 9923,
-          "ce_trend_delta": -521,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 9923,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 24900,
-          "ce_oi_history": [
-            10647
-          ],
-          "pe_oi_history": [
-            69253
-          ],
-          "today_ce_doi": 170,
-          "today_pe_doi": 8102,
-          "ce_trend_delta": 170,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 8102,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 24950,
-          "ce_oi_history": [
-            3428
-          ],
-          "pe_oi_history": [
-            36862
-          ],
-          "today_ce_doi": 116,
-          "today_pe_doi": 5454,
-          "ce_trend_delta": 116,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 5454,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 25000,
-          "ce_oi_history": [
-            41468
-          ],
-          "pe_oi_history": [
-            125027
-          ],
-          "today_ce_doi": 1639,
-          "today_pe_doi": 4304,
-          "ce_trend_delta": 1639,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 4304,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 25050,
-          "ce_oi_history": [
-            16852
-          ],
-          "pe_oi_history": [
-            41665
-          ],
-          "today_ce_doi": 10730,
-          "today_pe_doi": 22288,
-          "ce_trend_delta": 10730,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 22288,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 25100,
-          "ce_oi_history": [
-            68617
-          ],
-          "pe_oi_history": [
-            112352
-          ],
-          "today_ce_doi": 54747,
-          "today_pe_doi": 58446,
-          "ce_trend_delta": 54747,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 58446,
-          "pe_conviction": "SOLID FLOOR",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 25150,
-          "ce_oi_history": [
-            55066
-          ],
-          "pe_oi_history": [
-            48369
-          ],
-          "today_ce_doi": 46437,
-          "today_pe_doi": 23849,
-          "ce_trend_delta": 46437,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 23849,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 25200,
-          "ce_oi_history": [
-            129478
-          ],
-          "pe_oi_history": [
-            73301
-          ],
-          "today_ce_doi": 88015,
-          "today_pe_doi": 17356,
-          "ce_trend_delta": 88015,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 17356,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "FII FLOOR"
-        },
-        {
-          "strike": 25250,
-          "ce_oi_history": [
-            64902
-          ],
-          "pe_oi_history": [
-            16228
-          ],
-          "today_ce_doi": 16649,
-          "today_pe_doi": -23343,
-          "ce_trend_delta": 16649,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -23343,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "UNWINDING"
-        },
-        {
-          "strike": 25300,
-          "ce_oi_history": [
-            118144
-          ],
-          "pe_oi_history": [
-            33421
-          ],
-          "today_ce_doi": 9644,
-          "today_pe_doi": -32266,
-          "ce_trend_delta": 9644,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -32266,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "UNWINDING"
-        },
-        {
-          "strike": 25350,
-          "ce_oi_history": [
-            76134
-          ],
-          "pe_oi_history": [
-            15256
-          ],
-          "today_ce_doi": 2481,
-          "today_pe_doi": -16026,
-          "ce_trend_delta": 2481,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -16026,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "UNWINDING"
-        },
-        {
-          "strike": 25400,
-          "ce_oi_history": [
-            131635
-          ],
-          "pe_oi_history": [
-            19863
-          ],
-          "today_ce_doi": 22264,
-          "today_pe_doi": -7728,
-          "ce_trend_delta": 22264,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -7728,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "UNWINDING"
-        },
-        {
-          "strike": 25450,
-          "ce_oi_history": [
-            49132
-          ],
-          "pe_oi_history": [
-            3166
-          ],
-          "today_ce_doi": 11585,
-          "today_pe_doi": -1883,
-          "ce_trend_delta": 11585,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -1883,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 25500,
-          "ce_oi_history": [
-            163385
-          ],
-          "pe_oi_history": [
-            23165
-          ],
-          "today_ce_doi": 19004,
-          "today_pe_doi": -3613,
-          "ce_trend_delta": 19004,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -3613,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "--"
-        }
-      ]
+      "strikes": []
     },
     "BANKNIFTY": {
       "dates": [
-        "2026-11-13",
         "2026-11-16",
         "2026-11-17",
         "2026-11-18",
-        "2026-11-19"
+        "2026-11-19",
+        "2026-11-20"
       ],
-      "strikes": [
-        {
-          "strike": 60300,
-          "ce_oi_history": [
-            1198
-          ],
-          "pe_oi_history": [
-            2687
-          ],
-          "today_ce_doi": 43,
-          "today_pe_doi": 198,
-          "ce_trend_delta": 43,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 198,
-          "pe_conviction": "STABLE",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "NEUTRAL",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60400,
-          "ce_oi_history": [
-            843
-          ],
-          "pe_oi_history": [
-            2696
-          ],
-          "today_ce_doi": -8,
-          "today_pe_doi": 305,
-          "ce_trend_delta": -8,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 305,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60500,
-          "ce_oi_history": [
-            26057
-          ],
-          "pe_oi_history": [
-            41327
-          ],
-          "today_ce_doi": -8402,
-          "today_pe_doi": 2059,
-          "ce_trend_delta": -8402,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": 2059,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "COVERING",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60600,
-          "ce_oi_history": [
-            1204
-          ],
-          "pe_oi_history": [
-            2860
-          ],
-          "today_ce_doi": 91,
-          "today_pe_doi": -240,
-          "ce_trend_delta": 91,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -240,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60700,
-          "ce_oi_history": [
-            1826
-          ],
-          "pe_oi_history": [
-            3569
-          ],
-          "today_ce_doi": 180,
-          "today_pe_doi": 483,
-          "ce_trend_delta": 180,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": 483,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60800,
-          "ce_oi_history": [
-            3394
-          ],
-          "pe_oi_history": [
-            5568
-          ],
-          "today_ce_doi": 787,
-          "today_pe_doi": 1651,
-          "ce_trend_delta": 787,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 1651,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 60900,
-          "ce_oi_history": [
-            3992
-          ],
-          "pe_oi_history": [
-            4634
-          ],
-          "today_ce_doi": 2369,
-          "today_pe_doi": 2454,
-          "ce_trend_delta": 2369,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": 2454,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61000,
-          "ce_oi_history": [
-            29524
-          ],
-          "pe_oi_history": [
-            26538
-          ],
-          "today_ce_doi": 6603,
-          "today_pe_doi": 2059,
-          "ce_trend_delta": 6603,
-          "ce_conviction": "HARD RESISTANCE",
-          "pe_trend_delta": 2059,
-          "pe_conviction": "PE BUILDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "ALIGNED",
-          "ce_flow_attr": "WRITING",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61100,
-          "ce_oi_history": [
-            4690
-          ],
-          "pe_oi_history": [
-            2046
-          ],
-          "today_ce_doi": 1940,
-          "today_pe_doi": -867,
-          "ce_trend_delta": 1940,
-          "ce_conviction": "CE BUILDING",
-          "pe_trend_delta": -867,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "OPPOSED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61200,
-          "ce_oi_history": [
-            5570
-          ],
-          "pe_oi_history": [
-            2646
-          ],
-          "today_ce_doi": 213,
-          "today_pe_doi": -1525,
-          "ce_trend_delta": 213,
-          "ce_conviction": "STABLE",
-          "pe_trend_delta": -1525,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "NEUTRAL",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61300,
-          "ce_oi_history": [
-            6846
-          ],
-          "pe_oi_history": [
-            2942
-          ],
-          "today_ce_doi": -1079,
-          "today_pe_doi": -1802,
-          "ce_trend_delta": -1079,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -1802,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61400,
-          "ce_oi_history": [
-            4579
-          ],
-          "pe_oi_history": [
-            1555
-          ],
-          "today_ce_doi": -2100,
-          "today_pe_doi": -1637,
-          "ce_trend_delta": -2100,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -1637,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61500,
-          "ce_oi_history": [
-            16449
-          ],
-          "pe_oi_history": [
-            6071
-          ],
-          "today_ce_doi": -2528,
-          "today_pe_doi": -6779,
-          "ce_trend_delta": -2528,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -6779,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "UNWINDING"
-        },
-        {
-          "strike": 61600,
-          "ce_oi_history": [
-            2944
-          ],
-          "pe_oi_history": [
-            406
-          ],
-          "today_ce_doi": -1270,
-          "today_pe_doi": -332,
-          "ce_trend_delta": -1270,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -332,
-          "pe_conviction": "PE UNWINDING",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "OPPOSED",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        },
-        {
-          "strike": 61700,
-          "ce_oi_history": [
-            2901
-          ],
-          "pe_oi_history": [
-            277
-          ],
-          "today_ce_doi": -328,
-          "today_pe_doi": -133,
-          "ce_trend_delta": -328,
-          "ce_conviction": "CE UNWINDING",
-          "pe_trend_delta": -133,
-          "pe_conviction": "STABLE",
-          "ce_alignment": "ALIGNED",
-          "pe_alignment": "NEUTRAL",
-          "ce_flow_attr": "--",
-          "pe_flow_attr": "--"
-        }
-      ]
+      "strikes": []
     }
   },
   "divergence": [],
