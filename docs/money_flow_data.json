@@ -1,98 +1,98 @@
 {
-  "timestamp": "2026-11-26T14:31:14.264851+00:00",
+  "timestamp": "2026-11-27T14:31:12.058961+00:00",
   "executive_summary": {
-    "bias_label": "NEUTRAL / SIDEWAYS",
-    "smart_money_score": 11.875,
-    "action_desc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+    "bias_label": "HIGH CONFIDENCE BEARISH",
+    "smart_money_score": -50.325,
+    "action_desc": "FIIs are adding heavy Call shorts while unwinding Put support.",
     "score_breakdown": {
-      "fii_raw_score": 25,
-      "pro_raw_score": 0,
-      "dii_raw_score": -25,
+      "fii_raw_score": -25,
+      "pro_raw_score": -25,
+      "dii_raw_score": 17,
       "fii_weight": 1.0,
       "pro_weight": 0.6,
       "dii_weight": 0.4,
-      "weighted_clipped_before_adjustments": 15.0,
-      "trap_adjustment": 0,
+      "weighted_clipped_before_adjustments": -33.2,
+      "trap_adjustment": -15,
       "retail_confirmation_score": 0,
-      "fii_dii_modifier": -3.125,
+      "fii_dii_modifier": -2.125,
       "iv_modifier": 0.0
     }
   },
   "participant_summary": {
-    "date": "26-11-2026",
-    "prev_date": "25-11-2026",
-    "smart_money_score": 11.875,
-    "bias_label": "NEUTRAL / SIDEWAYS",
-    "action_desc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
-    "retail_trap_alarm": null,
-    "trap_adjustment": 0,
+    "date": "27-11-2026",
+    "prev_date": "26-11-2026",
+    "smart_money_score": -50.325,
+    "bias_label": "HIGH CONFIDENCE BEARISH",
+    "action_desc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+    "retail_trap_alarm": "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls.",
+    "trap_adjustment": -15,
     "retail_confirmation_message": null,
     "retail_confirmation_score": 0,
-    "fii_dii_modifier": -3.125,
+    "fii_dii_modifier": -2.125,
     "iv_modifier_applied": 0.0,
-    "weighted_clipped_before_adjustments": 15.0,
-    "fii_fut_net_change": -3239.0,
-    "fii_fut_long_change": -1040.0,
-    "fii_fut_short_change": 2199.0,
-    "fii_ce_long_change": 81937.0,
-    "fii_ce_short_change": 69316.0,
-    "fii_ce_net_short_change": -12621.0,
-    "fii_pe_long_change": 60721.0,
-    "fii_pe_short_change": 116110.0,
-    "fii_pe_net_short_change": 55389.0,
-    "fii_raw_score": 25,
-    "fii_stk_fut_net_change": 26860.0,
-    "fii_stk_fut_long_change": 6176.0,
-    "fii_stk_fut_short_change": -20684.0,
-    "fii_stk_ce_net_change": -2439.0,
-    "fii_stk_pe_net_change": 10830.0,
-    "pro_fut_net_change": 6335.0,
-    "pro_fut_long_change": 5676.0,
-    "pro_fut_short_change": -659.0,
-    "pro_ce_long_change": 111442.0,
-    "pro_ce_short_change": 108088.0,
-    "pro_ce_net_short_change": -3354.0,
-    "pro_pe_long_change": 244454.0,
-    "pro_pe_short_change": 171022.0,
-    "pro_pe_net_short_change": -73432.0,
-    "pro_raw_score": 0,
-    "pro_stk_fut_net_change": -14073.0,
-    "pro_stk_fut_long_change": 7397.0,
-    "pro_stk_fut_short_change": 21470.0,
-    "pro_stk_ce_net_change": -16106.0,
-    "pro_stk_pe_net_change": -11224.0,
-    "dii_fut_net_change": -6505.0,
-    "dii_fut_long_change": -442.0,
-    "dii_fut_short_change": 6063.0,
-    "dii_ce_long_change": 147.0,
-    "dii_ce_short_change": 200.0,
-    "dii_ce_net_short_change": 53.0,
-    "dii_pe_long_change": 402.0,
-    "dii_pe_short_change": 200.0,
-    "dii_pe_net_short_change": -202.0,
-    "dii_raw_score": -25,
-    "dii_stk_fut_net_change": -7626.0,
-    "dii_stk_fut_long_change": 17626.0,
-    "dii_stk_fut_short_change": 25252.0,
-    "dii_stk_ce_net_change": 28590.0,
-    "dii_stk_pe_net_change": 1242.0,
-    "client_ce_net_buy": -15921.0,
-    "client_pe_net_buy": -18245.0,
-    "client_ce_long_change": 370894.0,
-    "client_ce_short_change": 386815.0,
-    "client_pe_long_change": 545540.0,
-    "client_pe_short_change": 563785.0,
-    "client_fut_net_change": 3409.0,
-    "client_fut_long_change": 3864.0,
-    "client_fut_short_change": 455.0,
-    "client_stk_fut_net_change": -5161.0,
-    "client_stk_fut_long_change": 11946.0,
-    "client_stk_fut_short_change": 17107.0,
-    "client_stk_ce_net_change": -10045.0,
-    "client_stk_pe_net_change": -848.0,
-    "fii_fut_net_carried": -88469.0,
-    "pro_fut_net_carried": 6672.0,
-    "dii_fut_net_carried": 8549.0,
+    "weighted_clipped_before_adjustments": -33.2,
+    "fii_fut_net_change": -4403.0,
+    "fii_fut_long_change": -1016.0,
+    "fii_fut_short_change": 3387.0,
+    "fii_ce_long_change": 202823.0,
+    "fii_ce_short_change": 257298.0,
+    "fii_ce_net_short_change": 54475.0,
+    "fii_pe_long_change": 66533.0,
+    "fii_pe_short_change": -32309.0,
+    "fii_pe_net_short_change": -98842.0,
+    "fii_raw_score": -25,
+    "fii_stk_fut_net_change": -42151.0,
+    "fii_stk_fut_long_change": -26831.0,
+    "fii_stk_fut_short_change": 15320.0,
+    "fii_stk_ce_net_change": 23034.0,
+    "fii_stk_pe_net_change": -11621.0,
+    "pro_fut_net_change": -14213.0,
+    "pro_fut_long_change": -10009.0,
+    "pro_fut_short_change": 4204.0,
+    "pro_ce_long_change": 469917.0,
+    "pro_ce_short_change": 576303.0,
+    "pro_ce_net_short_change": 106386.0,
+    "pro_pe_long_change": 115950.0,
+    "pro_pe_short_change": 38723.0,
+    "pro_pe_net_short_change": -77227.0,
+    "pro_raw_score": -25,
+    "pro_stk_fut_net_change": -3063.0,
+    "pro_stk_fut_long_change": 4918.0,
+    "pro_stk_fut_short_change": 7981.0,
+    "pro_stk_ce_net_change": 59939.0,
+    "pro_stk_pe_net_change": -22601.0,
+    "dii_fut_net_change": 2446.0,
+    "dii_fut_long_change": 174.0,
+    "dii_fut_short_change": -2272.0,
+    "dii_ce_long_change": -472.0,
+    "dii_ce_short_change": 0.0,
+    "dii_ce_net_short_change": 472.0,
+    "dii_pe_long_change": -30.0,
+    "dii_pe_short_change": 250.0,
+    "dii_pe_net_short_change": 280.0,
+    "dii_raw_score": 17,
+    "dii_stk_fut_net_change": 8424.0,
+    "dii_stk_fut_long_change": 207.0,
+    "dii_stk_fut_short_change": -8217.0,
+    "dii_stk_ce_net_change": 18300.0,
+    "dii_stk_pe_net_change": 1840.0,
+    "client_ce_net_buy": 161333.0,
+    "client_pe_net_buy": -175789.0,
+    "client_ce_long_change": 1288845.0,
+    "client_ce_short_change": 1127512.0,
+    "client_pe_long_change": -76382.0,
+    "client_pe_short_change": 99407.0,
+    "client_fut_net_change": 16170.0,
+    "client_fut_long_change": 10229.0,
+    "client_fut_short_change": -5941.0,
+    "client_stk_fut_net_change": 36790.0,
+    "client_stk_fut_long_change": 33360.0,
+    "client_stk_fut_short_change": -3430.0,
+    "client_stk_ce_net_change": -101273.0,
+    "client_stk_pe_net_change": 32382.0,
+    "fii_fut_net_carried": -92872.0,
+    "pro_fut_net_carried": -7541.0,
+    "dii_fut_net_carried": 10995.0,
     "weights": {
       "fii": 1.0,
       "pro": 0.6,
@@ -102,7 +102,7 @@
   },
   "score_history": [
     {
-      "date": "28-09-2026",
+      "date": "29-09-2026",
       "prev_date": null,
       "score": 0.0,
       "bias": "NEUTRAL / SIDEWAYS",
@@ -110,16 +110,6 @@
       "fiiRawScore": 0,
       "proRawScore": 0,
       "diiRawScore": 0
-    },
-    {
-      "date": "29-09-2026",
-      "prev_date": "28-09-2026",
-      "score": 57.1,
-      "bias": "HIGH CONFIDENCE BULLISH",
-      "actionDesc": "FII (and, to a lesser extent, Pro/DII) desks are aggressively covering Call shorts and building Put floors.",
-      "fiiRawScore": 25,
-      "proRawScore": 25,
-      "diiRawScore": 4
     },
     {
       "date": "30-09-2026",
@@ -509,14 +499,24 @@
       "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
       "fiiRawScore": 25,
       "proRawScore": 0,
-      "diiRawScore": -25,
+      "diiRawScore": -25
+    },
+    {
+      "date": "27-11-2026",
+      "prev_date": "26-11-2026",
+      "score": -50.325,
+      "bias": "HIGH CONFIDENCE BEARISH",
+      "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
+      "fiiRawScore": -25,
+      "proRawScore": -25,
+      "diiRawScore": 17,
       "ivModifier": 0.0
     }
   ],
   "verdict": {
-    "score": 11.875,
-    "bias": "NEUTRAL / SIDEWAYS",
-    "actionDesc": "Mixed operator signals \u2014 expecting rangebound consolidation.",
+    "score": -50.325,
+    "bias": "HIGH CONFIDENCE BEARISH",
+    "actionDesc": "FIIs are adding heavy Call shorts while unwinding Put support.",
     "scoreBreakdown": {
       "fii": 1.0,
       "pro": 0.6,
@@ -527,113 +527,113 @@
   "participants": {
     "fii": {
       "futures": {
-        "net": -3239.0,
-        "long": -1040.0,
-        "short": 2199.0,
-        "stockNet": 26860.0,
-        "stockLong": 6176.0,
-        "stockShort": -20684.0,
-        "netCarried": -88469.0
+        "net": -4403.0,
+        "long": -1016.0,
+        "short": 3387.0,
+        "stockNet": -42151.0,
+        "stockLong": -26831.0,
+        "stockShort": 15320.0,
+        "netCarried": -92872.0
       },
       "options": {
         "ce": {
-          "long": 81937.0,
-          "short": 69316.0,
-          "netShort": -12621.0
+          "long": 202823.0,
+          "short": 257298.0,
+          "netShort": 54475.0
         },
         "pe": {
-          "long": 60721.0,
-          "short": 116110.0,
-          "netShort": 55389.0
+          "long": 66533.0,
+          "short": -32309.0,
+          "netShort": -98842.0
         },
-        "stkCeNet": -2439.0,
-        "stkPeNet": 10830.0
-      },
-      "rawScore": 25
-    },
-    "pro": {
-      "futures": {
-        "net": 6335.0,
-        "long": 5676.0,
-        "short": -659.0,
-        "stockNet": -14073.0,
-        "stockLong": 7397.0,
-        "stockShort": 21470.0,
-        "netCarried": 6672.0
-      },
-      "options": {
-        "ce": {
-          "long": 111442.0,
-          "short": 108088.0,
-          "netShort": -3354.0
-        },
-        "pe": {
-          "long": 244454.0,
-          "short": 171022.0,
-          "netShort": -73432.0
-        },
-        "stkCeNet": -16106.0,
-        "stkPeNet": -11224.0
-      },
-      "rawScore": 0
-    },
-    "dii": {
-      "futures": {
-        "net": -6505.0,
-        "long": -442.0,
-        "short": 6063.0,
-        "stockNet": -7626.0,
-        "stockLong": 17626.0,
-        "stockShort": 25252.0,
-        "netCarried": 8549.0
-      },
-      "options": {
-        "ce": {
-          "long": 147.0,
-          "short": 200.0,
-          "netShort": 53.0
-        },
-        "pe": {
-          "long": 402.0,
-          "short": 200.0,
-          "netShort": -202.0
-        },
-        "stkCeNet": 28590.0,
-        "stkPeNet": 1242.0
+        "stkCeNet": 23034.0,
+        "stkPeNet": -11621.0
       },
       "rawScore": -25
     },
+    "pro": {
+      "futures": {
+        "net": -14213.0,
+        "long": -10009.0,
+        "short": 4204.0,
+        "stockNet": -3063.0,
+        "stockLong": 4918.0,
+        "stockShort": 7981.0,
+        "netCarried": -7541.0
+      },
+      "options": {
+        "ce": {
+          "long": 469917.0,
+          "short": 576303.0,
+          "netShort": 106386.0
+        },
+        "pe": {
+          "long": 115950.0,
+          "short": 38723.0,
+          "netShort": -77227.0
+        },
+        "stkCeNet": 59939.0,
+        "stkPeNet": -22601.0
+      },
+      "rawScore": -25
+    },
+    "dii": {
+      "futures": {
+        "net": 2446.0,
+        "long": 174.0,
+        "short": -2272.0,
+        "stockNet": 8424.0,
+        "stockLong": 207.0,
+        "stockShort": -8217.0,
+        "netCarried": 10995.0
+      },
+      "options": {
+        "ce": {
+          "long": -472.0,
+          "short": 0.0,
+          "netShort": 472.0
+        },
+        "pe": {
+          "long": -30.0,
+          "short": 250.0,
+          "netShort": 280.0
+        },
+        "stkCeNet": 18300.0,
+        "stkPeNet": 1840.0
+      },
+      "rawScore": 17
+    },
     "client": {
       "futures": {
-        "net": 3409.0,
-        "long": 3864.0,
-        "short": 455.0,
-        "stockNet": -5161.0,
-        "stockLong": 11946.0,
-        "stockShort": 17107.0,
+        "net": 16170.0,
+        "long": 10229.0,
+        "short": -5941.0,
+        "stockNet": 36790.0,
+        "stockLong": 33360.0,
+        "stockShort": -3430.0,
         "netCarried": 0
       },
       "options": {
         "ce": {
-          "long": 370894.0,
-          "short": 386815.0,
-          "netBuy": -15921.0
+          "long": 1288845.0,
+          "short": 1127512.0,
+          "netBuy": 161333.0
         },
         "pe": {
-          "long": 545540.0,
-          "short": 563785.0,
-          "netBuy": -18245.0
+          "long": -76382.0,
+          "short": 99407.0,
+          "netBuy": -175789.0
         },
-        "stkCeNet": -10045.0,
-        "stkPeNet": -848.0
+        "stkCeNet": -101273.0,
+        "stkPeNet": 32382.0
       }
     }
   },
   "retail": {
-    "trapAlarm": null,
+    "trapAlarm": "RETAIL CALL TRAP ALERT: Retail buying calls while FIIs aggressively write calls.",
     "confirmationMessage": null,
     "confirmationScore": 0,
-    "adjustment": 0
+    "adjustment": -15
   },
   "weights": {
     "fii": 1.0,
@@ -657,21 +657,21 @@
   "conviction": {
     "NIFTY": {
       "dates": [
-        "2026-11-20",
         "2026-11-23",
         "2026-11-24",
         "2026-11-25",
-        "2026-11-26"
+        "2026-11-26",
+        "2026-11-27"
       ],
       "strikes": []
     },
     "BANKNIFTY": {
       "dates": [
-        "2026-11-20",
         "2026-11-23",
         "2026-11-24",
         "2026-11-25",
-        "2026-11-26"
+        "2026-11-26",
+        "2026-11-27"
       ],
       "strikes": []
     }
